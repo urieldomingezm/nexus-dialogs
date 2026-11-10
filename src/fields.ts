@@ -80,6 +80,16 @@ const ES = {
   removeRow: 'Quitar fila {0}',
   rowsInvalid: 'Revisa las filas marcadas.',
   minRows: 'Agrega al menos {0} fila(s).',
+  dialCode: 'Lada',
+  phoneDigits: 'Escribe los {0} dígitos del teléfono.',
+  postalCode: 'Código postal',
+  state: 'Estado',
+  municipality: 'Municipio o alcaldía',
+  neighborhood: 'Colonia',
+  street: 'Calle y número',
+  chooseNeighborhood: 'Elige la colonia',
+  postalNotFound: 'No encontramos ese código postal: escribe los datos.',
+  missing: 'Falta: {0}.',
 }
 type Textos = typeof ES
 const EN: Textos = {
@@ -119,6 +129,16 @@ const EN: Textos = {
   removeRow: 'Remove row {0}',
   rowsInvalid: 'Check the highlighted rows.',
   minRows: 'Add at least {0} row(s).',
+  dialCode: 'Country code',
+  phoneDigits: 'Enter all {0} digits of the phone number.',
+  postalCode: 'ZIP code',
+  state: 'State',
+  municipality: 'Municipality',
+  neighborhood: 'Neighborhood',
+  street: 'Street and number',
+  chooseNeighborhood: 'Choose the neighborhood',
+  postalNotFound: 'ZIP code not found: type the details.',
+  missing: 'Missing: {0}.',
 }
 const T = (): Textos => (language() === 'en' ? EN : ES)
 const f = (s: string, ...v: (string | number)[]) => s.replace(/\{(\d)\}/g, (_, i) => String(v[+i] ?? ''))
@@ -837,6 +857,250 @@ const otp: Fabrica = (ctx, valor) => {
   }
 }
 
+// ── phone (teléfono con lada) ────────────────────────────────────────────────
+
+/** Lada, nombre y dígitos del número nacional. */
+export interface PhoneCountry {
+  dial: string
+  label: string
+  digits?: number
+}
+export const DEFAULT_COUNTRIES: PhoneCountry[] = [
+  { dial: '+52', label: 'México', digits: 10 },
+  { dial: '+1', label: 'Estados Unidos y Canadá', digits: 10 },
+  { dial: '+34', label: 'España', digits: 9 },
+  { dial: '+57', label: 'Colombia', digits: 10 },
+  { dial: '+54', label: 'Argentina', digits: 10 },
+  { dial: '+56', label: 'Chile', digits: 9 },
+  { dial: '+51', label: 'Perú', digits: 9 },
+  { dial: '+502', label: 'Guatemala', digits: 8 },
+]
+
+/** 81 1234 5678 (CDMX, GDL y MTY: 2-4-4), 222 123 4567 (3-3-4), y de 3 en 3 para otros largos. */
+export function formatPhone(digitos: string, dial = '+52'): string {
+  const d = digitos.replace(/\D/g, '')
+  const grupos =
+    d.length > 6 && (dial === '+52' || dial === '+1')
+      ? dial === '+52' && /^(55|56|33|81)/.test(d)
+        ? [2, 4, 4]
+        : [3, 3, 4]
+      : [3, 3, 3, 3, 3]
+  const partes: string[] = []
+  let i = 0
+  for (const g of grupos) {
+    if (i >= d.length) break
+    partes.push(d.slice(i, i + g))
+    i += g
+  }
+  if (i < d.length) partes.push(d.slice(i))
+  return partes.join(' ')
+}
+
+const telefono: Fabrica = (ctx, valor) => {
+  const t = T()
+  const fl = ctx.field
+  const paises = fl.countries?.length ? fl.countries : DEFAULT_COUNTRIES
+  // El valor llega como +528112345678: se busca la lada más larga que coincida.
+  let inicial = String(valor ?? '').replace(/[^\d+]/g, '')
+  let dial = fl.dialCode ?? paises[0].dial
+  if (inicial.startsWith('+')) {
+    const p = [...paises].sort((a, b) => b.dial.length - a.dial.length).find((x) => inicial.startsWith(x.dial))
+    if (p) {
+      dial = p.dial
+      inicial = inicial.slice(p.dial.length)
+    }
+  }
+  const pais = () => paises.find((p) => p.dial === lada.value) ?? paises[0]
+  const lada = h(
+    'select',
+    { class: 'dial', 'data-skip-initial': '', 'aria-label': t.dialCode, disabled: fl.disabled, 'aria-describedby': ctx.describedBy },
+    ...paises.map((p) => h('option', { value: p.dial, selected: p.dial === dial }, `${p.dial} ${p.label}`)),
+  )
+  lada.value = dial
+  const input = h('input', {
+    id: ctx.id,
+    class: 'input',
+    type: 'tel',
+    inputmode: 'tel',
+    autocomplete: 'tel-national',
+    disabled: fl.disabled,
+    placeholder: fl.placeholder ?? formatPhone('8112345678'.slice(0, pais().digits ?? 10), lada.value),
+    'aria-describedby': ctx.describedBy,
+    'aria-required': ctx.required ? 'true' : null,
+  })
+  const digitos = () => input.value.replace(/\D/g, '')
+  const formatear = () => {
+    // Conserva el cursor: cuenta cuántos dígitos había antes de él.
+    const antes = input.value.slice(0, input.selectionStart ?? input.value.length).replace(/\D/g, '').length
+    const max = pais().digits ?? 15
+    const nuevo = formatPhone(digitos().slice(0, max), lada.value)
+    if (nuevo === input.value) return
+    input.value = nuevo
+    let pos = 0
+    for (let n = 0; pos < nuevo.length && n < antes; pos++) if (/\d/.test(nuevo[pos])) n++
+    if ((input.getRootNode() as ShadowRoot | Document).activeElement === input) input.setSelectionRange(pos, pos)
+  }
+  input.value = formatPhone(inicial, dial)
+  input.addEventListener('input', formatear)
+  lada.addEventListener('change', () => {
+    formatear()
+    input.placeholder = fl.placeholder ?? formatPhone('8112345678'.slice(0, pais().digits ?? 10), lada.value)
+  })
+  const el = h('div', { class: 'affix phone' }, lada, input)
+  return {
+    el,
+    value: () => (digitos() ? lada.value + digitos() : ''),
+    focus: () => input.focus(),
+    invalid: (on) => input.setAttribute('aria-invalid', String(on)),
+    validate: () => {
+      const n = pais().digits
+      const d = digitos()
+      return !d || (n ? d.length === n : d.length >= 6 && d.length <= 15) ? null : f(t.phoneDigits, n ?? '6–15')
+    },
+    summary: () => `${lada.value} ${input.value}`,
+  }
+}
+
+// ── address (dirección por código postal) ────────────────────────────────────
+
+export interface PostalLookup {
+  state: string
+  municipality: string
+  /** Colonias de ese código postal. */
+  neighborhoods: string[]
+  city?: string
+}
+export interface Address {
+  postalCode: string
+  state: string
+  municipality: string
+  neighborhood: string
+  street: string
+}
+
+const direccion: Fabrica = (ctx, valor) => {
+  const t = T()
+  const fl = ctx.field
+  const v = (valor ?? {}) as Partial<Address>
+  const parte = (nombre: keyof Address, etiqueta: string, extra: Record<string, unknown> = {}) => {
+    const id = nombre === 'postalCode' ? ctx.id : uid('fa')
+    const input = h('input', {
+      id,
+      class: 'input',
+      name: `${fl.name}.${nombre}`,
+      disabled: fl.disabled,
+      'aria-describedby': ctx.describedBy,
+      'aria-required': ctx.required ? 'true' : null,
+      value: v[nombre] ?? '',
+      ...extra,
+    })
+    return { input, el: h('div', { class: `ad-${nombre}` }, h('label', { for: id }, etiqueta), input) }
+  }
+  const cp = parte('postalCode', t.postalCode, { inputmode: 'numeric', autocomplete: 'postal-code', maxlength: 5 })
+  const estado = parte('state', t.state, { autocomplete: 'address-level1' })
+  const municipio = parte('municipality', t.municipality, { autocomplete: 'address-level2' })
+  const colonia = parte('neighborhood', t.neighborhood, { autocomplete: 'address-level3' })
+  const calle = parte('street', t.street, { autocomplete: 'street-address' })
+  // Con varias colonias, un <select> en lugar del texto (mismo id, así la etiqueta sigue apuntando bien).
+  const lista = h('select', { id: colonia.input.id, class: 'input', disabled: fl.disabled, 'aria-describedby': ctx.describedBy })
+  const aviso = h('p', { class: 'ad-note', role: 'status' })
+  let consulta = 0
+  const usarLista = (colonias: string[]) => {
+    if (colonias.length > 1) {
+      lista.replaceChildren(h('option', { value: '' }, t.chooseNeighborhood), ...colonias.map((c) => h('option', { value: c }, c)))
+      lista.value = colonias.includes(colonia.input.value) ? colonia.input.value : ''
+      colonia.input.replaceWith(lista)
+    } else {
+      if (lista.isConnected) lista.replaceWith(colonia.input)
+      colonia.input.value = colonias[0] ?? colonia.input.value
+    }
+  }
+  const buscar = async () => {
+    const codigo = cp.input.value
+    if (!fl.lookupPostalCode || !/^\d{5}$/.test(codigo)) return
+    const n = ++consulta
+    aviso.textContent = t.searching
+    el.setAttribute('aria-busy', 'true')
+    let r: PostalLookup | null = null
+    try {
+      r = await fl.lookupPostalCode(codigo)
+    } catch {}
+    if (n !== consulta) return
+    el.removeAttribute('aria-busy')
+    aviso.textContent = r ? '' : t.postalNotFound
+    if (r) {
+      estado.input.value = r.state
+      municipio.input.value = r.municipality
+      usarLista(r.neighborhoods)
+      if (r.neighborhoods.length > 1) lista.focus()
+      else calle.input.focus()
+    } else usarLista([])
+    cambio(el)
+  }
+  cp.input.addEventListener('input', () => {
+    const limpio = cp.input.value.replace(/\D/g, '').slice(0, 5)
+    if (limpio !== cp.input.value) cp.input.value = limpio
+    if (limpio.length === 5) void buscar()
+  })
+  const el = h('div', { class: 'addr' }, cp.el, estado.el, municipio.el, colonia.el, calle.el, aviso)
+  const coloniaValor = () => (lista.isConnected ? lista.value : colonia.input.value.trim())
+  const valores = (): Address => ({
+    postalCode: cp.input.value.trim(),
+    state: estado.input.value.trim(),
+    municipality: municipio.input.value.trim(),
+    neighborhood: coloniaValor(),
+    street: calle.input.value.trim(),
+  })
+  const partes: [keyof Address, string][] = [
+    ['postalCode', t.postalCode],
+    ['state', t.state],
+    ['municipality', t.municipality],
+    ['neighborhood', t.neighborhood],
+    ['street', t.street],
+  ]
+  const campo = (k: keyof Address) =>
+    k === 'neighborhood' && lista.isConnected
+      ? lista
+      : { postalCode: cp, state: estado, municipality: municipio, neighborhood: colonia, street: calle }[k].input
+  let faltan: (keyof Address)[] = []
+  return {
+    el,
+    group: true,
+    lazy: true,
+    value: () => {
+      const a = valores()
+      return Object.values(a).some(Boolean) ? a : null
+    },
+    focus: () => (faltan.length ? campo(faltan[0]).focus() : cp.input.focus()),
+    invalid: (on) => {
+      for (const [k] of partes) campo(k).setAttribute('aria-invalid', String(on && faltan.includes(k)))
+    },
+    validate: () => {
+      const a = valores()
+      faltan = []
+      if (!Object.values(a).some(Boolean)) return null
+      if (a.postalCode && !/^\d{5}$/.test(a.postalCode)) {
+        faltan = ['postalCode']
+        return f(t.missing, t.postalCode)
+      }
+      faltan = partes.filter(([k]) => !a[k]).map(([k]) => k)
+      return faltan.length
+        ? f(
+            t.missing,
+            partes
+              .filter(([k]) => faltan.includes(k))
+              .map(([, l]) => l.toLowerCase())
+              .join(', '),
+          )
+        : null
+    },
+    summary: () => {
+      const a = valores()
+      return [a.street, a.neighborhood, a.municipality, a.state, a.postalCode && `CP ${a.postalCode}`].filter(Boolean).join(', ')
+    },
+  }
+}
+
 // ── items (filas repetibles) ────────────────────────────────────────────────
 
 const items: Fabrica = (ctx, valor) => {
@@ -943,7 +1207,15 @@ const items: Fabrica = (ctx, valor) => {
   }
 }
 
-export const CAMPOS: Record<string, Fabrica> = { combobox, file: archivo, daterange: rango, otp, items }
+export const CAMPOS: Record<string, Fabrica> = {
+  combobox,
+  file: archivo,
+  daterange: rango,
+  otp,
+  items,
+  phone: telefono,
+  address: direccion,
+}
 
 export const FIELDS_CSS = `
 .btn-sm{height:34px;padding:0 12px;font-size:13px}
@@ -1030,4 +1302,16 @@ export const FIELDS_CSS = `
 .narrow .compact{grid-template-columns:1fr!important}
 .narrow .compact>.field>label{position:static;width:auto;height:auto;clip-path:none}
 .narrow .dr-inputs{grid-template-columns:1fr}
+.phone .dial{flex:none;width:auto;max-width:156px;height:auto;border:0;border-right:1px solid var(--_line);border-radius:0;background:var(--_surface);
+  padding:0 8px 0 12px;font:500 14px var(--_font);color:var(--_label);cursor:pointer;text-overflow:ellipsis}
+.phone .dial:focus-visible{outline:none;box-shadow:inset 0 0 0 2px var(--_accent)}
+.affix.phone{padding:0 14px 0 0;overflow:hidden;align-items:stretch}
+.phone .input{text-align:left;letter-spacing:.02em;flex:1;min-width:0}
+.addr{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.addr>div{display:flex;flex-direction:column;gap:6px;min-width:0}
+.addr label{font-size:13px;color:var(--_subtle)}
+.addr .ad-street,.addr .ad-note{grid-column:1/-1}
+.ad-note{margin:0;font-size:13px;color:var(--_subtle)}
+.ad-note:empty{display:none}
+.narrow .addr{grid-template-columns:1fr}
 `

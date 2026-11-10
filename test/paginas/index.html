@@ -41,6 +41,9 @@
   <button id="c-range">Rango de fechas</button>
   <button id="c-otp">Código de verificación</button>
   <button id="c-items">Partidas con totales</button>
+  <button id="c-contacto">Teléfono y dirección</button>
+  <button id="c-cliente">Asistente con paso condicional</button>
+  <button id="c-json">Formulario desde JSON</button>
 </div></section>
 
 <section><h2>Recetas (nexus-dialogs/patterns)</h2><div class="fila">
@@ -75,7 +78,7 @@
 
 <script type="module">
   import * as nd from 'nexus-dialogs'
-  import { form, wizard } from '../../src/forms.ts'
+  import { form, wizard, formFromJSON } from '../../src/forms.ts'
   import { toast } from '../../src/toast.ts'
   import { themes } from '../../src/themes.ts'
   import * as patterns from '../../src/patterns.ts'
@@ -190,6 +193,40 @@
   on('c-otp', () => form({ title: 'Confirma que eres tú', text: 'Escribe el código de 6 dígitos que enviamos a an•••@empresa.mx.', submitText: 'Verificar', size: 'sm', fields: [
     { name: 'codigo', label: 'Código de verificación', type: 'otp', required: true, validate: (v) => (v === '123456' ? null : 'El código no coincide.') },
   ] }))
+  // Catálogo de prueba (en una app real: tu API o SEPOMEX).
+  const CPS = {
+    '64000': { state: 'Nuevo León', municipality: 'Monterrey', neighborhoods: ['Centro', 'Obispado', 'María Luisa'] },
+    '01000': { state: 'Ciudad de México', municipality: 'Álvaro Obregón', neighborhoods: ['San Ángel'] },
+  }
+  const buscarCP = (cp) => new Promise((r) => setTimeout(() => r(CPS[cp] ?? null), 150))
+  on('c-contacto', () => form({ title: 'Datos de contacto', submitText: 'Guardar', draftKey: 'demo-contacto', fields: [
+    { name: 'telefono', label: 'Teléfono', type: 'phone', required: true, help: 'Prueba 8112345678' },
+    { name: 'direccion', label: 'Domicilio', type: 'address', required: true, lookupPostalCode: buscarCP, help: 'Prueba 64000 o 01000' },
+  ] }))
+  on('c-cliente', () => wizard({ title: 'Nuevo cliente', review: true, submitText: 'Crear cliente', draftKey: 'demo-cliente', steps: [
+    { title: 'Tipo', fields: [{ name: 'tipo', label: 'Tipo de cliente', type: 'segmented', options: [{ value: 'persona', label: 'Persona' }, { value: 'empresa', label: 'Empresa' }], value: 'persona' }] },
+    { title: 'Empresa', when: { field: 'tipo', equals: 'empresa' }, fields: [
+      { name: 'razon', label: 'Razón social', required: true },
+      { name: 'rfc', label: 'RFC', type: 'rfc', required: true },
+    ] },
+    { title: 'Contacto', fields: [
+      { name: 'nombre', label: 'Nombre del contacto', required: true },
+      { name: 'telefono', label: 'Teléfono', type: 'phone' },
+    ] },
+  ] }))
+  const ESQUEMA = {
+    title: 'Solicitud de permiso',
+    submitText: 'Enviar solicitud',
+    columns: 2,
+    fields: [
+      { name: 'motivo', label: 'Motivo', type: 'select', required: true, options: ['Personal', 'Médico', 'Otro'] },
+      { name: 'goce', label: 'Con goce de sueldo', type: 'switch' },
+      { name: 'otro', label: '¿Cuál?', required: true, span: 2, visibleIf: { field: 'motivo', equals: 'Otro' } },
+      { name: 'fechas', label: 'Fechas', type: 'daterange', required: true, span: 2, maxDays: 15 },
+      { name: 'comentario', label: 'Comentario para tu jefe', type: 'textarea', span: 2, validate: 'sinGroserias' },
+    ],
+  }
+  on('c-json', () => formFromJSON(ESQUEMA, { resolvers: { sinGroserias: (v) => (/tonto/i.test(v ?? '') ? 'Cuida el tono.' : null) } }))
   const pesos = (n) => '$ ' + n.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   on('c-items', () => form({ title: 'Nuevo gasto por comprobar', size: 'xl', submitText: 'Enviar a aprobación', fields: [
     { name: 'rfc', label: 'RFC del proveedor', type: 'rfc', required: true },

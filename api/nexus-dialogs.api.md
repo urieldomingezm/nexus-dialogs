@@ -211,6 +211,28 @@ const version: string;
 ## `nexus-dialogs/forms`
 
 ```ts
+interface Address {
+    postalCode: string;
+    state: string;
+    municipality: string;
+    neighborhood: string;
+    street: string;
+}
+
+type Condition = {
+    field: string;
+    equals?: unknown;
+    notEquals?: unknown;
+    in?: unknown[];
+    filled?: boolean;
+} | {
+    all: Condition[];
+} | {
+    any: Condition[];
+} | {
+    not: Condition;
+};
+
 interface DatePreset {
     label: string;
     range: () => [
@@ -218,6 +240,8 @@ interface DatePreset {
         Date
     ];
 }
+
+const DEFAULT_COUNTRIES: PhoneCountry[];
 
 function defaultDatePresets(): DatePreset[];
 
@@ -241,6 +265,10 @@ interface Field {
     autocomplete?: string;
     inputmode?: string;
     span?: 1 | 2;
+    visibleIf?: Condition;
+    countries?: PhoneCountry[];
+    dialCode?: string;
+    lookupPostalCode?: (postalCode: string) => Promise<PostalLookup | null> | PostalLookup | null;
     visible?: (values: Record<string, unknown>) => boolean;
     disabled?: boolean;
     currency?: string;
@@ -268,11 +296,17 @@ interface Field {
     }[];
 }
 
-type FieldType = 'text' | 'email' | 'tel' | 'url' | 'password' | 'number' | 'date' | 'time' | 'textarea' | 'select' | 'radio' | 'segmented' | 'checkbox' | 'switch' | 'money' | 'rfc' | 'curp' | 'nss' | 'clabe' | 'postal' | 'combobox' | 'file' | 'daterange' | 'otp' | 'items';
+function fieldsFromJSON(campos: JSONField[], resolvers?: Record<string, (...args: any[]) => any>): Field[];
+
+type FieldType = 'text' | 'email' | 'tel' | 'url' | 'password' | 'number' | 'date' | 'time' | 'textarea' | 'select' | 'radio' | 'segmented' | 'checkbox' | 'switch' | 'money' | 'rfc' | 'curp' | 'nss' | 'clabe' | 'postal' | 'combobox' | 'file' | 'daterange' | 'otp' | 'items' | 'phone' | 'address';
 
 function form<T extends Record<string, unknown> = Record<string, unknown>>(o: FormOptions<T>): Promise<DialogResult<T>>;
 
-interface FormOptions<T> extends Omit<DialogOptions<T>, 'requireText'> {
+function formatPhone(digitos: string, dial?: string): string;
+
+function formFromJSON<T extends Record<string, unknown> = Record<string, unknown>>(schema: FormSchema | string, opts?: FromJSONOptions<T>): Promise<DialogResult<T>>;
+
+interface FormOptions<T> extends ConBorrador, Omit<DialogOptions<T>, 'requireText'> {
     fields: Field[];
     values?: Partial<T>;
     columns?: 1 | 2;
@@ -280,6 +314,46 @@ interface FormOptions<T> extends Omit<DialogOptions<T>, 'requireText'> {
     submitText?: string;
     confirmDiscard?: boolean;
 }
+
+interface FormSchema {
+    title: string;
+    text?: string;
+    columns?: 1 | 2;
+    size?: 'sm' | 'md' | 'lg' | 'xl';
+    submitText?: string;
+    cancelText?: string;
+    draftKey?: string;
+    fields?: JSONField[];
+    steps?: JSONStep[];
+    review?: boolean | string;
+    validate?: string;
+}
+
+interface FromJSONOptions<T> {
+    resolvers?: Record<string, (...args: any[]) => any>;
+    values?: Partial<T>;
+    options?: Partial<FormOptions<T> & WizardOptions<T>>;
+}
+
+interface JSONField extends Omit<Field, Funciones> {
+    pattern?: string;
+    validate?: string;
+    search?: string;
+    creatable?: boolean | string;
+    upload?: string;
+    totals?: string;
+    lookupPostalCode?: string;
+    presets?: false;
+    fields?: JSONField[];
+}
+
+interface JSONStep extends Omit<WizardStep, 'fields' | 'validate' | 'when'> {
+    fields: JSONField[];
+    when?: Condition;
+    validate?: string;
+}
+
+function matches(c: Condition, v: Record<string, unknown>): boolean;
 
 type Option = string | {
     value: string;
@@ -290,9 +364,22 @@ type Option = string | {
     avatar?: string;
 };
 
+interface PhoneCountry {
+    dial: string;
+    label: string;
+    digits?: number;
+}
+
+interface PostalLookup {
+    state: string;
+    municipality: string;
+    neighborhoods: string[];
+    city?: string;
+}
+
 function wizard<T extends Record<string, unknown> = Record<string, unknown>>(o: WizardOptions<T>): Promise<DialogResult<T>>;
 
-interface WizardOptions<T> extends Omit<DialogOptions<T>, 'requireText'> {
+interface WizardOptions<T> extends ConBorrador, Omit<DialogOptions<T>, 'requireText'> {
     steps: WizardStep[];
     values?: Partial<T>;
     review?: boolean | string;
@@ -309,6 +396,7 @@ interface WizardStep {
     fields: Field[];
     columns?: 1 | 2;
     validate?: (values: Record<string, unknown>) => Record<string, string> | void | Promise<Record<string, string> | void>;
+    when?: ((values: Record<string, unknown>) => boolean) | Condition;
 }
 ```
 
@@ -904,6 +992,10 @@ interface EngineOptions<T> extends DialogOptions<T> {
 const es: Labels;
 
 function form<T extends Record<string, unknown> = Record<string, unknown>>(o: FormOptions<T>): Promise<DialogResult<T>>;
+
+function formatPhone(digitos: string, dial?: string): string;
+
+function formFromJSON<T extends Record<string, unknown> = Record<string, unknown>>(schema: FormSchema | string, opts?: FromJSONOptions<T>): Promise<DialogResult<T>>;
 
 function fromBootstrap(el?: Element): Theme;
 

@@ -485,9 +485,31 @@ Es un solo campo con cajas visuales: pegar funciona, el celular sugiere el códi
 
 Cada fila valida sus campos (los errores se marcan en la fila) y tiene su botón «Quitar fila N». Los totales se recalculan al escribir. En celular, cada fila se apila como tarjeta.
 
+#### `phone`: teléfono con lada
+
+```ts
+{ name: 'telefono', label: 'Teléfono', type: 'phone', required: true }
+```
+
+Lada a elegir (+52 por omisión; cambia la lista con `countries` y la inicial con `dialCode`). Se formatea mientras se escribe (`81 1234 5678`, `222 123 4567`), valida el número de dígitos de cada país y entrega el número completo: `'+528112345678'`. Acepta ese mismo formato como valor inicial. `formatPhone(digitos, lada)` está exportado.
+
+#### `address`: dirección por código postal
+
+```ts
+{ name: 'domicilio', label: 'Domicilio', type: 'address', required: true,
+  lookupPostalCode: async (cp) => {
+    const r = await fetch(`/api/cp/${cp}`) // tu API o SEPOMEX
+    return r.ok ? r.json() : null // { state, municipality, neighborhoods: [...] }
+  } }
+```
+
+Al escribir los 5 dígitos llena estado y municipio; con varias colonias ofrece la lista, con una la pone directo. Si el CP no existe, avisa y deja escribir todo a mano. La librería no trae catálogo (pesaría megas): tú decides de dónde sale. Valor: `{ postalCode, state, municipality, neighborhood, street }`; si es obligatorio, dice qué parte falta.
+
 **Validación**: `required`, `minLength`, `maxLength`, `min`, `max`, `pattern` (+ `patternMessage`) y `validate(valor, valores)` por campo, que puede ser async («¿ya existe este RFC?»). Al enviar con errores aparece un **resumen arriba con enlaces** a cada campo, cada campo queda con `aria-invalid` y su mensaje ligado con `aria-describedby`.
 
-**Campos condicionales**: `visible: (valores) => boolean`. Los ocultos no se validan ni se envían.
+**Campos condicionales**: `visible: (valores) => boolean`, o declarativo con `visibleIf: { field: 'tipo', equals: 'empresa' }` (también `notEquals`, `in: [...]`, `filled`, y `all`, `any`, `not` para combinar). Los ocultos no se validan ni se envían.
+
+**Borrador automático**: con `draftKey: 'alta-empleado'` lo que se escribe se guarda en el navegador (`localStorage`, sin contraseñas ni archivos). Si se cierra la pestaña o se recarga, al volver a abrir pregunta «¿Continuar donde te quedaste?». Se borra al enviar o al elegir «Descartar» / «Empezar de nuevo». Con `draftPrompt: false` restaura sin preguntar.
 
 **Cambios sin guardar**: si el usuario capturó algo y cierra (Cancelar, Esc o ×), se pregunta «¿Descartar los cambios?» con el foco en «Seguir editando». Desactívalo con `confirmDiscard: false`. Clic fuera no cierra formularios.
 
@@ -509,7 +531,36 @@ const r = await wizard({
 })
 ```
 
+**Pasos condicionales**: `when` en el paso (función o la misma condición declarativa de `visibleIf`) lo muestra solo si aplica con lo contestado antes. La barra, el «Paso 1 de N», la revisión y los valores enviados se ajustan solos.
+
+```ts
+{ title: 'Datos fiscales', when: { field: 'tipo', equals: 'empresa' }, fields: [/* … */] }
+```
+
+El asistente también acepta `draftKey`: además de los valores, recuerda en qué paso iba.
+
 Cada paso valida antes de avanzar, «Atrás» nunca pierde datos, Enter avanza, el título del paso recibe el foco para que el lector de pantalla lo anuncie («Paso 2 de 3») y en celular el indicador muestra solo el paso actual. `onStepChange(i, valores)` avisa cada cambio.
+
+### Formularios desde JSON
+
+Para que cada empresa tenga sus propios formularios (guardados en tu base de datos), descríbelos en JSON y ábrelos con `formFromJSON`. Las funciones van por nombre y las pasas en `resolvers`; con `steps` se abre un asistente.
+
+```ts
+import { formFromJSON } from 'nexus-dialogs/forms'
+
+const esquema = {
+  title: 'Solicitud de permiso',
+  columns: 2,
+  fields: [
+    { name: 'motivo', label: 'Motivo', type: 'select', required: true, options: ['Personal', 'Médico', 'Otro'] },
+    { name: 'otro', label: '¿Cuál?', required: true, visibleIf: { field: 'motivo', equals: 'Otro' } },
+    { name: 'rfc', label: 'RFC', type: 'rfc', validate: 'rfcLibre' },
+  ],
+}
+const r = await formFromJSON(esquema, { resolvers: { rfcLibre: async (rfc) => ((await existe(rfc)) ? 'Ya está registrado' : null) } })
+```
+
+Un tipo desconocido o un resolver que falta rechaza la promesa con un mensaje claro (sin abrir nada). `fieldsFromJSON()` convierte solo los campos, por si quieres armarlos tú.
 
 ## 8. Toasts
 

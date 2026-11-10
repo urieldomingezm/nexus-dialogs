@@ -388,7 +388,8 @@ export function openDialog<T = unknown>(opciones: EngineOptions<T>): Promise<Dia
     if (f === 'confirm') return btn('confirm')
     if (f === 'cancel') return btn('cancel')
     if (f && f !== 'first-field') return root.querySelector<HTMLElement>(f)
-    const campo = focusables(body)[0]
+    // data-skip-initial: partes secundarias (la lada del teléfono) que no deben recibir el foco al abrir.
+    const campo = focusables(body).find((e) => !e.hasAttribute('data-skip-initial'))
     if (campo && f !== undefined) return campo
     if (escrito) return escrito
     if (campo && body.querySelector('input,select,textarea')) return campo
