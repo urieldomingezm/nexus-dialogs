@@ -74,6 +74,7 @@ export type FieldType =
   | 'items'
   | 'phone'
   | 'address'
+  | 'signature'
 
 export type Option = string | { value: string; label: string; disabled?: boolean; description?: string; group?: string; avatar?: string }
 type Msg = string | void | null | undefined
@@ -145,6 +146,8 @@ export interface Field {
   presets?: false | DatePreset[]
   /** Máximo de días del rango. */
   maxDays?: number
+  /** daterange: calendario en la pantalla y fechas escritas como dd/mm/aaaa (sin el selector del navegador). */
+  calendar?: boolean
 
   // ── otp ──
   /** Dígitos del código. Por omisión 6. */
@@ -1004,7 +1007,7 @@ export interface FromJSONOptions<T> {
 }
 
 const TIPOS = new Set<string>(
-  'text email tel url password number date time textarea select radio segmented checkbox switch money rfc curp nss clabe postal combobox file daterange otp items phone address'.split(
+  'text email tel url password number date time textarea select radio segmented checkbox switch money rfc curp nss clabe postal combobox file daterange otp items phone address signature'.split(
     ' ',
   ),
 )

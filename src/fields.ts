@@ -80,6 +80,17 @@ const ES = {
   removeRow: 'Quitar fila {0}',
   rowsInvalid: 'Revisa las filas marcadas.',
   minRows: 'Agrega al menos {0} fila(s).',
+  prevMonth: 'Mes anterior',
+  nextMonth: 'Mes siguiente',
+  datePh: 'dd/mm/aaaa',
+  badDate: 'Escribe la fecha como dd/mm/aaaa.',
+  signHere: 'Firma aquí con el dedo o el mouse',
+  signArea: 'Área para firmar',
+  clear: 'Borrar',
+  typeName: 'Escribir mi nombre',
+  drawSign: 'Dibujar la firma',
+  yourName: 'Tu nombre completo',
+  signed: 'Firmado',
   dialCode: 'Lada',
   phoneDigits: 'Escribe los {0} dígitos del teléfono.',
   postalCode: 'Código postal',
@@ -129,6 +140,17 @@ const EN: Textos = {
   removeRow: 'Remove row {0}',
   rowsInvalid: 'Check the highlighted rows.',
   minRows: 'Add at least {0} row(s).',
+  prevMonth: 'Previous month',
+  nextMonth: 'Next month',
+  datePh: 'mm/dd/yyyy',
+  badDate: 'Type the date as mm/dd/yyyy.',
+  signHere: 'Sign here with your finger or mouse',
+  signArea: 'Signature area',
+  clear: 'Clear',
+  typeName: 'Type my name',
+  drawSign: 'Draw signature',
+  yourName: 'Your full name',
+  signed: 'Signed',
   dialCode: 'Country code',
   phoneDigits: 'Enter all {0} digits of the phone number.',
   postalCode: 'ZIP code',
@@ -726,6 +748,150 @@ export function defaultDatePresets(): DatePreset[] {
   ]
 }
 
+// ── Calendario en línea ─────────────────────────────────────────────────────
+
+const loc = () => (language() === 'en' ? 'en-US' : 'es-MX')
+/** Texto dd/mm/aaaa (o mm/dd/yyyy en inglés) ↔ ISO. '' si está vacío; null si no es una fecha válida. */
+function textoAIso(s: string): string | null {
+  const m = s.trim().match(/^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})$/)
+  if (!s.trim()) return ''
+  if (!m) return null
+  const [a, b, y] = [+m[1], +m[2], +m[3]]
+  const [d, mes] = language() === 'en' ? [b, a] : [a, b]
+  const f = new Date(y, mes - 1, d)
+  return f.getFullYear() === y && f.getMonth() === mes - 1 && f.getDate() === d ? iso(f) : null
+}
+const isoATexto = (s: string) => {
+  if (!s) return ''
+  const [y, m, d] = s.split('-')
+  return language() === 'en' ? `${m}/${d}/${y}` : `${d}/${m}/${y}`
+}
+
+interface Calendario {
+  el: HTMLElement
+  pintar(desde: string, hasta: string): void
+}
+/** Mes en cuadrícula: flechas, Re Pág/Av Pág (mes), Inicio/Fin (semana), Enter o espacio elige. Semana desde lunes. */
+function calendario(o: { min?: string; max?: string; alElegir: (iso: string) => void }): Calendario {
+  const t = T()
+  let mes = new Date()
+  mes = new Date(mes.getFullYear(), mes.getMonth(), 1)
+  let foco = ''
+  let sel: [string, string] = ['', '']
+  const titulo = h('div', { class: 'cal-title', 'aria-live': 'polite' })
+  const flecha = (texto: string, d: number, path: string) => {
+    const b = h('button', { type: 'button', class: 'cal-nav', 'aria-label': texto, onclick: () => mover(d, true, false) })
+    b.appendChild(
+      svg(
+        `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${path}"/></svg>`,
+      ),
+    )
+    return b
+  }
+  const dias = h('div', { class: 'cal-grid', role: 'grid' })
+  const el = h(
+    'div',
+    { class: 'cal' },
+    h('div', { class: 'cal-head' }, flecha(t.prevMonth, -1, 'M10 3 5 8l5 5'), titulo, flecha(t.nextMonth, 1, 'm6 3 5 5-5 5')),
+    dias,
+  )
+  const fuera = (i: string) => (!!o.min && i < o.min) || (!!o.max && i > o.max)
+  const dibujar = (enfocar = false) => {
+    titulo.textContent = mes.toLocaleDateString(loc(), { month: 'long', year: 'numeric' })
+    const nombres = Array.from({ length: 7 }, (_, i) =>
+      h('span', { role: 'columnheader', class: 'cal-dow' }, new Date(2024, 0, 1 + i).toLocaleDateString(loc(), { weekday: 'narrow' })),
+    )
+    const inicio = new Date(mes)
+    inicio.setDate(1 - ((mes.getDay() + 6) % 7))
+    const hoy = iso(new Date())
+    if (!foco || foco.slice(0, 7) !== iso(mes).slice(0, 7)) foco = sel[0] && sel[0].slice(0, 7) === iso(mes).slice(0, 7) ? sel[0] : iso(mes)
+    const filas: HTMLElement[] = [h('div', { role: 'row', class: 'cal-row' }, ...nombres)]
+    for (let w = 0; w < 6; w++) {
+      const celdas: HTMLElement[] = []
+      for (let d = 0; d < 7; d++) {
+        const f = new Date(inicio)
+        f.setDate(inicio.getDate() + w * 7 + d)
+        const i = iso(f)
+        const [a, b] = sel
+        const clases = [
+          f.getMonth() !== mes.getMonth() ? 'out' : '',
+          i === hoy ? 'today' : '',
+          i === a || i === b ? 'sel' : '',
+          a && b && i > a && i < b ? 'in' : '',
+          i === a && b ? 'start' : '',
+          i === b && a ? 'end' : '',
+        ]
+        celdas.push(
+          h(
+            'span',
+            { role: 'gridcell', 'aria-selected': String(i === a || i === b || (!!a && !!b && i > a && i < b)) },
+            h(
+              'button',
+              {
+                type: 'button',
+                class: `cal-day ${clases.filter(Boolean).join(' ')}`,
+                'data-d': i,
+                tabindex: i === foco ? '0' : '-1',
+                disabled: fuera(i),
+                'aria-label': f.toLocaleDateString(loc(), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
+                'aria-current': i === hoy ? 'date' : null,
+                onclick: () => {
+                  foco = i
+                  o.alElegir(i)
+                },
+              },
+              String(f.getDate()),
+            ),
+          ),
+        )
+      }
+      filas.push(h('div', { role: 'row', class: 'cal-row' }, ...celdas))
+    }
+    dias.replaceChildren(...filas)
+    if (enfocar) dias.querySelector<HTMLElement>(`[data-d="${foco}"]`)?.focus()
+  }
+  /** Mueve el día enfocado (o un mes entero). Desde las flechas del encabezado no se roba el foco. */
+  const mover = (n: number, mesEntero = false, enfocar = true) => {
+    const f = desdeIso(foco)
+    if (mesEntero) f.setMonth(f.getMonth() + n, Math.min(f.getDate(), 28))
+    else f.setDate(f.getDate() + n)
+    foco = iso(f)
+    mes = new Date(f.getFullYear(), f.getMonth(), 1)
+    dibujar(enfocar)
+  }
+  dias.addEventListener('keydown', (e) => {
+    const k: Record<string, () => void> = {
+      ArrowLeft: () => mover(-1),
+      ArrowRight: () => mover(1),
+      ArrowUp: () => mover(-7),
+      ArrowDown: () => mover(7),
+      PageUp: () => mover(-1, true),
+      PageDown: () => mover(1, true),
+      Home: () => mover(-((desdeIso(foco).getDay() + 6) % 7)),
+      End: () => mover(6 - ((desdeIso(foco).getDay() + 6) % 7)),
+    }
+    if (k[e.key]) {
+      e.preventDefault()
+      k[e.key]()
+    }
+  })
+  dibujar()
+  return {
+    el,
+    pintar(a, b) {
+      sel = [a, b]
+      const ancla = b || a
+      if (ancla) {
+        const f = desdeIso(ancla)
+        if (f.getMonth() !== mes.getMonth() || f.getFullYear() !== mes.getFullYear()) mes = new Date(f.getFullYear(), f.getMonth(), 1)
+        foco = ancla
+      }
+      const tenia = el.contains((el.getRootNode() as ShadowRoot | Document).activeElement)
+      dibujar(tenia)
+    },
+  }
+}
+
 const rango: Fabrica = (ctx, valor) => {
   const t = T()
   const fl = ctx.field
@@ -733,9 +899,24 @@ const rango: Fabrica = (ctx, valor) => {
   const idHasta = uid('dr')
   const min = fl.min !== undefined ? String(fl.min) : undefined
   const max = fl.max !== undefined ? String(fl.max) : undefined
-  const comunes = { type: 'date', class: 'input', min, max, disabled: fl.disabled, 'aria-describedby': ctx.describedBy }
-  const desde = h('input', { ...comunes, id: ctx.id, value: v.from ?? '' })
-  const hasta = h('input', { ...comunes, id: idHasta, value: v.to ?? '' })
+  const conCal = !!fl.calendar
+  // Con calendario: texto dd/mm/aaaa (sin el selector del navegador). Sin él: <input type="date">.
+  const comunes = conCal
+    ? {
+        type: 'text',
+        inputmode: 'numeric',
+        placeholder: t.datePh,
+        autocomplete: 'off',
+        class: 'input',
+        disabled: fl.disabled,
+        'aria-describedby': ctx.describedBy,
+      }
+    : { type: 'date', class: 'input', min, max, disabled: fl.disabled, 'aria-describedby': ctx.describedBy }
+  const desde = h('input', { ...comunes, id: ctx.id, value: conCal ? isoATexto(v.from ?? '') : (v.from ?? '') })
+  const hasta = h('input', { ...comunes, id: idHasta, value: conCal ? isoATexto(v.to ?? '') : (v.to ?? '') })
+  /** ISO de cada caja ('' vacía, null si el texto no es fecha). */
+  const leer = (i: HTMLInputElement) => (conCal ? textoAIso(i.value) : i.value)
+  const poner = (i: HTMLInputElement, s: string) => (i.value = conCal ? isoATexto(s) : s)
   const atajos = fl.presets === false ? [] : (fl.presets ?? defaultDatePresets())
   const chips = atajos.map((p) =>
     h(
@@ -747,8 +928,8 @@ const rango: Fabrica = (ctx, valor) => {
         disabled: fl.disabled,
         onclick: () => {
           const [a, b] = p.range()
-          desde.value = iso(a)
-          hasta.value = iso(b)
+          poner(desde, iso(a))
+          poner(hasta, iso(b))
           marcar()
           cambio(el)
         },
@@ -756,11 +937,36 @@ const rango: Fabrica = (ctx, valor) => {
       p.label,
     ),
   )
+  // Clic en el calendario: el primero es «Desde», el segundo «Hasta» (si es anterior, se intercambian).
+  let siguienteEsHasta = false
+  const cal = conCal
+    ? calendario({
+        min,
+        max,
+        alElegir: (d) => {
+          const a = leer(desde) || ''
+          if (!siguienteEsHasta || !a) {
+            poner(desde, d)
+            poner(hasta, '')
+            siguienteEsHasta = true
+          } else {
+            if (d < a) {
+              poner(desde, d)
+              poner(hasta, a)
+            } else poner(hasta, d)
+            siguienteEsHasta = false
+          }
+          marcar()
+          cambio(el)
+        },
+      })
+    : null
   const marcar = () => {
     atajos.forEach((p, i) => {
       const [a, b] = p.range()
-      chips[i].setAttribute('aria-pressed', String(desde.value === iso(a) && hasta.value === iso(b)))
+      chips[i].setAttribute('aria-pressed', String(leer(desde) === iso(a) && leer(hasta) === iso(b)))
     })
+    cal?.pintar(leer(desde) || '', leer(hasta) || '')
   }
   const el = h(
     'div',
@@ -772,32 +978,40 @@ const rango: Fabrica = (ctx, valor) => {
       h('div', { class: 'dr-col' }, h('label', { for: ctx.id }, t.from), desde),
       h('div', { class: 'dr-col' }, h('label', { for: idHasta }, t.to), hasta),
     ),
+    cal?.el,
   )
-  desde.addEventListener('change', marcar)
-  hasta.addEventListener('change', marcar)
+  for (const i of [desde, hasta])
+    i.addEventListener(conCal ? 'input' : 'change', () => {
+      siguienteEsHasta = false
+      marcar()
+    })
   marcar()
   return {
     el,
     group: true,
-    value: () => (desde.value || hasta.value ? { from: desde.value, to: hasta.value } : null),
+    value: () => {
+      const [a, b] = [leer(desde), leer(hasta)]
+      return desde.value || hasta.value ? { from: a ?? desde.value, to: b ?? hasta.value } : null
+    },
     focus: () => desde.focus(),
     invalid: (on) => {
       desde.setAttribute('aria-invalid', String(on))
       hasta.setAttribute('aria-invalid', String(on))
     },
     validate: () => {
+      const [a, b] = [leer(desde), leer(hasta)]
       if (!desde.value && !hasta.value) return null
-      if (!desde.value || !hasta.value) return t.bothDates
-      if (hasta.value < desde.value) return t.order
-      if ((min && desde.value < min) || (max && hasta.value > max))
-        return f(t.outOfRange, min ? legible(min) : '…', max ? legible(max) : '…')
+      if (a === null || b === null) return t.badDate
+      if (!a || !b) return t.bothDates
+      if (b < a) return t.order
+      if ((min && a < min) || (max && b > max)) return f(t.outOfRange, min ? legible(min) : '…', max ? legible(max) : '…')
       if (fl.maxDays) {
-        const dias = Math.round((desdeIso(hasta.value).getTime() - desdeIso(desde.value).getTime()) / 86_400_000) + 1
+        const dias = Math.round((desdeIso(b).getTime() - desdeIso(a).getTime()) / 86_400_000) + 1
         if (dias > fl.maxDays) return f(t.maxDays, fl.maxDays)
       }
       return null
     },
-    summary: () => `${legible(desde.value)} – ${legible(hasta.value)}`,
+    summary: () => `${legible(leer(desde) as string)} – ${legible(leer(hasta) as string)}`,
   }
 }
 
@@ -1101,6 +1315,157 @@ const direccion: Fabrica = (ctx, valor) => {
   }
 }
 
+// ── signature (firma en pantalla) ───────────────────────────────────────────
+
+const TINTA = '#101828'
+const firma: Fabrica = (ctx, valor) => {
+  const t = T()
+  const fl = ctx.field
+  const alto = 160
+  const lienzo = h('canvas', { class: 'sig-pad', role: 'img', 'aria-label': t.signArea, height: alto })
+  const pista = h('span', { class: 'sig-hint', 'aria-hidden': 'true' }, t.signHere)
+  const nombre = h('input', {
+    id: uid('sg'),
+    class: 'input sig-name',
+    autocomplete: 'name',
+    placeholder: t.yourName,
+    'aria-label': t.yourName,
+    'aria-describedby': ctx.describedBy,
+    hidden: true,
+  })
+  let dato = typeof valor === 'string' ? valor : ''
+  let escrita = false
+  const c2d = () => lienzo.getContext('2d')
+  // Tamaño real según el ancho y la densidad de pantalla (si no, la firma se ve borrosa).
+  const ajustar = () => {
+    const ancho = lienzo.clientWidth || 400
+    const r = Math.max(1, Math.min(3, window.devicePixelRatio || 1))
+    if (lienzo.width === Math.round(ancho * r)) return
+    lienzo.width = Math.round(ancho * r)
+    lienzo.height = Math.round(alto * r)
+    const c = c2d()
+    if (!c) return
+    c.setTransform(r, 0, 0, r, 0, 0)
+    c.lineCap = c.lineJoin = 'round'
+    c.lineWidth = 2.4
+    c.strokeStyle = c.fillStyle = TINTA
+    if (dato) {
+      const img = new Image()
+      img.onload = () => c.drawImage(img, 0, 0, ancho, alto)
+      img.src = dato
+    }
+  }
+  const limpiar = () => {
+    c2d()?.clearRect(0, 0, lienzo.width, lienzo.height)
+    dato = ''
+    el.classList.remove('has')
+  }
+  const guardar = () => {
+    try {
+      dato = lienzo.toDataURL('image/png')
+    } catch {
+      dato = ''
+    }
+    el.classList.toggle('has', !!dato)
+    cambio(el)
+  }
+  let ultimo: [number, number] | null = null
+  const punto = (e: PointerEvent): [number, number] => {
+    const r = lienzo.getBoundingClientRect()
+    return [e.clientX - r.left, e.clientY - r.top]
+  }
+  lienzo.addEventListener('pointerdown', (e) => {
+    if (fl.disabled || escrita) return
+    ajustar()
+    lienzo.setPointerCapture?.(e.pointerId)
+    ultimo = punto(e)
+    const c = c2d()
+    c?.beginPath()
+    c?.arc(ultimo[0], ultimo[1], 1.2, 0, Math.PI * 2)
+    c?.fill()
+    e.preventDefault()
+  })
+  lienzo.addEventListener('pointermove', (e) => {
+    if (!ultimo) return
+    const p = punto(e)
+    const c = c2d()
+    if (c) {
+      c.beginPath()
+      c.moveTo(ultimo[0], ultimo[1])
+      c.lineTo(p[0], p[1])
+      c.stroke()
+    }
+    ultimo = p
+  })
+  const soltar = () => {
+    if (!ultimo) return
+    ultimo = null
+    guardar()
+  }
+  lienzo.addEventListener('pointerup', soltar)
+  lienzo.addEventListener('pointercancel', soltar)
+  // Alternativa con teclado (y para quien no puede trazar): el nombre escrito con letra manuscrita.
+  const dibujarNombre = () => {
+    ajustar()
+    const c = c2d()
+    const texto = nombre.value.trim()
+    c?.clearRect(0, 0, lienzo.width, lienzo.height)
+    if (!c || !texto) {
+      dato = texto ? `data:text/plain,${encodeURIComponent(texto)}` : ''
+      el.classList.toggle('has', !!texto)
+      return cambio(el)
+    }
+    const ancho = lienzo.clientWidth || 400
+    let tam = 40
+    const fuente = () => `italic ${tam}px "Segoe Script","Brush Script MT","Snell Roundhand","Apple Chancery",cursive`
+    c.font = fuente()
+    while (c.measureText(texto).width > ancho - 32 && tam > 16) {
+      tam -= 2
+      c.font = fuente()
+    }
+    c.textBaseline = 'middle'
+    c.fillText(texto, 16, alto / 2 - 10)
+    guardar()
+  }
+  nombre.addEventListener('input', dibujarNombre)
+  const modo = h('button', { type: 'button', class: 'link', disabled: fl.disabled }, t.typeName)
+  modo.addEventListener('click', () => {
+    escrita = !escrita
+    nombre.hidden = !escrita
+    modo.textContent = escrita ? t.drawSign : t.typeName
+    limpiar()
+    nombre.value = ''
+    cambio(el)
+    if (escrita) nombre.focus()
+  })
+  const borrar = h('button', { type: 'button', class: 'link', disabled: fl.disabled }, t.clear)
+  borrar.addEventListener('click', () => {
+    limpiar()
+    nombre.value = ''
+    cambio(el)
+  })
+  const el = h(
+    'div',
+    { class: 'sig' },
+    h('div', { class: 'sig-box' }, lienzo, pista),
+    nombre,
+    h('div', { class: 'sig-tools' }, modo, borrar),
+  )
+  if (dato) el.classList.add('has')
+  requestAnimationFrame(ajustar)
+  return {
+    el,
+    group: true,
+    value: () => dato,
+    focus: () => (escrita ? nombre : modo).focus(),
+    invalid: (on) => {
+      el.classList.toggle('bad', on)
+      nombre.setAttribute('aria-invalid', String(on))
+    },
+    summary: () => (dato ? t.signed : '—'),
+  }
+}
+
 // ── items (filas repetibles) ────────────────────────────────────────────────
 
 const items: Fabrica = (ctx, valor) => {
@@ -1215,6 +1580,7 @@ export const CAMPOS: Record<string, Fabrica> = {
   items,
   phone: telefono,
   address: direccion,
+  signature: firma,
 }
 
 export const FIELDS_CSS = `
@@ -1302,6 +1668,34 @@ export const FIELDS_CSS = `
 .narrow .compact{grid-template-columns:1fr!important}
 .narrow .compact>.field>label{position:static;width:auto;height:auto;clip-path:none}
 .narrow .dr-inputs{grid-template-columns:1fr}
+.sig-box{position:relative;border:1px dashed var(--_border);border-radius:12px;background:#fff;overflow:hidden}
+.sig.bad .sig-box{border-color:color-mix(in srgb,var(--_error) 55%,var(--_bg))}
+.sig-pad{display:block;width:100%;height:160px;touch-action:none;cursor:crosshair}
+.sig-hint{position:absolute;left:24px;right:24px;bottom:12px;text-align:center;font-size:13px;color:#667085;pointer-events:none;border-top:1px solid #d0d5dd;padding-top:6px}
+.sig.has .sig-hint{color:transparent}
+.sig-name{margin-top:10px}
+.sig-tools{display:flex;justify-content:space-between;margin-top:6px}
+.cal{margin-top:12px;padding:12px;border:1px solid var(--_line);border-radius:12px;max-width:340px}
+.cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.cal-title{font-weight:600;font-size:14px;color:var(--_fg)}
+.cal-title::first-letter{text-transform:uppercase}
+.cal-nav{width:32px;height:32px;border:0;border-radius:8px;background:transparent;color:var(--_muted);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.cal-nav:hover{background:var(--_surface)}
+.cal-nav:focus-visible,.cal-day:focus-visible{outline:none;box-shadow:0 0 0 3px var(--_focus)}
+.cal-row{display:grid;grid-template-columns:repeat(7,1fr)}
+.cal-dow{text-align:center;font-size:12px;font-weight:500;color:var(--_subtle);padding:4px 0;text-transform:uppercase}
+.cal-row>[role=gridcell]{display:flex;justify-content:center;padding:1px 0}
+.cal-row>[role=gridcell]:has(.in),.cal-row>[role=gridcell]:has(.start),.cal-row>[role=gridcell]:has(.end){background:color-mix(in srgb,var(--_accent) 9%,var(--_bg))}
+.cal-row>[role=gridcell]:has(.start){border-radius:20px 0 0 20px}
+.cal-row>[role=gridcell]:has(.end){border-radius:0 20px 20px 0}
+.cal-day{width:40px;height:40px;border:0;border-radius:50%;background:transparent;color:var(--_fg);font:500 14px var(--_font);cursor:pointer;font-variant-numeric:tabular-nums}
+.cal-day:hover{background:var(--_surface)}
+.cal-day.out{color:var(--_subtle)}
+.cal-day.today{box-shadow:inset 0 0 0 1px var(--_border);font-weight:700}
+.cal-day.sel{background:var(--_accent);color:var(--_accent-fg);font-weight:600}
+.cal-day:disabled{opacity:.35;cursor:not-allowed;background:transparent}
+.narrow .cal{max-width:none}
+.narrow .cal-day{width:100%;max-width:44px;height:44px}
 .phone .dial{flex:none;width:auto;max-width:156px;height:auto;border:0;border-right:1px solid var(--_line);border-radius:0;background:var(--_surface);
   padding:0 8px 0 12px;font:500 14px var(--_font);color:var(--_label);cursor:pointer;text-overflow:ellipsis}
 .phone .dial:focus-visible{outline:none;box-shadow:inset 0 0 0 2px var(--_accent)}

@@ -21,7 +21,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['test/**/*.{ts,mjs}', 'scripts/**/*.mjs', '*.config.{js,mjs}'],
+    files: ['test/**/*.{ts,mjs}', 'scripts/**/*.mjs', 'bin/**/*.mjs', '*.config.{js,mjs}'],
     languageOptions: { globals: { ...globals.node, ...globals.browser, NexusDialogs: 'readonly', nd: 'readonly' } },
     rules: {
       'no-empty': ['error', { allowEmptyCatch: true }],

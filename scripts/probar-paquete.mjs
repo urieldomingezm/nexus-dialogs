@@ -27,6 +27,9 @@ const ENTRADAS = [
   'nexus-dialogs/themes',
   'nexus-dialogs/patterns',
   'nexus-dialogs/mx',
+  'nexus-dialogs/import',
+  'nexus-dialogs/table',
+  'nexus-dialogs/sepomex',
 ]
 
 try {
@@ -71,6 +74,9 @@ import { confirmDelete, bulkAction, type ApprovalResult } from 'nexus-dialogs/pa
 import { isCLABE } from 'nexus-dialogs/mx'
 import Swal, { type SweetAlertResult } from 'nexus-dialogs/swal'
 import { useDialog, NexusDialogs } from 'nexus-dialogs/vue'
+import { importData, parseCSV, type ImportColumn } from 'nexus-dialogs/import'
+import { pickRows } from 'nexus-dialogs/table'
+import { sepomexLookup } from 'nexus-dialogs/sepomex'
 configure({ lang: 'es', theme: themes.bootstrap, scheme: 'auto' })
 const botones: ButtonSpec[] = [{ id: 'ok', role: 'confirm', text: 'Guardar', variant: 'primary' }]
 const campos: Field[] = [{ name: 'rfc', label: 'RFC', type: 'rfc', required: true }]
@@ -89,6 +95,14 @@ async function uso() {
   const a: ApprovalResult | null = null; void a
   const s: SweetAlertResult = await Swal.fire({ title: 'X', icon: 'warning', showCancelButton: true }); void s.isConfirmed
   const d = useDialog(); await d.scoped(confirmDelete)({ what: 'x' }); void NexusDialogs
+  const cols: ImportColumn[] = [{ name: 'rfc', label: 'RFC', type: 'rfc', unique: true }]
+  const im = await importData<{ rfc: string }>({ columns: cols })
+  if (im.value) im.value.rows.map((x) => x.rfc)
+  parseCSV('a,b')
+  const pk = await pickRows<{ id: string; nombre: string }>({ rows: [{ id: '1', nombre: 'Ana' }], columns: [{ key: 'nombre', label: 'Nombre' }] })
+  pk.value?.map((x) => x.nombre)
+  const cp = await sepomexLookup({ baseUrl: '/cp/' })('64000'); void cp?.neighborhoods
+  await form({ title: 'Firma', fields: [{ name: 'f', label: 'Firma', type: 'signature' }, { name: 'r', label: 'Fechas', type: 'daterange', calendar: true }] })
 }
 void uso
 `

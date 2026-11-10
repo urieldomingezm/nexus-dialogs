@@ -8,8 +8,8 @@ import { transformSync } from 'esbuild'
 
 const LIMITES = {
   'nexus-dialogs': 10,
-  'nexus-dialogs.all': 35.5,
-  forms: 18.5,
+  'nexus-dialogs.all': 39,
+  forms: 22,
   toast: 6.5,
   themes: 1,
   patterns: 7,
@@ -17,6 +17,9 @@ const LIMITES = {
   vue: 1,
   swal: 3.5,
   'nexus-dialogs.swal.iife': 14,
+  import: 8,
+  table: 3.5,
+  sepomex: 0.8,
 }
 
 if (!existsSync('dist/nexus-dialogs.js')) {

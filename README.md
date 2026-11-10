@@ -503,7 +503,23 @@ Lada a elegir (+52 por omisión; cambia la lista con `countries` y la inicial co
   } }
 ```
 
-Al escribir los 5 dígitos llena estado y municipio; con varias colonias ofrece la lista, con una la pone directo. Si el CP no existe, avisa y deja escribir todo a mano. La librería no trae catálogo (pesaría megas): tú decides de dónde sale. Valor: `{ postalCode, state, municipality, neighborhood, street }`; si es obligatorio, dice qué parte falta.
+Al escribir los 5 dígitos llena estado y municipio; con varias colonias ofrece la lista, con una la pone directo. Si el CP no existe, avisa y deja escribir todo a mano. La librería no trae catálogo (pesaría megas): tú decides de dónde sale. Valor: `{ postalCode, state, municipality, neighborhood, street }`; si es obligatorio, dice qué parte falta. Para no depender de una API, usa el [catálogo SEPOMEX](#catálogo-sepomex-sin-api).
+
+#### Calendario en `daterange`
+
+```ts
+{ name: 'vacaciones', label: 'Fechas', type: 'daterange', calendar: true, maxDays: 20 }
+```
+
+Con `calendar: true` el rango se elige en un calendario en la pantalla (dos clics, en cualquier orden) y las fechas se escriben como `dd/mm/aaaa`, sin el selector del navegador. Teclado completo: flechas (día y semana), Re Pág / Av Pág (mes), Inicio / Fin (semana), Enter para elegir. Respeta `min`, `max` y los atajos. Semana de lunes a domingo.
+
+#### `signature`: firma en pantalla
+
+```ts
+{ name: 'firma', label: 'Firma del empleado', type: 'signature', required: true }
+```
+
+Se firma con el dedo, el mouse o la pluma. Para quien usa teclado o no puede trazar, «Escribir mi nombre» lo dibuja con letra manuscrita. El valor es la imagen en PNG (`data:image/png;base64,…`), lista para guardarla o ponerla en un PDF.
 
 **Validación**: `required`, `minLength`, `maxLength`, `min`, `max`, `pattern` (+ `patternMessage`) y `validate(valor, valores)` por campo, que puede ser async («¿ya existe este RFC?»). Al enviar con errores aparece un **resumen arriba con enlaces** a cada campo, cada campo queda con `aria-invalid` y su mensaje ligado con `aria-describedby`.
 
@@ -561,6 +577,66 @@ const r = await formFromJSON(esquema, { resolvers: { rfcLibre: async (rfc) => ((
 ```
 
 Un tipo desconocido o un resolver que falta rechaza la promesa con un mensaje claro (sin abrir nada). `fieldsFromJSON()` convierte solo los campos, por si quieres armarlos tú.
+
+### Importar CSV o Excel
+
+```ts
+import { importData } from 'nexus-dialogs/import'
+
+const r = await importData({
+  title: 'Importar empleados',
+  columns: [
+    { name: 'numero', label: 'Número de empleado', required: true, unique: true },
+    { name: 'nombre', label: 'Nombre completo', required: true, aliases: ['empleado'] },
+    { name: 'rfc', label: 'RFC', type: 'rfc', unique: true },
+    { name: 'ingreso', label: 'Fecha de ingreso', type: 'date' },
+    { name: 'salario', label: 'Salario diario', type: 'number' },
+  ],
+  onImport: (filas) => api.post('/empleados/lote', filas), // con «Importando…»; si falla, el error se muestra
+})
+```
+
+Tres pasos: elegir el archivo (CSV o `.xlsx`, sin dependencias), relacionar las columnas (se relacionan solas por nombre, sin acentos y con abreviaturas como «No. empleado») y revisar: cuántas filas están bien y cuáles tienen error («Fila 5 · RFC no es válido»). Solo se importan las válidas. Tipos: `text`, `number` (acepta `$1,234.50` y `1.234,50`), `date` (`dd/mm/aaaa`, ISO o fecha de Excel), `boolean` (sí/no, 1/0, x), `email`, `rfc`, `curp`, `nss`, `clabe`, `postal`. «Descargar plantilla» baja un CSV con los encabezados.
+
+Las piezas sirven por separado: `readSpreadsheet(file)`, `parseCSV(texto)`, `guessMapping()`, `processRows()`, `convert()`.
+
+### Elegir de una tabla
+
+```ts
+import { pickRows } from 'nexus-dialogs/table'
+
+const r = await pickRows({
+  title: 'Agregar participantes',
+  rows: empleados, // o load: ({ search, page, pageSize }) => api.get(...) → { rows, total }
+  rowKey: 'numero',
+  columns: [
+    { key: 'numero', label: 'Núm.' },
+    { key: 'nombre', label: 'Nombre' },
+    { key: 'salario', label: 'Salario', align: 'right', format: (v) => pesos(v) },
+  ],
+  isDisabled: (e) => e.baja, // no se pueden elegir
+  max: 30,
+})
+if (r.confirmed) agregar(r.value)
+```
+
+Búsqueda sin acentos, páginas, «seleccionar todos los de esta página», clic en cualquier parte de la fila y la selección se conserva al buscar o cambiar de página. `multiple: false` para elegir una sola. En celular la tabla se desplaza a lo ancho.
+
+### Catálogo SEPOMEX sin API
+
+Para llenar el domicilio por código postal sin depender de un servicio externo, sirve el catálogo oficial desde tu sitio:
+
+1. Descarga el TXT en [correosdemexico.gob.mx](https://www.correosdemexico.gob.mx/SSLServicios/ConsultaCP/CodigoPostal_Exportar.aspx) («Descarga tu código postal»).
+2. Conviértelo en archivos pequeños por prefijo: `npx nexus-dialogs-sepomex CPdescarga.txt public/cp`
+3. Úsalo:
+
+```ts
+import { sepomexLookup } from 'nexus-dialogs/sepomex'
+const lookupPostalCode = sepomexLookup({ baseUrl: '/cp/' })
+// { name: 'domicilio', label: 'Domicilio', type: 'address', lookupPostalCode }
+```
+
+Cada búsqueda baja solo el archivo de su prefijo (unos KB) y lo guarda en memoria. Para actualizar, repite los pasos 1 y 2.
 
 ## 8. Toasts
 
