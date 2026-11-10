@@ -29,7 +29,10 @@ export const test = base.extend({
 })
 
 /** Revisión de accesibilidad con axe (WCAG 2.2 AA) de lo que esté abierto. */
+// En Firefox, Playwright + axe hace caer la página cuando el DOM cambia mucho (lo comprobamos con un diagnóstico
+// en CI: sin axe, los mismos flujos pasan). axe corre en Chromium y WebKit, donde el DOM es el mismo.
 export async function axe(page, incluir = 'dialog[data-nexus-dialog]') {
+  if (page.context().browser()?.browserType().name() === 'firefox') return []
   const r = await new AxeBuilder({ page }).include(incluir).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze()
   return r.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)
 }
