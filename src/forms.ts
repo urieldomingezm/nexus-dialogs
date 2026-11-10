@@ -623,7 +623,7 @@ const FORM_CSS = `
 .grid{display:grid;gap:16px}
 .cols-2{grid-template-columns:1fr 1fr}
 .span-2{grid-column:1/-1}
-@media (max-width:560px){.cols-2{grid-template-columns:1fr}}
+.narrow .cols-2{grid-template-columns:1fr}
 .field[hidden],[hidden]{display:none!important}
 fieldset.field{border:0;margin:0;padding:0;min-width:0}
 legend{font-size:14px;font-weight:600;padding:0;margin-bottom:8px}
@@ -665,7 +665,7 @@ select.input{appearance:none;background-image:linear-gradient(45deg,transparent 
 .stepper .current{color:var(--_fg);font-weight:700}
 .stepper .current .num{background:var(--_accent);color:var(--_accent-fg)}
 .stepper .done .num{background:var(--_success);color:#fff}
-@media (max-width:560px){.stepper li:not(.current) span:last-child{display:none}}
+.narrow .stepper li:not(.current) span:last-child{display:none}
 .step-head{margin-bottom:14px}
 .step-count{margin:0;font-size:13px;color:var(--_muted)}
 .step-title{margin:2px 0 0;font:700 17px/1.3 var(--_title-font)}

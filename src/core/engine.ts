@@ -3,7 +3,7 @@
 import { config, labels } from '../config'
 import { CORE_CSS } from '../styles'
 import type { ButtonSpec, CloseReason, DialogContext, DialogOptions, DialogResult, Dismissible } from '../types'
-import { activeDeep, focusables, h, reducedMotion, uid } from './dom'
+import { activeDeep, angosto, focusables, h, reducedMotion, uid } from './dom'
 import { closeIcon, icon } from './icons'
 import { adopt, globalStyles } from './sheet'
 
@@ -135,6 +135,7 @@ export function openDialog<T = unknown>(opciones: EngineOptions<T>): Promise<Dia
   )
   root.appendChild(raiz)
   dialog.appendChild(host)
+  const soltarAngosto = angosto(raiz)
 
   // ── Estado ────────────────────────────────────────────────────────────────
   let terminado = false
@@ -334,6 +335,7 @@ export function openDialog<T = unknown>(opciones: EngineOptions<T>): Promise<Dia
     if (terminado) return
     terminado = true
     cancelAnimationFrame(frame)
+    soltarAngosto()
     const i = pila.findIndex((a) => a.ctx === ctx)
     if (i >= 0) pila.splice(i, 1)
     raiz.setAttribute('data-state', 'closing')

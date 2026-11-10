@@ -106,11 +106,10 @@ textarea.input{height:auto;min-height:96px;padding:10px 12px;resize:vertical}
 .p-bottom .wrap{padding:0;align-items:flex-end}
 .p-bottom .panel{width:min(var(--_w,640px),100%);border-radius:var(--_radius) var(--_radius) 0 0;--_from:translateY(24px);max-height:90dvh}
 .p-bottom .panel::before{content:"";display:block;width:40px;height:4px;border-radius:2px;background:var(--_border);margin:10px auto 0}
-@media (max-width:560px){
-  .p-center.sheet .wrap{padding:0;align-items:flex-end}
-  .p-center.sheet .panel{width:100%;border-radius:var(--_radius) var(--_radius) 0 0;--_from:translateY(24px);max-height:90dvh}
-  .head{padding:22px 20px 0}.body{padding:14px 20px 0}.foot{padding:14px 20px}
-  .foot .btn{flex:1 1 auto}
-}
+/* .narrow la pone el motor con matchMedia (max-width:560px): WebKit puede no reevaluar @media de hojas adoptadas al cambiar el tamaño. */
+.narrow.p-center.sheet .wrap{padding:0;align-items:flex-end}
+.narrow.p-center.sheet .panel{width:100%;border-radius:var(--_radius) var(--_radius) 0 0;--_from:translateY(24px);max-height:90dvh}
+.narrow .head{padding:22px 20px 0}.narrow .body{padding:14px 20px 0}.narrow .foot{padding:14px 20px}
+.narrow .foot .btn{flex:1 1 auto}
 @media (prefers-reduced-motion:reduce){.panel,.overlay{transition:none}.icon path{animation:none;stroke-dashoffset:0}}
 `

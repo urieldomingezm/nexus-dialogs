@@ -45,3 +45,13 @@ const FOCUSABLE =
   'input:not([type=hidden]):not([disabled]),select:not([disabled]),textarea:not([disabled]),button:not([disabled]),[href],[tabindex]:not([tabindex="-1"])'
 export const focusables = (root: ParentNode): HTMLElement[] =>
   [...root.querySelectorAll<HTMLElement>(FOCUSABLE)].filter((e) => !e.closest('[hidden]'))
+
+/** Pantalla angosta (celular). Se evalúa en JS porque WebKit puede no reevaluar @media de hojas adoptadas al cambiar el tamaño. */
+export function angosto(el: Element, clase = 'narrow'): () => void {
+  if (typeof matchMedia !== 'function') return () => {}
+  const mq = matchMedia('(max-width: 560px)')
+  const aplicar = () => el.classList.toggle(clase, mq.matches)
+  aplicar()
+  mq.addEventListener?.('change', aplicar)
+  return () => mq.removeEventListener?.('change', aplicar)
+}

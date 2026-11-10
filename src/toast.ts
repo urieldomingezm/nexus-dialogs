@@ -9,7 +9,7 @@
  * ```
  * Se monta dentro del diálogo modal de arriba cuando hay uno abierto (si no, quedaría inerte detrás).
  */
-import { h, uid } from './core/dom'
+import { angosto, h, uid } from './core/dom'
 import { adopt } from './core/sheet'
 import { en, es } from './i18n'
 import { BUTTONS, VARS } from './styles'
@@ -103,8 +103,8 @@ li.out{animation:out .18s forwards}
 .x:hover{background:color-mix(in srgb,var(--_fg) 7%,transparent)}
 .x:focus-visible{outline:3px solid var(--_focus)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
-@media (max-width:560px){ol{width:100%;left:0;right:0;transform:none}
-  .bottom-left,.bottom-center,.bottom-right{top:0;bottom:auto;flex-direction:column}}
+ol.narrow{width:100%;left:0;right:0;transform:none}
+ol.narrow.bottom-left,ol.narrow.bottom-center,ol.narrow.bottom-right{top:0;bottom:auto;flex-direction:column}
 @media (prefers-reduced-motion:reduce){li,li.out{animation:none}.loading .dot{animation:none}}
 `
 
@@ -131,6 +131,7 @@ function montar(): void {
     const root = host.attachShadow({ mode: 'open' })
     adopt(root, CSS_TOAST)
     lista = h('ol', { class: cfg.position, 'aria-label': L().notifications })
+    angosto(lista)
     polite = h('div', { class: 'sr', role: 'status', 'aria-live': 'polite' })
     assertive = h('div', { class: 'sr', role: 'alert', 'aria-live': 'assertive' })
     lista.addEventListener('pointerenter', () => pausar(true))
@@ -313,7 +314,8 @@ export function configureToast(c: ToastConfig): void {
   Object.assign(cfg, { ...c, theme: { ...cfg.theme, ...c.theme } })
   if (host) {
     host.setAttribute('data-scheme', cfg.scheme)
-    lista.className = cfg.position
+    lista.classList.remove('top-left', 'top-center', 'top-right', 'bottom-left', 'bottom-center', 'bottom-right')
+    lista.classList.add(cfg.position)
     for (const [k, v] of Object.entries(cfg.theme)) host.style.setProperty(k.startsWith('--') ? k : `--nd-${k}`, v)
   }
 }
