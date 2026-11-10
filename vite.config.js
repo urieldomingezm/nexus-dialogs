@@ -6,7 +6,8 @@ const { version } = JSON.parse(readFileSync(new URL('./package.json', import.met
 const define = { __VERSION__: JSON.stringify(version) }
 
 const src = (f) => fileURLToPath(new URL(`./src/${f}`, import.meta.url))
-const ALIAS = { 'nexus-dialogs': src('index.ts') }
+// Lo más específico primero: 'nexus-dialogs' también coincidiría con 'nexus-dialogs/toast'.
+const ALIAS = { 'nexus-dialogs/toast': src('toast.ts'), 'nexus-dialogs': src('index.ts') }
 
 // Un build por modo. `npm run build` los corre todos. forms depende del núcleo como paquete externo
 // para compartir la misma configuración (configure) y la misma pila de diálogos.
@@ -24,6 +25,21 @@ const LIBS = {
     external: ['nexus-dialogs'],
   },
   mx: { entry: 'src/mx.ts', name: 'NexusDialogsMx', fileName: 'mx', formats: ['es', 'umd'], external: [] },
+  vue: {
+    entry: 'src/vue.ts',
+    name: 'NexusDialogsVue',
+    fileName: 'vue',
+    formats: ['es', 'cjs'],
+    external: ['vue', 'nexus-dialogs', 'nexus-dialogs/toast'],
+  },
+  swal: {
+    entry: 'src/swal.ts',
+    name: 'NexusDialogsSwal',
+    fileName: 'swal',
+    formats: ['es', 'cjs'],
+    external: ['nexus-dialogs', 'nexus-dialogs/toast'],
+  },
+  swalglobal: { entry: 'src/swal-global.ts', name: 'Swal', fileName: 'nexus-dialogs.swal', formats: ['iife'], external: [] },
 }
 
 export default defineConfig(({ mode, command }) => {
@@ -31,10 +47,10 @@ export default defineConfig(({ mode, command }) => {
   if (command === 'build' && lib) {
     return {
       define,
-      resolve: mode === 'all' ? { alias: ALIAS } : undefined,
+      resolve: mode === 'all' || mode === 'swalglobal' ? { alias: ALIAS } : undefined,
       build: {
         lib: { entry: lib.entry, name: lib.name, fileName: lib.fileName, formats: lib.formats },
-        rollupOptions: { external: lib.external },
+        rollupOptions: { external: lib.external, output: mode === 'swal' ? { exports: 'named' } : undefined },
         emptyOutDir: mode === 'core',
         target: 'es2020',
         minify: 'esbuild',

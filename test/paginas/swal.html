@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<link rel="icon" href="data:,">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>nexus-dialogs · compatibilidad con SweetAlert2</title>
+<style>body { font: 15px/1.5 system-ui, sans-serif; padding: 24px } button { height: 38px; padding: 0 14px; margin: 4px }</style>
+</head>
+<body>
+<h1>Código escrito para SweetAlert2</h1>
+<p>Los ejemplos de la documentación de SweetAlert2, sin cambios, con <code>import Swal from 'nexus-dialogs/swal'</code>.</p>
+<button id="s-basic">Básico</button>
+<button id="s-delete">Confirmar borrado</button>
+<button id="s-deny">Guardar / No guardar</button>
+<button id="s-input">Input con validación</button>
+<button id="s-toast">Toast</button>
+<pre id="out"></pre>
+<script type="module">
+  import Swal from '../../src/swal.ts'
+  window.Swal = Swal
+  const on = (id, fn) => document.getElementById(id).addEventListener('click', async () => {
+    const r = await fn()
+    window.ultimo = r
+    document.getElementById('out').textContent = JSON.stringify(r)
+  })
+  on('s-basic', () => Swal.fire('Good job!', 'You clicked the button!', 'success'))
+  on('s-delete', () => Swal.fire({ title: 'Are you sure?', text: "You won't be able to revert this!", icon: 'warning', showCancelButton: true,
+    confirmButtonColor: '#3085d6', cancelButtonColor: '#d33', confirmButtonText: 'Yes, delete it!' }))
+  on('s-deny', () => Swal.fire({ title: 'Do you want to save the changes?', showDenyButton: true, showCancelButton: true, confirmButtonText: 'Save', denyButtonText: "Don't save" }))
+  on('s-input', () => Swal.fire({ title: 'Submit your Github username', input: 'text', inputAttributes: { autocapitalize: 'off' },
+    showCancelButton: true, confirmButtonText: 'Look up', inputValidator: (v) => !v && 'You need to write something!' }))
+  on('s-toast', () => Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 400 }).fire({ icon: 'success', title: 'Signed in successfully' }))
+</script>
+</body>
+</html>

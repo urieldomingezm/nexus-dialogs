@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<link rel="icon" href="data:,">
+<title>nexus-dialogs · Vue</title>
+<style>body { font: 15px/1.5 system-ui, sans-serif; padding: 24px } button { height: 38px; padding: 0 14px; margin: 4px }</style>
+</head>
+<body>
+<div id="app"></div>
+<script type="module">
+  import { createApp, defineComponent, h, ref } from 'vue'
+  import { NexusDialogs, useDialog, useToast } from '../../src/vue.ts'
+  import { confirmDelete } from '../../src/patterns.ts'
+
+  // Simula una «página» que se desmonta al cambiar de ruta.
+  const Pagina = defineComponent({
+    setup() {
+      const dialog = useDialog()
+      const toast = useToast()
+      const borrar = dialog.scoped(confirmDelete)
+      return () =>
+        h('div', [
+          h('h2', 'Empleados'),
+          h('button', { id: 'v-confirm', onClick: async () => {
+            const r = await dialog.confirm({ title: '¿Enviar a aprobación?', confirmText: 'Enviar' })
+            window.ultimo = r
+            if (r.confirmed) toast.success('Enviado')
+          } }, 'Confirmar'),
+          h('button', { id: 'v-delete', onClick: async () => (window.ultimo = { ok: await borrar({ what: 'a Laura' }) }) }, 'Eliminar'),
+          h('p', { id: 'v-abierto' }, dialog.isOpen.value ? 'hay diálogo' : 'sin diálogo'),
+        ])
+    },
+  })
+
+  const App = defineComponent({
+    setup() {
+      const visible = ref(true)
+      window.cambiarRuta = () => (visible.value = !visible.value)
+      return () => h('main', [h('h1', 'App Vue'), visible.value ? h(Pagina) : h('p', { id: 'otra' }, 'Otra página')])
+    },
+  })
+  createApp(App).use(NexusDialogs, { scheme: 'light', toast: { position: 'top-right' } }).mount('#app')
+  window.listo = true
+</script>
+</body>
+</html>
