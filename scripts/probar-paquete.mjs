@@ -20,7 +20,14 @@ const paso = (nombre, fn) => {
 }
 
 const dir = mkdtempSync(join(tmpdir(), 'nexus-dialogs-paquete-'))
-const ENTRADAS = ['nexus-dialogs', 'nexus-dialogs/forms', 'nexus-dialogs/toast', 'nexus-dialogs/themes']
+const ENTRADAS = [
+  'nexus-dialogs',
+  'nexus-dialogs/forms',
+  'nexus-dialogs/toast',
+  'nexus-dialogs/themes',
+  'nexus-dialogs/patterns',
+  'nexus-dialogs/mx',
+]
 
 try {
   paso('npm pack', () => {
@@ -60,6 +67,8 @@ import { dialog, configure, type DialogResult, type ButtonSpec, type CloseReason
 import { form, wizard, type Field } from 'nexus-dialogs/forms'
 import { toast, type ToastOptions } from 'nexus-dialogs/toast'
 import { themes, fromBootstrap } from 'nexus-dialogs/themes'
+import { confirmDelete, bulkAction, type ApprovalResult } from 'nexus-dialogs/patterns'
+import { isCLABE } from 'nexus-dialogs/mx'
 configure({ lang: 'es', theme: themes.bootstrap, scheme: 'auto' })
 const botones: ButtonSpec[] = [{ id: 'ok', role: 'confirm', text: 'Guardar', variant: 'primary' }]
 const campos: Field[] = [{ name: 'rfc', label: 'RFC', type: 'rfc', required: true }]
@@ -72,6 +81,10 @@ async function uso() {
   const o: ToastOptions = { type: 'success', duration: 3000 }
   toast.success('Listo', o)
   void razon; void fromBootstrap
+  if (await confirmDelete({ what: 'el periodo', name: 'Q21', requireName: true })) isCLABE('002010077777777771')
+  const b = await bulkAction({ title: 'Mover', items: [{ n: 'Ana' }], label: (e) => e.n, run: async () => {} })
+  b.failed.map((x) => x.item.n)
+  const a: ApprovalResult | null = null; void a
 }
 void uso
 `

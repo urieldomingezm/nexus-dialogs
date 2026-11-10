@@ -134,6 +134,10 @@ export interface Labels {
   max: string
   pattern: string
   invalidRfc: string
+  invalidCurp: string
+  invalidNss: string
+  invalidClabe: string
+  invalidPostal: string
   errorSummary: string
   next: string
   back: string

@@ -16,6 +16,14 @@ const LIBS = {
   forms: { entry: 'src/forms.ts', name: 'NexusDialogsForms', fileName: 'forms', formats: ['es', 'cjs'], external: ['nexus-dialogs'] },
   toast: { entry: 'src/toast.ts', name: 'NexusDialogsToast', fileName: 'toast', formats: ['es', 'cjs'], external: [] },
   themes: { entry: 'src/themes.ts', name: 'NexusDialogsThemes', fileName: 'themes', formats: ['es', 'umd'], external: [] },
+  patterns: {
+    entry: 'src/patterns.ts',
+    name: 'NexusDialogsPatterns',
+    fileName: 'patterns',
+    formats: ['es', 'cjs'],
+    external: ['nexus-dialogs'],
+  },
+  mx: { entry: 'src/mx.ts', name: 'NexusDialogsMx', fileName: 'mx', formats: ['es', 'umd'], external: [] },
 }
 
 export default defineConfig(({ mode, command }) => {

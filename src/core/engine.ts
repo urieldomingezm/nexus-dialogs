@@ -200,6 +200,7 @@ export function openDialog<T = unknown>(opciones: EngineOptions<T>): Promise<Dia
 
   // ── Escribir para confirmar ───────────────────────────────────────────────
   let escrito: HTMLInputElement | null = null
+  let bloqueEscrito: HTMLElement | null = null
   const bloqueadoPorTexto = (): boolean => !!o.requireText && escrito?.value !== o.requireText
   if (o.requireText) {
     const id = uid('c')
@@ -209,19 +210,19 @@ export function openDialog<T = unknown>(opciones: EngineOptions<T>): Promise<Dia
       const b = foot.querySelector<HTMLButtonElement>('button[data-role=confirm]')
       if (b && !cargando) b.disabled = bloqueadoPorTexto()
     })
-    body.appendChild(
-      h(
-        'div',
-        { class: 'typed' },
-        h('label', { for: id }, `${L.typeToConfirm} `, h('code', null, o.requireText)),
-        escrito,
-        h('small', { id: ayuda }, L.typeToConfirmHelp),
-      ),
+    bloqueEscrito = h(
+      'div',
+      { class: 'typed' },
+      h('label', { for: id }, `${L.typeToConfirm} `, h('code', null, o.requireText)),
+      escrito,
+      h('small', { id: ayuda }, L.typeToConfirmHelp),
     )
   }
 
+  // Primero el contenido (qué se pierde) y al final el campo para escribir el nombre.
   const propio = o.render?.(ctx)
   if (propio) body.appendChild(propio)
+  if (bloqueEscrito) body.appendChild(bloqueEscrito)
   if (o.footnote) body.appendChild(h('p', { class: 'note' }, o.footnote))
 
   ctx.setButtons(
@@ -320,7 +321,7 @@ export function openDialog<T = unknown>(opciones: EngineOptions<T>): Promise<Dia
     const e = ev as KeyboardEvent
     if (e.key !== 'Enter' || e.isComposing || e.shiftKey || e.ctrlKey || e.altKey) return
     const t = e.target as HTMLElement
-    if (!(t instanceof HTMLInputElement) || ['checkbox', 'radio', 'button', 'submit', 'file'].includes(t.type)) return
+    if (!(t instanceof HTMLInputElement) || ['button', 'submit', 'reset', 'file'].includes(t.type)) return
     // Enter = botón principal: confirmar o, en un asistente, «Siguiente».
     const b =
       foot.querySelector<HTMLButtonElement>('button[data-role=confirm]:not([hidden])') ??

@@ -57,6 +57,26 @@
         "default": "./dist/themes.umd.cjs"
       }
     },
+    "./patterns": {
+      "import": {
+        "types": "./dist/patterns.d.ts",
+        "default": "./dist/patterns.js"
+      },
+      "require": {
+        "types": "./dist/patterns.d.cts",
+        "default": "./dist/patterns.cjs"
+      }
+    },
+    "./mx": {
+      "import": {
+        "types": "./dist/mx.d.ts",
+        "default": "./dist/mx.js"
+      },
+      "require": {
+        "types": "./dist/mx.d.cts",
+        "default": "./dist/mx.umd.cjs"
+      }
+    },
     "./all": {
       "import": {
         "types": "./dist/global.d.ts",
@@ -79,6 +99,12 @@
       ],
       "themes": [
         "./dist/themes.d.ts"
+      ],
+      "patterns": [
+        "./dist/patterns.d.ts"
+      ],
+      "mx": [
+        "./dist/mx.d.ts"
       ],
       "all": [
         "./dist/global.d.ts"
@@ -104,7 +130,13 @@
     "wizard",
     "sweetalert",
     "accessibility",
-    "a11y"
+    "a11y",
+    "rfc",
+    "curp",
+    "clabe",
+    "mexico",
+    "rrhh",
+    "approval"
   ],
   "engines": {
     "node": ">=18"
@@ -115,7 +147,7 @@
   },
   "scripts": {
     "dev": "vite --open /test/paginas/",
-    "build": "vite build --mode core && vite build --mode all && vite build --mode forms && vite build --mode toast && vite build --mode themes && tsc -p tsconfig.build.json && node scripts/tipos.mjs",
+    "build": "vite build --mode core && vite build --mode all && vite build --mode forms && vite build --mode toast && vite build --mode themes && vite build --mode patterns && vite build --mode mx && tsc -p tsconfig.build.json && node scripts/tipos.mjs",
     "build:site": "vite build --mode site",
     "test": "npm run test:unit && npm run test:e2e",
     "test:unit": "vitest run",

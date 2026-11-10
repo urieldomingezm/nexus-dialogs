@@ -85,6 +85,34 @@ describe('form', () => {
     expect((await p).value).toEqual({ tipo: 'Empresa', rfc: 'PEM840101AB3' })
   })
 
+  it('tipos de México: curp, nss, clabe y postal validan su dígito verificador', async () => {
+    const p = form({
+      title: 'Nómina',
+      fields: [
+        { name: 'curp', label: 'CURP', type: 'curp' },
+        { name: 'nss', label: 'NSS', type: 'nss' },
+        { name: 'clabe', label: 'CLABE', type: 'clabe' },
+        { name: 'cp', label: 'CP', type: 'postal' },
+      ],
+    })
+    expect(input('nss').getAttribute('inputmode')).toBe('numeric')
+    expect(input('curp').getAttribute('maxlength')).toBe('18')
+    escribir(input('curp'), 'pelj900515hjcrpn04')
+    escribir(input('nss'), '12169012345')
+    escribir(input('clabe'), '002010077777777772')
+    escribir(input('cp'), '00600')
+    boton('confirm').click()
+    await esperar()
+    expect(input('curp').value).toBe('PELJ900515HJCRPN04')
+    expect($$('.msg').map((m) => m.textContent)).toEqual([es.invalidCurp, es.invalidNss, es.invalidClabe, es.invalidPostal])
+    escribir(input('curp'), 'PELJ900515HJCRPN03')
+    escribir(input('nss'), '12169012346')
+    escribir(input('clabe'), '002010077777777771')
+    escribir(input('cp'), '06600')
+    boton('confirm').click()
+    expect((await p).value).toEqual({ curp: 'PELJ900515HJCRPN03', nss: '12169012346', clabe: '002010077777777771', cp: '06600' })
+  })
+
   it('money: formatea con miles al salir y devuelve número', async () => {
     const p = form({ title: 'Gasto', fields: [{ name: 'importe', label: 'Importe', type: 'money', min: 1 }] })
     const i = input('importe')

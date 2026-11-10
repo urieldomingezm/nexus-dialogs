@@ -84,6 +84,7 @@ export const CORE_CSS =
 @keyframes draw{to{stroke-dashoffset:0}}
 .i-success{color:var(--_success)}.i-error{color:var(--_danger)}.i-warning{color:var(--_warning)}.i-info,.i-question{color:var(--_info)}
 .timer{position:absolute;left:0;bottom:0;height:4px;background:var(--_accent);opacity:.7;width:100%;transform-origin:left}
+.body>*+.typed{margin-top:16px}
 .typed label{display:block;font-size:14px;margin-bottom:8px}
 .typed code{font:600 13px ui-monospace,Menlo,monospace;background:color-mix(in srgb,var(--_fg) 7%,transparent);padding:2px 6px;border-radius:6px;user-select:all}
 .typed small{display:block;margin-top:6px;font-size:13px;color:var(--_muted)}

@@ -11,7 +11,7 @@
  */
 export { dialog, alert, confirm, prompt, open } from './dialog'
 export type { PromptOptions, DialogInput } from './dialog'
-export { configure, labels } from './config'
+export { configure, labels, language } from './config'
 export type { GlobalConfig } from './config'
 export { openDialog, INVALID } from './core/engine'
 export type { EngineOptions } from './core/engine'
