@@ -41,8 +41,8 @@ try {
     )
   })
 
-  paso('instalar typescript, vite y webpack', () => {
-    sh('npm i --no-audit --no-fund --silent typescript@5 vite webpack webpack-cli', dir)
+  paso('instalar vue, typescript, vite y webpack', () => {
+    sh('npm i --no-audit --no-fund --silent vue typescript@5 vite webpack webpack-cli', dir)
   })
 
   paso('Node ESM: import de cada entrada (más /all)', () => {
@@ -69,6 +69,8 @@ import { toast, type ToastOptions } from 'nexus-dialogs/toast'
 import { themes, fromBootstrap } from 'nexus-dialogs/themes'
 import { confirmDelete, bulkAction, type ApprovalResult } from 'nexus-dialogs/patterns'
 import { isCLABE } from 'nexus-dialogs/mx'
+import Swal, { type SweetAlertResult } from 'nexus-dialogs/swal'
+import { useDialog, NexusDialogs } from 'nexus-dialogs/vue'
 configure({ lang: 'es', theme: themes.bootstrap, scheme: 'auto' })
 const botones: ButtonSpec[] = [{ id: 'ok', role: 'confirm', text: 'Guardar', variant: 'primary' }]
 const campos: Field[] = [{ name: 'rfc', label: 'RFC', type: 'rfc', required: true }]
@@ -85,6 +87,8 @@ async function uso() {
   const b = await bulkAction({ title: 'Mover', items: [{ n: 'Ana' }], label: (e) => e.n, run: async () => {} })
   b.failed.map((x) => x.item.n)
   const a: ApprovalResult | null = null; void a
+  const s: SweetAlertResult = await Swal.fire({ title: 'X', icon: 'warning', showCancelButton: true }); void s.isConfirmed
+  const d = useDialog(); await d.scoped(confirmDelete)({ what: 'x' }); void NexusDialogs
 }
 void uso
 `
@@ -110,7 +114,9 @@ import { dialog, configure } from 'nexus-dialogs'
 import { form } from 'nexus-dialogs/forms'
 import { toast } from 'nexus-dialogs/toast'
 import { themes } from 'nexus-dialogs/themes'
+import Swal from 'nexus-dialogs/swal'
 configure({ theme: themes.tailwind })
+window.Swal = Swal
 window.abrir = () => dialog.confirm('¿Seguro?').then(() => form({ title: 'X', fields: [{ name: 'a', label: 'A' }] }))
 window.avisar = () => toast.success('Hola')
 `

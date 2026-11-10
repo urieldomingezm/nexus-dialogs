@@ -311,7 +311,8 @@ export function dismiss(id?: string): void {
 
 /** Opciones globales de los toasts. */
 export function configureToast(c: ToastConfig): void {
-  Object.assign(cfg, { ...c, theme: { ...cfg.theme, ...c.theme } })
+  const definidos = Object.fromEntries(Object.entries(c).filter(([, v]) => v !== undefined))
+  Object.assign(cfg, { ...definidos, theme: { ...cfg.theme, ...c.theme } })
   if (host) {
     host.setAttribute('data-scheme', cfg.scheme)
     lista.classList.remove('top-left', 'top-center', 'top-right', 'bottom-left', 'bottom-center', 'bottom-right')

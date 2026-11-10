@@ -24,6 +24,8 @@ Las librerías de alertas resuelven el «¿Seguro?» y poco más. En un sistema 
 1. [Instalación](#1-instalación)
 2. [Inicio rápido](#2-inicio-rápido)
 3. [Recetas: lo de todos los días en una línea](#3-recetas-lo-de-todos-los-días-en-una-línea)
+   - [Vue 3](#vue-3)
+   - [¿Vienes de SweetAlert2?](#vienes-de-sweetalert2)
 4. [Estándar de botones](#4-estándar-de-botones)
 5. [Diálogos](#5-diálogos)
 6. [Formularios](#6-formularios)
@@ -50,6 +52,8 @@ npm i nexus-dialogs
 | `nexus-dialogs/themes` | Temas listos (Bootstrap, Tailwind, Material, oscuro) |
 | `nexus-dialogs/patterns` | Recetas en una línea: borrar, cambios sin guardar, sesión, aprobaciones, acciones masivas… |
 | `nexus-dialogs/mx` | Validadores de RFC, CURP, NSS, CLABE y código postal (también en Node) |
+| `nexus-dialogs/vue` | Plugin y composables para Vue 3 |
+| `nexus-dialogs/swal` | Compatible con SweetAlert2: cambia el import y listo |
 
 Sin bundler, con un `<script>`:
 
@@ -214,6 +218,70 @@ espera.close()
 Si la tarea falla, la espera se cierra y el error se relanza para que lo muestres (por ejemplo con `dialog.error`). Para lo que no bloquea, mejor `toast.promise`.
 
 Textos de las recetas: siguen el idioma de `configure({ lang })`; cambia los que quieras con `configurePatterns({ stay: 'Continuar aquí' })`.
+
+### Vue 3
+
+```ts
+// main.ts
+import { NexusDialogs } from 'nexus-dialogs/vue'
+app.use(NexusDialogs, { scheme: 'auto', toast: { position: 'top-right' } })
+```
+
+```vue
+<script setup lang="ts">
+import { useDialog, useToast } from 'nexus-dialogs/vue'
+import { confirmDelete } from 'nexus-dialogs/patterns'
+
+const dialog = useDialog()
+const toast = useToast()
+const borrar = dialog.scoped(confirmDelete)
+
+async function eliminar(empleado) {
+  if (await borrar({ what: `a ${empleado.nombre}` })) toast.success('Eliminado')
+}
+</script>
+```
+
+- Los diálogos que abre el componente **se cierran solos al desmontarlo** (por ejemplo, si el usuario cambia de ruta con uno abierto). `scoped()` hace lo mismo con recetas y formularios: `dialog.scoped(form)`, `dialog.scoped(wizard)`.
+- `dialog.isOpen` es reactivo: ¿este componente tiene un diálogo abierto?
+- Los toasts no se cierran al desmontar: «Guardado» sigue visible en la siguiente página.
+- En la Options API: `this.$dialog.confirm(…)` y `this.$toast.success(…)`.
+- `vue` es dependencia opcional: solo se necesita si importas `nexus-dialogs/vue`.
+
+### ¿Vienes de SweetAlert2?
+
+Cambia el import y tu código sigue funcionando:
+
+```ts
+// antes: import Swal from 'sweetalert2'
+import Swal from 'nexus-dialogs/swal'
+
+const r = await Swal.fire({
+  title: '¿Estás seguro?',
+  text: 'No podrás revertirlo',
+  icon: 'warning',
+  showCancelButton: true,
+  confirmButtonText: 'Sí, eliminar',
+})
+if (r.isConfirmed) eliminar()
+```
+
+Sin bundler, cambia el `<script>` de SweetAlert2 por este (define `window.Swal`):
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/nexus-dialogs/dist/nexus-dialogs.swal.iife.js"></script>
+```
+
+**Qué cubre**: `Swal.fire(título, html, icono)` y `Swal.fire({…})`, `Swal.mixin`, toasts (`toast: true`, `position`, `timer`), botones confirm/deny/cancel, `input` (text, email, password, number, tel, url, date, textarea, select, radio, checkbox) con `inputOptions`, `inputValidator` y `validationMessage`, `preConfirm`, `preDeny`, `timer`, `allowOutsideClick`, `allowEscapeKey`, `showCloseButton`, `didOpen`/`didClose`, el resultado `{ isConfirmed, isDenied, isDismissed, value, dismiss }`, `Swal.DismissReason` y los métodos `close`, `isVisible`, `showLoading`, `hideLoading`, `isLoading`, `showValidationMessage`, `resetValidationMessage`, `update`, `getInput`, `getConfirmButton`, `clickConfirm` y similares.
+
+**Qué cambia a propósito**:
+- Se aplica el [estándar de botones](#4-estándar-de-botones). Una confirmación cuyo botón dice «eliminar», «borrar» o «delete» pasa sola a **peligro**: botón rojo y el foco en Cancelar. Fuérzalo con `danger: true`.
+- `confirmButtonColor`, `customClass` y similares se ignoran; los colores vienen del tema.
+- El orden de los botones es siempre Cancelar, Denegar, Confirmar (la acción principal a la derecha).
+- Los textos por omisión salen en el idioma configurado («Aceptar», «Cancelar»).
+- Los toasts usan la cola de `nexus-dialogs/toast`; la posición es una sola para todos.
+
+Cuando tengas tiempo, pasa a la API propia (`dialog.confirm`, recetas): es más corta y tiene tipos más precisos.
 
 ## 4. Estándar de botones
 
@@ -489,6 +557,8 @@ configure({ labels: { cancel: 'Cerrar', submit: 'Guardar cambios' } })
 | `themes`, `fromBootstrap()`, `applyTheme()` | `nexus-dialogs/themes` |
 | `confirmDelete`, `unsavedChanges`, `sessionTimeout`, `watchIdle`, `approval`, `bulkAction`, `choose`, `loading`, `configurePatterns` | `nexus-dialogs/patterns` |
 | `isRFC`, `isCURP`, `isNSS`, `isCLABE`, `isPostalCode`, `normalize` | `nexus-dialogs/mx` |
+| `NexusDialogs` (plugin), `useDialog`, `useToast` | `nexus-dialogs/vue` |
+| `Swal` (por omisión), `DismissReason` | `nexus-dialogs/swal` |
 | `configure({ lang, labels, theme, scheme, defaults, sheetOnMobile })` | Global |
 
 Eventos en `document`: `nexus-dialogs:open` y `nexus-dialogs:close` (con `detail.dialog`).
@@ -499,7 +569,8 @@ La API pública completa, generada de los tipos, está en [`api/nexus-dialogs.ap
 
 - Navegadores actuales: Chrome/Edge 111+, Firefox 113+, Safari 16.4+ (usa `<dialog>` modal y `color-mix()`). Probado en Chromium, Firefox y WebKit.
 - **nexus-tours**: los diálogos son `<dialog open>` de verdad, así que los tours los detectan y pueden explicar lo que hay dentro.
-- Bootstrap, Tailwind, SweetAlert2: sin choques de `z-index` ni de CSS.
+- Bootstrap, Tailwind, SweetAlert2: sin choques de `z-index` ni de CSS. Para migrar de SweetAlert2, ver [¿Vienes de SweetAlert2?](#vienes-de-sweetalert2).
+- Vue 3.3+ con `nexus-dialogs/vue`.
 - Node/SSR: importar no toca el DOM; los diálogos se abren solo en el navegador.
 
 ## 14. Desarrollo

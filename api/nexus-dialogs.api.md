@@ -23,6 +23,8 @@ interface ButtonSpec {
 
 type ButtonVariant = 'primary' | 'cancel' | 'danger' | 'secondary';
 
+function closeDialog(el: HTMLDialogElement, value?: unknown): boolean;
+
 type CloseReason = 'confirm' | 'cancel' | 'deny' | 'escape' | 'backdrop' | 'close' | 'timer' | 'program' | (string & {});
 
 function configure(c: GlobalConfig): void;
@@ -499,6 +501,172 @@ function isRFC(valor: string): boolean;
 const normalize: (v: string) => string;
 ```
 
+## `nexus-dialogs/vue`
+
+```ts
+const NexusDialogs: {
+    install(app: App, opciones?: PluginOptions): void;
+};
+
+interface PluginOptions extends GlobalConfig {
+    toast?: ToastConfig;
+}
+
+function useDialog(): UseDialogReturn;
+
+interface UseDialogReturn {
+    alert: typeof base.alert;
+    confirm: typeof base.confirm;
+    prompt: typeof base.prompt;
+    open: typeof base.open;
+    success: typeof base.success;
+    error: typeof base.error;
+    warning: typeof base.warning;
+    info: typeof base.info;
+    isOpen: Readonly<Ref<boolean>>;
+    closeAll: () => void;
+    scoped: <F extends Fn>(fn: F) => F;
+}
+
+const useToast: () => typeof toast;
+```
+
+## `nexus-dialogs/swal`
+
+```ts
+const Swal: {
+    fire: (...args: [
+        SweetAlertOptions
+    ] | [
+        string?,
+        string?,
+        SweetAlertIcon?
+    ]) => Promise<SweetAlertResult>;
+    mixin: (mas: SweetAlertOptions) => any;
+    close: (_result?: Partial<SweetAlertResult>) => void;
+    isVisible: () => boolean;
+    isLoading: () => boolean;
+    showLoading: () => void;
+    hideLoading: () => void;
+    showValidationMessage: (mensaje: string) => void;
+    resetValidationMessage: () => void;
+    update: (o: Pick<SweetAlertOptions, "title" | "titleText">) => void;
+    getPopup: () => HTMLDialogElement;
+    getInput: () => HTMLElement | null;
+    getConfirmButton: () => HTMLButtonElement | null;
+    getCancelButton: () => HTMLButtonElement | null;
+    getDenyButton: () => HTMLButtonElement | null;
+    clickConfirm: () => void | undefined;
+    clickCancel: () => void | undefined;
+    clickDeny: () => void | undefined;
+    DismissReason: {
+        readonly cancel: "cancel";
+        readonly backdrop: "backdrop";
+        readonly close: "close";
+        readonly esc: "esc";
+        readonly timer: "timer";
+    };
+};
+
+const DismissReason: {
+    readonly cancel: "cancel";
+    readonly backdrop: "backdrop";
+    readonly close: "close";
+    readonly esc: "esc";
+    readonly timer: "timer";
+};
+type DismissReason = (typeof DismissReason)[keyof typeof DismissReason];
+
+const Swal: {
+    fire: (...args: [
+        SweetAlertOptions
+    ] | [
+        string?,
+        string?,
+        SweetAlertIcon?
+    ]) => Promise<SweetAlertResult>;
+    mixin: (mas: SweetAlertOptions) => any;
+    close: (_result?: Partial<SweetAlertResult>) => void;
+    isVisible: () => boolean;
+    isLoading: () => boolean;
+    showLoading: () => void;
+    hideLoading: () => void;
+    showValidationMessage: (mensaje: string) => void;
+    resetValidationMessage: () => void;
+    update: (o: Pick<SweetAlertOptions, "title" | "titleText">) => void;
+    getPopup: () => HTMLDialogElement;
+    getInput: () => HTMLElement | null;
+    getConfirmButton: () => HTMLButtonElement | null;
+    getCancelButton: () => HTMLButtonElement | null;
+    getDenyButton: () => HTMLButtonElement | null;
+    clickConfirm: () => void | undefined;
+    clickCancel: () => void | undefined;
+    clickDeny: () => void | undefined;
+    DismissReason: {
+        readonly cancel: "cancel";
+        readonly backdrop: "backdrop";
+        readonly close: "close";
+        readonly esc: "esc";
+        readonly timer: "timer";
+    };
+};
+
+type SweetAlertIcon = 'success' | 'error' | 'warning' | 'info' | 'question';
+
+type SweetAlertInput = 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'search' | 'date' | 'datetime-local' | 'time' | 'month' | 'textarea' | 'select' | 'radio' | 'checkbox';
+
+interface SweetAlertOptions {
+    title?: string;
+    titleText?: string;
+    text?: string;
+    html?: string | HTMLElement;
+    icon?: SweetAlertIcon;
+    footer?: string;
+    toast?: boolean;
+    position?: 'top' | 'top-start' | 'top-end' | 'center' | 'center-start' | 'center-end' | 'bottom' | 'bottom-start' | 'bottom-end';
+    width?: number | string;
+    timer?: number;
+    timerProgressBar?: boolean;
+    showConfirmButton?: boolean;
+    showDenyButton?: boolean;
+    showCancelButton?: boolean;
+    showCloseButton?: boolean;
+    confirmButtonText?: string;
+    denyButtonText?: string;
+    cancelButtonText?: string;
+    focusConfirm?: boolean;
+    focusCancel?: boolean;
+    focusDeny?: boolean;
+    allowOutsideClick?: boolean | (() => boolean);
+    allowEscapeKey?: boolean | (() => boolean);
+    input?: SweetAlertInput;
+    inputLabel?: string;
+    inputPlaceholder?: string;
+    inputValue?: string | number | boolean;
+    inputOptions?: Opciones | Promise<Opciones>;
+    inputAttributes?: Record<string, string>;
+    inputValidator?: Validador;
+    validationMessage?: string;
+    preConfirm?: (inputValue: any) => any;
+    preDeny?: (value: any) => any;
+    willOpen?: (popup: HTMLElement) => void;
+    didOpen?: (popup: HTMLElement) => void;
+    didRender?: (popup: HTMLElement) => void;
+    willClose?: (popup: HTMLElement) => void;
+    didClose?: () => void;
+    danger?: boolean;
+    [otra: string]: unknown;
+}
+
+interface SweetAlertResult<T = any> {
+    isConfirmed: boolean;
+    isDenied: boolean;
+    isDismissed: boolean;
+    value?: T;
+    dismiss?: DismissReason;
+}
+```
+
 ## `nexus-dialogs/all`
 
 ```ts
@@ -595,6 +763,8 @@ interface ChooseOptions<V extends string> {
     value?: V;
     confirmText?: string;
 }
+
+function closeDialog(el: HTMLDialogElement, value?: unknown): boolean;
 
 type CloseReason = 'confirm' | 'cancel' | 'deny' | 'escape' | 'backdrop' | 'close' | 'timer' | 'program' | (string & {});
 

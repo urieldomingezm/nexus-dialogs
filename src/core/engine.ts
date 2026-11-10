@@ -419,6 +419,13 @@ export function openDialog<T = unknown>(opciones: EngineOptions<T>): Promise<Dia
 /** Diálogos de nexus-dialogs abiertos ahora, del más antiguo al más reciente. */
 export const openCount = (): number => pila.length
 
+/** Cierra un diálogo concreto (el `<dialog>` que llega en `ctx.dialog` o en el evento `nexus-dialogs:open`). */
+export function closeDialog(el: HTMLDialogElement, value?: unknown): boolean {
+  const a = pila.find((x) => x.ctx.dialog === el)
+  a?.ctx.close('program', value)
+  return !!a
+}
+
 /** Cierra el diálogo de arriba (o todos) con reason 'program'. */
 export function closeTop(value?: unknown, all = false): void {
   const lista = all ? [...pila].reverse() : pila.slice(-1)

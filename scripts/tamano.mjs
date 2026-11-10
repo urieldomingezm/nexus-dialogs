@@ -14,6 +14,9 @@ const LIMITES = {
   themes: 1,
   patterns: 7,
   mx: 1,
+  vue: 1,
+  swal: 3.5,
+  'nexus-dialogs.swal.iife': 13.5,
 }
 
 if (!existsSync('dist/nexus-dialogs.js')) {

@@ -1,6 +1,6 @@
 {
   "name": "nexus-dialogs",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Modals, alerts, confirmations, forms, wizards, toasts and drawers built on the native <dialog>: accessible, isolated with Shadow DOM, promise-based and dependency-free.",
   "license": "MIT",
   "author": "Angel Uriel Domínguez Medina (DevMedina) (https://devmedina.is-a.dev/)",
@@ -77,6 +77,26 @@
         "default": "./dist/mx.umd.cjs"
       }
     },
+    "./vue": {
+      "import": {
+        "types": "./dist/vue.d.ts",
+        "default": "./dist/vue.js"
+      },
+      "require": {
+        "types": "./dist/vue.d.cts",
+        "default": "./dist/vue.cjs"
+      }
+    },
+    "./swal": {
+      "import": {
+        "types": "./dist/swal.d.ts",
+        "default": "./dist/swal.js"
+      },
+      "require": {
+        "types": "./dist/swal.d.cts",
+        "default": "./dist/swal.cjs"
+      }
+    },
     "./all": {
       "import": {
         "types": "./dist/global.d.ts",
@@ -105,6 +125,12 @@
       ],
       "mx": [
         "./dist/mx.d.ts"
+      ],
+      "vue": [
+        "./dist/vue.d.ts"
+      ],
+      "swal": [
+        "./dist/swal.d.ts"
       ],
       "all": [
         "./dist/global.d.ts"
@@ -136,7 +162,9 @@
     "clabe",
     "mexico",
     "rrhh",
-    "approval"
+    "approval",
+    "vue",
+    "sweetalert2"
   ],
   "engines": {
     "node": ">=18"
@@ -147,7 +175,7 @@
   },
   "scripts": {
     "dev": "vite --open /test/paginas/",
-    "build": "vite build --mode core && vite build --mode all && vite build --mode forms && vite build --mode toast && vite build --mode themes && vite build --mode patterns && vite build --mode mx && tsc -p tsconfig.build.json && node scripts/tipos.mjs",
+    "build": "vite build --mode core && vite build --mode all && vite build --mode forms && vite build --mode toast && vite build --mode themes && vite build --mode patterns && vite build --mode mx && vite build --mode vue && vite build --mode swal && vite build --mode swalglobal && tsc -p tsconfig.build.json && node scripts/tipos.mjs",
     "build:site": "vite build --mode site",
     "test": "npm run test:unit && npm run test:e2e",
     "test:unit": "vitest run",
@@ -164,12 +192,21 @@
     "check:paquete": "attw --pack . --ignore-rules cjs-resolves-to-esm && node scripts/probar-paquete.mjs",
     "prepublishOnly": "npm run build"
   },
+  "peerDependencies": {
+    "vue": ">=3.3"
+  },
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
     "@axe-core/playwright": "^4.14.0",
     "@eslint/js": "^9.39.5",
     "@playwright/test": "^1.65.0",
     "@vitest/coverage-v8": "^5.1.0",
+    "@vue/test-utils": "^2.5.1",
     "esbuild": "^0.28.2",
     "eslint": "^9.39.5",
     "eslint-config-prettier": "^10.1.8",
@@ -179,6 +216,7 @@
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.72.2",
     "vite": "^7.3.8",
-    "vitest": "^5.1.0"
+    "vitest": "^5.1.0",
+    "vue": "^3.5.45"
   }
 }
