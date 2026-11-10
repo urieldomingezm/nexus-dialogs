@@ -108,55 +108,62 @@ export function configurePatterns(textos: Partial<Textos>): void {
 }
 
 const CSS = `
-.lead{margin:0 0 12px;color:var(--_muted)}
-.lead b{color:var(--_fg)}
+.lead{margin:0 0 16px;color:var(--_muted);font-size:14px;line-height:20px}
+.lead b{color:var(--_fg);font-weight:600}
 .req{color:var(--_error)}
-.loss{margin:0;padding:12px 14px 12px 32px;border-radius:12px;font-size:14px;color:var(--_muted);
-  background:color-mix(in srgb,var(--_danger) 6%,transparent);border:1px solid color-mix(in srgb,var(--_danger) 25%,transparent)}
-.loss-t{margin:0 0 6px;font-size:14px;font-weight:600}
-.changes{list-style:none;margin:0;padding:0;display:grid;gap:8px;font-size:14px}
-.changes li{display:flex;gap:10px;align-items:baseline}
-.changes li::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--_warning)}
-.changes s{color:var(--_muted)}
-.clock{display:flex;flex-direction:column;align-items:center;gap:6px;margin:6px 0 4px}
-.clock svg{width:112px;height:112px}
-.clock .num{font:700 26px var(--_title-font);font-variant-numeric:tabular-nums;margin-top:-76px;height:70px}
-.facts{margin:0 0 14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
-.facts div{background:var(--_surface);border-radius:12px;padding:10px 12px}
-.facts dt{font-size:12px;color:var(--_muted)}
-.facts dd{margin:2px 0 0;font-weight:600;font-size:14px}
-.warn{margin:0 0 14px;padding:10px 12px;border-radius:10px;font-size:13px;color:var(--_fg);
-  background:color-mix(in srgb,var(--_warning) 12%,transparent);border:1px solid color-mix(in srgb,var(--_warning) 40%,transparent)}
-.chips{border:0;margin:0 0 14px;padding:0}
-.chips legend{font-size:14px;font-weight:600;margin-bottom:8px;padding:0}
+.loss{margin:0;padding:12px 16px 12px 34px;border-radius:12px;font-size:14px;line-height:22px;color:var(--_muted);
+  background:color-mix(in srgb,var(--_danger) 4%,var(--_bg));border:1px solid color-mix(in srgb,var(--_danger) 22%,var(--_bg))}
+.loss-t{margin:0 0 8px;font-size:14px;font-weight:600;color:var(--_label)}
+.changes{list-style:none;margin:0;padding:0;border:1px solid var(--_line);border-radius:12px;font-size:14px}
+.changes li{display:flex;gap:10px;align-items:baseline;padding:10px 14px;border-top:1px solid var(--_line)}
+.changes li:first-child{border-top:0}
+.changes li::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--_warning);transform:translateY(-1px)}
+.changes s{color:var(--_subtle)}
+.clock{display:flex;flex-direction:column;align-items:stretch;gap:10px;margin:4px 0 0}
+.clock .num{font:600 36px/44px var(--_title-font);letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:var(--_fg)}
+.warnbar{margin:0}
+.bar.warnbar div{background:var(--_warning)}
+.facts{margin:0 0 16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));border:1px solid var(--_line);border-radius:12px;overflow:hidden}
+.facts div{padding:12px 14px;border-right:1px solid var(--_line);border-bottom:1px solid var(--_line);margin:0 -1px -1px 0}
+.facts dt{font-size:12px;color:var(--_subtle)}
+.facts dd{margin:2px 0 0;font-weight:600;font-size:14px;color:var(--_fg)}
+.warn{margin:0 0 16px;padding:12px 14px;border-radius:12px;font-size:14px;line-height:20px;color:var(--_fg);
+  background:color-mix(in srgb,var(--_warning) 7%,var(--_bg));border:1px solid color-mix(in srgb,var(--_warning) 35%,var(--_bg))}
+.chips{border:0;margin:0 0 16px;padding:0}
+.chips legend{font-size:14px;font-weight:500;color:var(--_label);margin-bottom:8px;padding:0}
 .chips div{display:flex;flex-wrap:wrap;gap:8px}
 .chip{position:relative}
 .chip input{position:absolute;opacity:0;inset:0;margin:0}
-.chip span{display:inline-flex;align-items:center;height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--_border);font-size:14px;cursor:pointer}
-.chip input:checked+span{border-color:var(--_accent);background:var(--_accent);color:var(--_accent-fg);font-weight:600}
-.chip input:focus-visible+span{outline:3px solid var(--_focus);outline-offset:2px}
-.count{display:flex;justify-content:space-between;font-size:13px;margin-top:6px;color:var(--_muted)}
+.chip span{display:inline-flex;align-items:center;height:34px;padding:0 14px;border-radius:999px;border:1px solid var(--_border);background:var(--_bg);
+  font-size:14px;font-weight:500;color:var(--_label);cursor:pointer;box-shadow:var(--_xs)}
+.chip span:hover{background:var(--_surface)}
+.chip input:checked+span{border-color:color-mix(in srgb,var(--_accent) 50%,var(--_bg));background:color-mix(in srgb,var(--_accent) 8%,var(--_bg));color:color-mix(in srgb,var(--_accent) 75%,var(--_fg));font-weight:600}
+.chip input:focus-visible+span{box-shadow:0 0 0 4px var(--_focus)}
+.warn-top{margin:12px 0 0}
+.warn-list{margin:4px 0 0;padding-left:18px}
+.count{display:flex;justify-content:space-between;font-size:13px;margin-top:6px;color:var(--_subtle)}
 .count .msg{margin:0}
 .table{border:1px solid var(--_line);border-radius:12px;overflow:hidden;font-size:14px}
-.row{display:grid;grid-template-columns:1.2fr 1fr;gap:12px;padding:9px 12px;border-top:1px solid var(--_line)}
+.row{display:grid;grid-template-columns:1.2fr 1fr;gap:12px;padding:10px 14px;border-top:1px solid var(--_line)}
 .row:first-child{border-top:0}
-.row.head{background:var(--_surface);color:var(--_muted);font-size:12px;font-weight:600}
-.row .to{font-weight:600}
-.more{padding:9px 12px;border-top:1px solid var(--_line);color:var(--_muted)}
+.row.head{background:var(--_surface);color:var(--_subtle);font-size:12px;font-weight:600}
+.row .to{font-weight:600;color:var(--_fg)}
+.more{padding:10px 14px;border-top:1px solid var(--_line);color:var(--_subtle)}
 .bar{height:8px;border-radius:999px;background:var(--_line);overflow:hidden;margin:4px 0 6px}
-.bar div{height:100%;background:var(--_accent);transition:width .2s}
+.bar div{height:100%;border-radius:999px;background:var(--_accent);transition:width .2s}
 .results{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:8px;font-size:14px;max-height:220px;overflow:auto}
 .results li{display:flex;gap:10px;align-items:flex-start}
-.dot{flex:none;width:10px;height:10px;border-radius:50%;margin-top:6px}
-.ok .dot{background:var(--_success)}.bad .dot{background:var(--_danger)}.skip .dot{background:var(--_muted)}
+.dot{flex:none;width:8px;height:8px;border-radius:50%;margin-top:6px}
+.ok .dot{background:var(--_success)}.bad .dot{background:var(--_danger)}.skip .dot{background:var(--_subtle)}
 .cards{display:grid;gap:10px;border:0;margin:0;padding:0}
 .card{position:relative;display:block}
 .card input{position:absolute;opacity:0;inset:0;margin:0}
-.card span{display:block;padding:12px 14px;border:1px solid var(--_border);border-radius:12px;cursor:pointer}
-.card b{display:block;font-size:15px}
-.card small{display:block;color:var(--_muted);font-size:13px;margin-top:2px}
-.card input:checked+span{border:2px solid var(--_accent);padding:11px 13px;background:color-mix(in srgb,var(--_accent) 6%,transparent)}
-.card input:focus-visible+span{outline:3px solid var(--_focus);outline-offset:2px}
+.card span{display:block;padding:14px 16px;border:1px solid var(--_line);border-radius:12px;cursor:pointer;box-shadow:var(--_xs)}
+.card span:hover{background:var(--_surface)}
+.card b{display:block;font-size:14px;font-weight:600;color:var(--_fg)}
+.card small{display:block;color:var(--_subtle);font-size:14px;margin-top:2px}
+.card input:checked+span{border-color:var(--_accent);box-shadow:inset 0 0 0 1px var(--_accent);background:color-mix(in srgb,var(--_accent) 4%,var(--_bg))}
+.card input:focus-visible+span{box-shadow:inset 0 0 0 1px var(--_accent),0 0 0 4px var(--_focus)}
 .card input:disabled+span{opacity:.5;cursor:not-allowed}
 .spin{width:40px;height:40px;border-radius:50%;border:4px solid var(--_line);border-top-color:var(--_accent);animation:spin .8s linear infinite;margin:4px auto 0}
 @keyframes spin{to{transform:rotate(1turn)}}
@@ -293,6 +300,7 @@ export async function sessionTimeout(o: SessionTimeoutOptions = {}): Promise<'ex
   const r = await openDialog({
     role: 'alertdialog',
     title: t.sessionTitle,
+    icon: 'clock',
     text: [t.sessionText, o.text].filter(Boolean).join(' '),
     moduleCss: CSS,
     dismissible: { escape: true, backdrop: false },
@@ -302,32 +310,13 @@ export async function sessionTimeout(o: SessionTimeoutOptions = {}): Promise<'ex
       { id: 'extend', role: 'confirm', text: t.stay },
     ],
     render: (ctx: DialogContext) => {
-      const C = 2 * Math.PI * 48
-      const arco = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
-      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-      svg.setAttribute('viewBox', '0 0 112 112')
-      svg.setAttribute('aria-hidden', 'true')
-      const fondo = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
-      for (const [c, color] of [
-        [fondo, 'var(--_line)'],
-        [arco, 'var(--_warning)'],
-      ] as const) {
-        c.setAttribute('cx', '56')
-        c.setAttribute('cy', '56')
-        c.setAttribute('r', '48')
-        c.setAttribute('fill', 'none')
-        c.setAttribute('stroke-width', '9')
-        c.style.stroke = color
-      }
-      arco.setAttribute('stroke-linecap', 'round')
-      arco.setAttribute('stroke-dasharray', String(C))
-      arco.setAttribute('transform', 'rotate(-90 56 56)')
-      svg.append(fondo, arco)
+      const relleno = h('div')
+      const barra = h('div', { class: 'bar warnbar', 'aria-hidden': 'true' }, relleno)
       const num = h('div', { class: 'num', 'aria-hidden': 'true' }, reloj(queda))
       const vivo = h('p', { class: 'sr', role: 'status' }, f(t.sessionLeft, reloj(queda)))
       const pintar = () => {
         num.textContent = reloj(queda)
-        arco.setAttribute('stroke-dashoffset', String(C * (1 - queda / total)))
+        relleno.style.width = `${(queda / total) * 100}%`
         // Al lector de pantalla solo cada minuto y en los últimos 30 s y 10 s, no cada segundo.
         if (queda % 60 === 0 || queda === 30 || queda === 10) vivo.textContent = f(t.sessionLeft, reloj(queda))
       }
@@ -337,7 +326,7 @@ export async function sessionTimeout(o: SessionTimeoutOptions = {}): Promise<'ex
         pintar()
         if (queda <= 0) ctx.close('expired')
       }, 1000)
-      return h('div', { class: 'clock' }, svg, num, vivo)
+      return h('div', { class: 'clock' }, num, barra, vivo)
     },
     onClose: () => clearInterval(intervalo),
   })
@@ -638,13 +627,9 @@ export async function bulkAction<T>(o: BulkActionOptions<T>): Promise<BulkAction
       omitidos.length
         ? h(
             'div',
-            { class: 'warn', style: 'margin:12px 0 0' },
+            { class: 'warn warn-top' },
             f(t.skipped, omitidos.length),
-            h(
-              'ul',
-              { style: 'margin:4px 0 0;padding-left:18px' },
-              ...omitidos.slice(0, max).map((s) => h('li', null, `${o.label(s.item)}: ${s.reason}`)),
-            ),
+            h('ul', { class: 'warn-list' }, ...omitidos.slice(0, max).map((s) => h('li', null, `${o.label(s.item)}: ${s.reason}`))),
           )
         : null,
     )

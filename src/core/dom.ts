@@ -55,3 +55,9 @@ export function angosto(el: Element, clase = 'narrow'): () => void {
   mq.addEventListener?.('change', aplicar)
   return () => mq.removeEventListener?.('change', aplicar)
 }
+
+/** Estilos por CSSOM (permitido con CSP estricta, a diferencia del atributo `style`). */
+export function css<T extends HTMLElement>(el: T, props: Record<string, string>): T {
+  for (const [k, v] of Object.entries(props)) el.style.setProperty(k, v)
+  return el
+}

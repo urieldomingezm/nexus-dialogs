@@ -123,7 +123,7 @@ interface GlobalConfig {
     sheetOnMobile?: boolean;
 }
 
-type IconName = 'success' | 'error' | 'warning' | 'info' | 'question';
+type IconName = 'success' | 'error' | 'warning' | 'info' | 'question' | 'delete' | 'clock';
 
 const INVALID: unique symbol;
 
@@ -249,6 +249,7 @@ interface Field {
     search?: (query: string) => Promise<Option[]> | Option[];
     creatable?: boolean | ((text: string) => Option | Promise<Option>);
     maxItems?: number;
+    avatars?: boolean;
     accept?: string;
     maxSize?: number;
     maxFiles?: number;
@@ -286,6 +287,7 @@ type Option = string | {
     disabled?: boolean;
     description?: string;
     group?: string;
+    avatar?: string;
 };
 
 function wizard<T extends Record<string, unknown> = Record<string, unknown>>(o: WizardOptions<T>): Promise<DialogResult<T>>;
@@ -914,7 +916,7 @@ interface GlobalConfig {
     sheetOnMobile?: boolean;
 }
 
-type IconName = 'success' | 'error' | 'warning' | 'info' | 'question';
+type IconName = 'success' | 'error' | 'warning' | 'info' | 'question' | 'delete' | 'clock';
 
 const INVALID: unique symbol;
 

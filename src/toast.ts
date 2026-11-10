@@ -10,6 +10,7 @@
  * Se monta dentro del diálogo modal de arriba cuando hay uno abierto (si no, quedaría inerte detrás).
  */
 import { angosto, h, uid } from './core/dom'
+import { icon } from './core/icons'
 import { adopt } from './core/sheet'
 import { en, es } from './i18n'
 import { BUTTONS, VARS } from './styles'
@@ -84,28 +85,35 @@ const CSS_TOAST =
 ol{position:fixed;margin:0;padding:16px;list-style:none;display:flex;flex-direction:column;gap:10px;width:min(400px,100%)}
 .top-left,.top-center,.top-right{top:0}.bottom-left,.bottom-center,.bottom-right{bottom:0;flex-direction:column-reverse}
 .top-left,.bottom-left{left:0}.top-right,.bottom-right{right:0}.top-center,.bottom-center{left:50%;transform:translateX(-50%)}
-li{pointer-events:auto;position:relative;display:flex;gap:12px;align-items:flex-start;padding:14px 14px 14px 16px;border-radius:14px;
-  background:var(--_bg);border:1px solid var(--_line);box-shadow:0 12px 32px rgba(10,12,30,.18);
-  animation:in .22s cubic-bezier(.2,.8,.2,1);border-left:4px solid var(--c,var(--_line))}
+li{pointer-events:auto;position:relative;display:flex;gap:12px;align-items:flex-start;padding:14px 12px 14px 14px;border-radius:12px;
+  background:var(--_bg);border:1px solid var(--_line);box-shadow:0 12px 16px -4px rgba(16,24,40,.08),0 4px 6px -2px rgba(16,24,40,.03);
+  animation:in .22s cubic-bezier(.2,.8,.2,1)}
 li.out{animation:out .18s forwards}
 @keyframes in{from{opacity:0;transform:translateY(8px) scale(.98)}}
 @keyframes out{to{opacity:0;transform:scale(.96)}}
 .success{--c:var(--_success)}.error{--c:var(--_danger)}.warning{--c:var(--_warning)}.info{--c:var(--_info)}.loading{--c:var(--_accent)}
-.dot{flex:none;width:10px;height:10px;border-radius:50%;background:var(--c,var(--_muted));margin-top:6px}
-.loading .dot{background:none;border:2px solid var(--_line);border-top-color:var(--_accent);width:14px;height:14px;margin-top:3px;animation:spin .8s linear infinite}
+.icon{flex:none;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  color:var(--c);background:color-mix(in srgb,var(--c) 14%,var(--_bg));box-shadow:0 0 0 5px color-mix(in srgb,var(--c) 6%,var(--_bg));margin:2px 2px 0}
+.icon svg{width:18px;height:18px}
+.spin{flex:none;width:20px;height:20px;margin:8px;border-radius:50%;border:2px solid var(--_line);border-top-color:var(--_accent);animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(1turn)}}
 .txt{flex:1;min-width:0}
-.t{font-weight:700;display:block}
+.txt{padding-top:6px}
+.t{font-weight:600;display:block;color:var(--_fg)}
 .m{color:var(--_muted)}
 .t+.m{display:block;margin-top:2px}
-.btn{height:32px;padding:0 12px;font-size:14px}
+.t~.act{margin-top:10px}
+.act{flex:none;height:32px;padding:0 6px;margin-top:2px;border:0;border-radius:8px;background:transparent;color:var(--_accent);font:600 14px var(--_font);cursor:pointer}
+.act:hover{background:color-mix(in srgb,var(--_accent) 8%,var(--_bg))}
+.act:focus-visible{outline:none;box-shadow:0 0 0 4px var(--_focus)}
 .x{flex:none;width:28px;height:28px;margin:-4px -4px 0 0;border-radius:8px;border:0;background:transparent;color:var(--_muted);cursor:pointer;display:flex;align-items:center;justify-content:center}
-.x:hover{background:color-mix(in srgb,var(--_fg) 7%,transparent)}
-.x:focus-visible{outline:3px solid var(--_focus)}
+.x{margin:0}
+.x:hover{background:var(--_surface)}
+.x:focus-visible{outline:none;box-shadow:0 0 0 4px var(--_focus)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 ol.narrow{width:100%;left:0;right:0;transform:none}
 ol.narrow.bottom-left,ol.narrow.bottom-center,ol.narrow.bottom-right{top:0;bottom:auto;flex-direction:column}
-@media (prefers-reduced-motion:reduce){li,li.out{animation:none}.loading .dot{animation:none}}
+@media (prefers-reduced-motion:reduce){li,li.out{animation:none}.spin{animation:none}.icon path{animation:none}}
 `
 
 const L = () => (cfg.lang === 'en' ? en : es)
@@ -203,14 +211,14 @@ function dibujar(it: Item): HTMLElement {
   const li = h(
     'li',
     { class: o.type ?? 'default', 'data-id': it.id },
-    h('span', { class: 'dot', 'aria-hidden': 'true' }),
+    o.type === 'loading' ? h('span', { class: 'spin', 'aria-hidden': 'true' }) : o.type && o.type !== 'default' ? icon(o.type) : null,
     h('div', { class: 'txt' }, titulo, mensaje),
     o.action
       ? h(
           'button',
           {
             type: 'button',
-            class: 'btn btn-secondary',
+            class: 'act',
             onclick: () => {
               o.action!.onClick(it.id)
               dismiss(it.id)
