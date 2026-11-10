@@ -2,7 +2,7 @@
 // Cada uno es una «fábrica» que devuelve un control propio; FieldSet (forms.ts) pone la etiqueta, la ayuda y el error.
 import { language } from 'nexus-dialogs'
 import type { DatePreset, Field, Option } from './forms'
-import { h, uid } from './core/dom'
+import { css, h, svg, uid } from './core/dom'
 
 /** Lo que FieldSet necesita de un control propio. */
 export interface CustomControl {
@@ -124,7 +124,22 @@ const T = (): Textos => (language() === 'en' ? EN : ES)
 const f = (s: string, ...v: (string | number)[]) => s.replace(/\{(\d)\}/g, (_, i) => String(v[+i] ?? ''))
 const cambio = (el: Element) => el.dispatchEvent(new Event('change', { bubbles: true }))
 
-type Opt = { value: string; label: string; disabled: boolean; description?: string; group?: string }
+const iniciales = (nombre: string) =>
+  nombre
+    .split(/\s+/)
+    .filter((p) => /^\p{L}/u.test(p))
+    .slice(0, 2)
+    .map((p) => p[0].toUpperCase())
+    .join('')
+/** Avatar: la foto si la opción trae `avatar`; si no, iniciales con un tono fijo por nombre (clases, sin estilos en línea por CSP). */
+function avatar(o: { label: string; avatar?: string }, clase = 'av'): HTMLElement {
+  if (o.avatar) return h('img', { class: clase, src: o.avatar, alt: '' })
+  let n = 0
+  for (const c of o.label) n = (n * 31 + c.charCodeAt(0)) >>> 0
+  return h('span', { class: `${clase} t${n % 7}`, 'aria-hidden': 'true' }, iniciales(o.label))
+}
+
+type Opt = { value: string; label: string; disabled: boolean; description?: string; group?: string; avatar?: string }
 const opt = (o: Option): Opt => (typeof o === 'string' ? { value: o, label: o, disabled: false } : { disabled: false, ...o })
 /** Sin acentos ni mayúsculas, para buscar «nomina» y encontrar «Nómina». */
 const plano = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
@@ -178,6 +193,7 @@ const combobox: Fabrica = (ctx, valor) => {
   const el = h('div', { class: 'cb' }, chips, h('div', { class: 'cb-box' }, input, lista), estado)
 
   const etiqueta = (v: string) => conocidas.get(v)?.label ?? v
+  const conAvatar = () => !!fl.avatars || [...conocidas.values()].some((o) => o.avatar)
 
   const pintarChips = () => {
     if (!multiple) return
@@ -187,6 +203,7 @@ const combobox: Fabrica = (ctx, valor) => {
         h(
           'li',
           null,
+          conAvatar() ? avatar(conocidas.get(v) ?? { label: etiqueta(v) }, 'av av-sm') : null,
           h('span', null, etiqueta(v)),
           h(
             'button',
@@ -252,8 +269,9 @@ const combobox: Fabrica = (ctx, valor) => {
             onmousedown: (e: Event) => e.preventDefault(),
             onclick: () => !o.disabled && void elegir(o),
           },
-          multiple ? h('span', { class: 'cb-check', 'aria-hidden': 'true' }, sel ? '✓' : '') : null,
+          conAvatar() && o.value !== CREAR ? avatar(o) : null,
           h('span', { class: 'cb-text' }, h('span', null, o.label), o.description ? h('small', null, o.description) : null),
+          h('span', { class: 'cb-check', 'aria-hidden': 'true' }, sel ? '✓' : ''),
         ),
       )
     })
@@ -411,6 +429,21 @@ const combobox: Fabrica = (ctx, valor) => {
 
 // ── file ────────────────────────────────────────────────────────────────────
 
+/** Etiqueta con la extensión (PDF, XML, JPG…); el color sale de la clase. */
+function tipoArchivo(nombre: string): HTMLElement {
+  const ext = nombre.includes('.') ? (nombre.split('.').pop() ?? '').toLowerCase() : ''
+  const tono = /^pdf$/.test(ext)
+    ? 'ft-pdf'
+    : /^(xml|xlsx?|csv|ods)$/.test(ext)
+      ? 'ft-data'
+      : /^(docx?|odt|txt|rtf)$/.test(ext)
+        ? 'ft-doc'
+        : /^(jpe?g|png|gif|webp|heic|avif|svg)$/.test(ext)
+          ? 'ft-img'
+          : ''
+  return h('span', { class: `ftype ${tono}`, 'aria-hidden': 'true' }, ext.slice(0, 4).toUpperCase() || '—')
+}
+
 const peso = (b: number) => (b < 1024 ? `${b} B` : b < 1024 ** 2 ? `${(b / 1024).toFixed(0)} KB` : `${(b / 1024 ** 2).toFixed(1)} MB`)
 
 function aceptado(file: File, accept?: string): boolean {
@@ -454,8 +487,14 @@ const archivo: Fabrica = (ctx) => {
   const zona = h(
     'div',
     { class: 'drop' },
-    h('span', null, t.dropHere),
-    boton,
+    h(
+      'span',
+      { class: 'drop-ico', 'aria-hidden': 'true' },
+      svg(
+        '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13V4M6.5 7.5 10 4l3.5 3.5M4 13v1.5A1.5 1.5 0 0 0 5.5 16h9a1.5 1.5 0 0 0 1.5-1.5V13"/></svg>',
+      ),
+    ),
+    h('div', { class: 'drop-row' }, h('span', null, t.dropHere), boton),
     fl.accept ? h('small', null, fl.accept.replace(/,/g, ', ')) : null,
   )
   const el = h('div', { class: 'file' }, zona, oculto, aviso, lista)
@@ -491,6 +530,7 @@ const archivo: Fabrica = (ctx) => {
         h(
           'li',
           { 'data-k': k, class: a.estado },
+          tipoArchivo(a.file.name),
           h(
             'div',
             { class: 'f-info' },
@@ -512,7 +552,7 @@ const archivo: Fabrica = (ctx) => {
                     'aria-valuemax': '100',
                     'aria-valuenow': String(a.pct),
                   },
-                  h('div', { style: `width:${a.pct}%` }),
+                  css(h('div'), { width: `${a.pct}%` }),
                 )
               : null,
           ),
@@ -811,11 +851,9 @@ const items: Fabrica = (ctx, valor) => {
   const encabezado = h(
     'div',
     { class: 'row rows-head', 'aria-hidden': 'true' },
-    h(
-      'div',
-      { class: 'rh-cols', style: `grid-template-columns:repeat(${columnas.length},minmax(0,1fr))` },
-      ...columnas.map((c) => h('span', null, c.label)),
-    ),
+    css(h('div', { class: 'rh-cols' }, ...columnas.map((c) => h('span', null, c.label))), {
+      'grid-template-columns': `repeat(${columnas.length},minmax(0,1fr))`,
+    }),
     h('span', { class: 'btn btn-sm rh-x' }, t.remove),
   )
   const agregar = h(
@@ -823,7 +861,12 @@ const items: Fabrica = (ctx, valor) => {
     { type: 'button', class: 'btn btn-secondary btn-sm', disabled: fl.disabled, onclick: () => nueva({}, true) },
     fl.addText ?? t.add,
   )
-  const el = h('div', { class: 'items' }, encabezado, cuerpo, h('div', { class: 'rows-foot' }, agregar, totales))
+  const el = h(
+    'div',
+    { class: 'items' },
+    h('div', { class: 'tbl' }, encabezado, cuerpo),
+    h('div', { class: 'rows-foot' }, agregar, totales),
+  )
 
   const actualizar = () => {
     filas.forEach((r, i) => {
@@ -903,75 +946,88 @@ const items: Fabrica = (ctx, valor) => {
 export const CAMPOS: Record<string, Fabrica> = { combobox, file: archivo, daterange: rango, otp, items }
 
 export const FIELDS_CSS = `
-.btn-sm{height:34px;padding:0 12px;font-size:14px}
+.btn-sm{height:34px;padding:0 12px;font-size:13px}
+.av{flex:none;width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font:600 12px var(--_font);object-fit:cover}
+.av-sm{width:20px;height:20px;font-size:9px}
+.t0{background:#e0e7ff;color:#3451d1}.t1{background:#fce7f6;color:#c11574}.t2{background:#d1fadf;color:#067647}.t3{background:#fef0c7;color:#b54708}
+.t4{background:#e0f2fe;color:#026aa2}.t5{background:#ebe9fe;color:#5925dc}.t6{background:#ffe4e8;color:#c01048}
 .cb-box{position:relative}
-.cb-list{position:absolute;z-index:5;left:0;right:0;top:calc(100% + 4px);margin:0;padding:4px;list-style:none;max-height:240px;overflow:auto;
-  background:var(--_bg);border:1px solid var(--_border);border-radius:var(--_control-radius);box-shadow:0 12px 28px rgba(10,12,30,.18)}
+.cb-list{position:absolute;z-index:5;left:0;right:0;top:calc(100% + 6px);margin:0;padding:6px;list-style:none;max-height:260px;overflow:auto;
+  background:var(--_bg);border:1px solid var(--_line);border-radius:12px;box-shadow:0 12px 24px -4px rgba(16,24,40,.12),0 4px 8px -2px rgba(16,24,40,.04)}
 .cb-list[hidden]{display:none}
-.cb-list.up{top:auto;bottom:calc(100% + 4px)}
-.cb-opt{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:8px;cursor:pointer}
-.cb-opt.active{background:color-mix(in srgb,var(--_accent) 12%,transparent)}
-.cb-opt[aria-selected=true]{font-weight:600}
-.cb-opt[aria-disabled=true]{opacity:.5;cursor:not-allowed}
-.cb-opt.create{color:var(--_accent);font-weight:600}
-.cb-text{display:flex;flex-direction:column}
-.cb-text small{color:var(--_muted);font-weight:400}
-.cb-check{flex:none;width:18px;height:18px;border:1px solid var(--_border);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:12px;margin-top:2px}
-.cb-opt[aria-selected=true] .cb-check{background:var(--_accent);border-color:var(--_accent);color:var(--_accent-fg)}
-.cb-group{padding:8px 10px 4px;font-size:12px;font-weight:700;color:var(--_muted);text-transform:uppercase;letter-spacing:.04em}
-.cb-note{padding:10px;color:var(--_muted);font-size:14px}
+.cb-list.up{top:auto;bottom:calc(100% + 6px)}
+.cb-opt{display:flex;gap:12px;align-items:center;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:14px;color:var(--_fg)}
+.cb-opt.active{background:var(--_surface)}
+.cb-opt[aria-selected=true] .cb-text>span{font-weight:600}
+.cb-opt[aria-disabled=true]{opacity:.45;cursor:not-allowed}
+.cb-opt.create{color:var(--_accent);font-weight:600;border-top:1px solid var(--_line);border-radius:0 0 8px 8px;margin-top:4px}
+.cb-text{display:flex;flex-direction:column;min-width:0;flex:1}
+.cb-text small{color:var(--_subtle);font-size:13px;font-weight:400}
+.cb-check{flex:none;width:18px;text-align:center;color:var(--_accent);font-weight:700}
+.cb-group{padding:8px 10px 4px;font-size:12px;font-weight:600;color:var(--_subtle)}
+.cb-note{padding:10px;color:var(--_subtle);font-size:14px}
 .cb-chips{list-style:none;margin:0 0 8px;padding:0;display:flex;flex-wrap:wrap;gap:6px}
 .cb-chips[hidden]{display:none}
-.cb-chips li{display:inline-flex;align-items:center;gap:4px;height:30px;padding:0 4px 0 10px;border-radius:999px;background:var(--_surface);border:1px solid var(--_line);font-size:14px}
-.cb-x{width:24px;height:24px;border:0;border-radius:50%;background:transparent;color:var(--_muted);cursor:pointer;font-size:16px;line-height:1}
-.cb-x:hover{background:color-mix(in srgb,var(--_fg) 8%,transparent)}
-.cb-x:focus-visible{outline:3px solid var(--_focus)}
-.drop{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;padding:18px;border:2px dashed var(--_border);border-radius:12px;color:var(--_muted);text-align:center}
-.drop small{flex-basis:100%;font-size:12px}
-.drop.over{border-color:var(--_accent);background:color-mix(in srgb,var(--_accent) 6%,transparent)}
-.drop.bad{border-color:var(--_error)}
-.file-note{margin:6px 0 0;font-size:13px;color:var(--_error)}
+.cb-chips li{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 4px 0 8px;border-radius:8px;border:1px solid var(--_border);background:var(--_bg);font-size:14px;font-weight:500;color:var(--_label)}
+.cb-chips li:has(.av){padding-left:4px}
+.cb-x{width:24px;height:24px;border:0;border-radius:6px;background:transparent;color:var(--_subtle);cursor:pointer;font-size:16px;line-height:1}
+.cb-x:hover{background:var(--_surface)}
+.cb-x:focus-visible{outline:none;box-shadow:0 0 0 4px var(--_focus)}
+.drop{display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px;border:1px dashed var(--_border);border-radius:12px;background:var(--_surface);color:var(--_muted);text-align:center;font-size:14px}
+.drop-ico{width:40px;height:40px;border-radius:10px;border:1px solid var(--_line);background:var(--_bg);display:flex;align-items:center;justify-content:center;color:var(--_muted);box-shadow:var(--_xs)}
+.drop-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center}
+.drop small{font-size:12px;color:var(--_subtle)}
+.drop.over{border-color:var(--_accent);background:color-mix(in srgb,var(--_accent) 6%,var(--_bg))}
+.drop.bad{border-color:color-mix(in srgb,var(--_error) 55%,var(--_bg))}
+.file-note{margin:8px 0 0;font-size:13px;color:var(--_error)}
 .file-note:empty{display:none}
-.files{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:8px}
-.files li{display:flex;gap:8px;align-items:center;padding:8px 10px;border:1px solid var(--_line);border-radius:10px}
-.files li.error{border-color:color-mix(in srgb,var(--_error) 50%,transparent)}
+.files{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px}
+.files li{display:flex;gap:12px;align-items:center;padding:12px 14px;border:1px solid var(--_line);border-radius:12px}
+.files li.error{border-color:color-mix(in srgb,var(--_error) 30%,var(--_bg));background:color-mix(in srgb,var(--_error) 3%,var(--_bg))}
 .files li.error small{color:var(--_error)}
+.ftype{flex:none;width:36px;height:40px;border-radius:6px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px;font:700 9px var(--_font);letter-spacing:.02em;color:#fff;background:#475467}
+.ft-pdf{background:#d92d20}.ft-data{background:#067647}.ft-doc{background:#155eef}.ft-img{background:#6938ef}
 .f-info{flex:1;min-width:0;display:flex;flex-direction:column}
-.f-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;font-weight:600}
-.f-info small{color:var(--_muted);font-size:12px}
-.f-info .bar{height:4px;border-radius:2px;background:var(--_line);margin-top:4px;overflow:hidden}
-.f-info .bar div{height:100%;background:var(--_accent)}
-.presets{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
-.preset{height:32px;padding:0 12px;border-radius:999px;border:1px solid var(--_border);background:transparent;color:var(--_fg);font:14px var(--_font);cursor:pointer}
+.f-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;font-weight:500;color:var(--_fg)}
+.f-info small{color:var(--_subtle);font-size:13px}
+.f-info .bar{height:8px;border-radius:4px;background:var(--_line);margin-top:8px;overflow:hidden}
+.f-info .bar div{height:100%;background:var(--_accent);border-radius:4px;transition:width .2s}
+.presets{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.preset{height:32px;padding:0 12px;border-radius:999px;border:1px solid var(--_border);background:var(--_bg);color:var(--_label);font:500 13px var(--_font);cursor:pointer;box-shadow:var(--_xs)}
+.preset:hover{background:var(--_surface)}
 .preset[aria-pressed=true]{background:var(--_accent);border-color:var(--_accent);color:var(--_accent-fg);font-weight:600}
-.preset:focus-visible{outline:3px solid var(--_focus);outline-offset:2px}
+.preset:focus-visible{outline:none;box-shadow:0 0 0 4px var(--_focus)}
 .dr-inputs{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .dr-col{display:flex;flex-direction:column;gap:4px}
-.dr-col label{font-size:13px;color:var(--_muted)}
+.dr-col label{font-size:13px;color:var(--_subtle)}
 .otp{position:relative;display:inline-block}
 .otp-boxes{display:flex;gap:8px}
-.otp-box{width:46px;height:54px;border:1px solid var(--_border);border-radius:var(--_control-radius);display:flex;align-items:center;justify-content:center;
-  font:600 24px ui-monospace,Menlo,monospace;background:var(--_bg)}
-.otp-box.active{border:2px solid var(--_accent);outline:3px solid var(--_focus)}
-.otp.bad .otp-box{border:2px solid var(--_error)}
+.otp-box{width:48px;height:56px;border:1px solid var(--_border);border-radius:12px;display:flex;align-items:center;justify-content:center;
+  font:600 26px ui-monospace,Menlo,monospace;background:var(--_bg);box-shadow:var(--_xs);color:var(--_fg)}
+.otp-box.active{border-color:color-mix(in srgb,var(--_accent) 55%,var(--_bg));box-shadow:var(--_xs),0 0 0 4px var(--_focus)}
+.otp.bad .otp-box{border-color:color-mix(in srgb,var(--_error) 55%,var(--_bg))}
 .otp-input{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:0;font-size:16px;caret-color:transparent}
-.rows-head{padding:0 0 6px;font-size:13px;font-weight:600;color:var(--_muted)}
+.tbl{border:1px solid var(--_line);border-radius:12px;overflow:visible}
+.rows-head{padding:10px 14px;background:var(--_surface);border-radius:11px 11px 0 0;font-size:12px;font-weight:600;color:var(--_subtle)}
 .rh-cols{display:grid;gap:12px}
-.rows-head .rh-x{visibility:hidden;height:0;overflow:hidden}
-.rows{display:grid;gap:8px}
+.rows-head .rh-x{visibility:hidden;height:0;overflow:hidden;padding-top:0;padding-bottom:0;border:0}
+.rows{display:grid}
 .row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:start}
+.rows>.row{padding:10px 14px;border-top:1px solid var(--_line)}
 .compact{gap:12px}
 .compact>.field>label,.compact>fieldset>legend{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .compact>.field{position:relative}
-.row>.btn{margin-top:5px}
-.rows-foot{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-top:10px}
-.totals{margin:0;display:grid;grid-template-columns:auto auto;gap:4px 18px;font-size:14px;font-variant-numeric:tabular-nums}
-.totals dt{color:var(--_muted);text-align:right}
-.totals dd{margin:0;text-align:right;font-weight:600}
-.totals dt:last-of-type,.totals dd:last-of-type{font-size:16px;color:var(--_fg);font-weight:700}
+.row>.btn{margin-top:3px}
+.rows-foot{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-top:14px}
+.totals{margin:0;display:grid;grid-template-columns:auto minmax(110px,auto);gap:6px 24px;font-size:14px;font-variant-numeric:tabular-nums}
+.totals dt{color:var(--_subtle);text-align:right}
+.totals dd{margin:0;text-align:right;font-weight:500;color:var(--_fg)}
+.totals dt:last-of-type,.totals dd:last-of-type{font-size:18px;color:var(--_fg);font-weight:700;padding-top:2px}
 .narrow .rows-head{display:none}
+.narrow .tbl{border:0}
+.narrow .rows{gap:10px}
+.narrow .rows>.row{border:1px solid var(--_line);border-radius:12px;padding:12px}
 .narrow .compact{grid-template-columns:1fr!important}
 .narrow .compact>.field>label{position:static;width:auto;height:auto;clip-path:none}
-.narrow .row{padding:10px;border:1px solid var(--_line);border-radius:12px}
 .narrow .dr-inputs{grid-template-columns:1fr}
 `

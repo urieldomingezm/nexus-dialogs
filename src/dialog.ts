@@ -26,7 +26,7 @@ export function alert(opciones: DialogInput<true>, text?: string): Promise<Dialo
 /** Pregunta Sí/No. `if ((await dialog.confirm({ title: '¿Eliminar?', danger: true })).confirmed) …` */
 export function confirm(opciones: DialogInput<true>, text?: string): Promise<DialogResult<true>> {
   const o = normalizar(opciones, text)
-  return openDialog<true>({ role: 'alertdialog', icon: o.danger ? undefined : o.icon, ...o })
+  return openDialog<true>({ role: 'alertdialog', ...o })
 }
 
 const conIcono =

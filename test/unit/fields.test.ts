@@ -35,6 +35,34 @@ describe('combobox', () => {
     expect((await p).value).toEqual({ p: 'marta' })
   })
 
+  it('avatars: iniciales con tono fijo (sin estilos en línea), foto si la trae y palomita a la derecha', async () => {
+    const p = form({
+      title: 'X',
+      fields: [
+        {
+          name: 'p',
+          label: 'Persona',
+          type: 'combobox',
+          avatars: true,
+          options: [...personas, { value: 'leo', label: 'Leo Ruiz', avatar: 'data:image/png;base64,AA' }],
+          value: 'ana',
+        },
+      ],
+    })
+    const input = $<HTMLInputElement>('[role=combobox]')
+    escribir(input, 'r')
+    const ana = $$('[role=option]').find((o) => o.textContent!.includes('Ana'))!
+    const av = ana.querySelector('.av')!
+    expect(av.textContent).toBe('AT')
+    expect(av.className).toMatch(/^av t[0-6]$/)
+    expect(av.hasAttribute('style')).toBe(false)
+    expect(ana.lastElementChild!.className).toBe('cb-check')
+    expect($$('[role=option]').at(-1)!.querySelector('img.av')).not.toBeNull()
+    tecla(input, 'Escape')
+    boton('cancel').click()
+    expect((await p).confirmed).toBe(false)
+  })
+
   it('Esc con la lista abierta solo cierra la lista', async () => {
     const p = form({ title: 'X', fields: [{ name: 'p', label: 'Persona', type: 'combobox', options: personas }] })
     const input = $<HTMLInputElement>('[role=combobox]')
@@ -123,6 +151,10 @@ describe('file', () => {
       archivo('grande.pdf', 'application/pdf', 500),
     ])
     expect($$('.f-name').map((n) => n.textContent)).toEqual(['a.pdf', 'foto.png'])
+    expect($$('.ftype').map((n) => [n.textContent, n.className])).toEqual([
+      ['PDF', 'ftype ft-pdf'],
+      ['PNG', 'ftype ft-img'],
+    ])
     expect($('.file-note').textContent).toContain('x.exe no se agregó')
     expect($('.file-note').textContent).toContain('grande.pdf no se agregó')
     ;($$('.files button')[0] as HTMLButtonElement).click()

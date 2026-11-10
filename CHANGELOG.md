@@ -17,6 +17,20 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
   - `otp`: código con cajas visuales, `one-time-code` y envío automático al completar.
   - `items`: filas repetibles con `fields`, `minRows`, `maxRows` y `totals` que se recalculan al escribir.
 - Un control dentro del diálogo puede «consumir» Esc (evento `nexus-dialogs:escape`): Esc cierra la lista del combobox, no el diálogo.
+- `combobox`: `avatars: true` muestra iniciales con un color fijo por nombre; con `avatar` (URL) en la opción, la foto.
+- Iconos `delete` (papelera) y `clock`. Las confirmaciones de peligro llevan la papelera por omisión.
+
+### Cambiado
+
+- **Diseño v2.** Paleta neutra más fría y acento `#4263eb`; sombras en capas; fondo con desenfoque; foco como anillo suave de 4 px.
+  - Icono en un cuadro de color junto al título (centrado solo en avisos de un botón).
+  - Pie con borde y botones de 40 px; en celular se apilan a lo ancho con 52 px de alto.
+  - Asistente con barras de progreso, segmentado tipo pastilla e interruptor más compacto.
+  - Buscador con palomita a la derecha y «Crear» separado; archivos con etiqueta de tipo (PDF, XML, JPG…) y barra de 8 px; partidas como tabla con total grande.
+  - Recetas: datos en cuadrícula, sesión con tiempo grande y barra (en vez del anillo), chips y tarjetas nuevas.
+  - Toasts con icono en círculo por tipo; la acción es un enlace de texto.
+- En la revisión del asistente, las fechas se muestran legibles («1 dic 2026») en lugar de ISO.
+- Sin atributos `style` en el marcado: los estilos dinámicos van por CSSOM, así funciona con `style-src` estricta.
 
 ### Corregido
 

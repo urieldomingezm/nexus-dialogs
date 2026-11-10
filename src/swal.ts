@@ -14,7 +14,7 @@
 import { dialog, INVALID, labels, openDialog } from 'nexus-dialogs'
 import type { ButtonSpec, CloseReason, DialogContext, IconName } from 'nexus-dialogs'
 import { toast, type ToastPosition } from 'nexus-dialogs/toast'
-import { h, uid } from './core/dom'
+import { css, h, uid } from './core/dom'
 
 export type SweetAlertIcon = 'success' | 'error' | 'warning' | 'info' | 'question'
 export type SweetAlertInput =
@@ -186,7 +186,10 @@ async function crearCampo(o: SweetAlertOptions): Promise<Campo | null> {
         h('span', null, l),
       ),
     )
-    const grupo = h('div', { role: 'radiogroup', 'aria-label': o.inputLabel ?? nombreAccesible, style: 'display:grid;gap:8px' }, ...radios)
+    const grupo = css(h('div', { role: 'radiogroup', 'aria-label': o.inputLabel ?? nombreAccesible }, ...radios), {
+      display: 'grid',
+      gap: '8px',
+    })
     const sel = () => grupo.querySelector<HTMLInputElement>('input:checked')
     return {
       el: grupo,
@@ -198,12 +201,11 @@ async function crearCampo(o: SweetAlertOptions): Promise<Campo | null> {
   }
   if (tipo === 'checkbox') {
     const cb = h('input', { type: 'checkbox', id, checked: !!o.inputValue && o.inputValue !== '0' })
-    const el = h(
-      'label',
-      { class: 'check', style: 'display:flex;gap:10px;align-items:center' },
-      cb,
-      h('span', null, o.inputPlaceholder ?? o.inputLabel ?? ''),
-    )
+    const el = css(h('label', { class: 'check' }, cb, h('span', null, o.inputPlaceholder ?? o.inputLabel ?? '')), {
+      display: 'flex',
+      gap: '10px',
+      'align-items': 'center',
+    })
     return { el, leer: () => (cb.checked ? 1 : 0), enfocar: () => cb.focus(), input: () => cb, mensajeInvalido: () => null }
   }
 

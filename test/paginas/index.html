@@ -177,7 +177,7 @@
   on('c-combo', () => form({ title: 'Asignar responsables', submitText: 'Asignar', fields: [
     { name: 'cliente', label: 'Cliente', type: 'combobox', required: true, placeholder: 'Escribe para buscar', creatable: true,
       search: async (q) => { await espera(200); return ['Abarrotes Lupita', 'Aceros del Norte', 'Agrícola San Juan', 'Bodegas Ramírez'].filter((x) => x.toLowerCase().includes(q.toLowerCase())) } },
-    { name: 'equipo', label: 'Equipo', type: 'combobox', multiple: true, maxItems: 3, options: personas, value: ['ana'], required: true },
+    { name: 'equipo', label: 'Equipo', type: 'combobox', multiple: true, avatars: true, maxItems: 3, options: personas, value: ['ana'], required: true },
   ] }))
   on('c-file', () => form({ title: 'Documentos del empleado', submitText: 'Guardar', fields: [
     { name: 'ine', label: 'INE (frente y vuelta)', type: 'file', accept: '.pdf,image/*', maxSize: 5 * 1024 * 1024, required: true, multiple: true, maxFiles: 2,

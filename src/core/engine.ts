@@ -105,10 +105,12 @@ export function openDialog<T = unknown>(opciones: EngineOptions<T>): Promise<Dia
     if (typeof o.html === 'string') html.innerHTML = o.html
     else html.appendChild(o.html)
   }
-  const centrado = !!o.icon
+  // Las confirmaciones de peligro llevan la papelera; el icono va junto al título y solo se centra en avisos de un botón.
+  const icono = o.icon ?? (o.danger && o.role === 'alertdialog' ? 'delete' : undefined)
+  const centrado = !!icono && (o.buttons ? o.buttons.filter((b) => !b.hidden).length : 2) <= 1
   const head =
-    titulo || texto || html || o.icon
-      ? h('header', { class: centrado ? 'head centered' : 'head' }, o.icon ? icon(o.icon) : null, h('div', null, titulo, texto, html))
+    titulo || texto || html || icono
+      ? h('header', { class: centrado ? 'head centered' : 'head' }, icono ? icon(icono) : null, h('div', null, titulo, texto, html))
       : null
   const body = h('div', { class: 'body' })
   const error = h('div', { class: 'err', role: 'alert', hidden: true })
@@ -122,6 +124,7 @@ export function openDialog<T = unknown>(opciones: EngineOptions<T>): Promise<Dia
     foot,
   )
   if (puede.closeButton) {
+    panel.classList.add('has-x')
     panel.appendChild(
       h('button', { type: 'button', class: 'x', 'aria-label': L.close, onclick: () => intentarCerrar('close') }, closeIcon()),
     )

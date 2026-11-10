@@ -21,7 +21,7 @@ export interface ButtonSpec {
   hidden?: boolean
 }
 
-export type IconName = 'success' | 'error' | 'warning' | 'info' | 'question'
+export type IconName = 'success' | 'error' | 'warning' | 'info' | 'question' | 'delete' | 'clock'
 
 export type Placement = 'center' | 'right' | 'left' | 'bottom'
 

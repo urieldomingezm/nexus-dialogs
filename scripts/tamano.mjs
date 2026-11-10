@@ -7,16 +7,16 @@ import { readFileSync, existsSync, appendFileSync } from 'node:fs'
 import { transformSync } from 'esbuild'
 
 const LIMITES = {
-  'nexus-dialogs': 9.5,
-  'nexus-dialogs.all': 31,
-  forms: 14,
-  toast: 6,
+  'nexus-dialogs': 10,
+  'nexus-dialogs.all': 32,
+  forms: 15,
+  toast: 6.5,
   themes: 1,
   patterns: 7,
   mx: 1,
   vue: 1,
   swal: 3.5,
-  'nexus-dialogs.swal.iife': 13.5,
+  'nexus-dialogs.swal.iife': 14,
 }
 
 if (!existsSync('dist/nexus-dialogs.js')) {

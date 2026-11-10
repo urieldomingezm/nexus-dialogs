@@ -43,7 +43,8 @@ describe('toast', () => {
     toast('Se archivaron 3 recibos', { action: { label: 'Deshacer', onClick }, onClose })
     const [accion, x] = [...items()[0].querySelectorAll('button')]
     expect(accion.textContent).toBe('Deshacer')
-    expect(accion.className).toBe('btn btn-secondary')
+    expect(accion.className).toBe('act')
+    expect(items()[0].querySelector('.icon')).toBeNull()
     expect(x.getAttribute('aria-label')).toBe('Cerrar aviso')
     accion.click()
     expect(onClick).toHaveBeenCalled()
@@ -75,5 +76,13 @@ describe('toast', () => {
     expect(host.parentElement?.tagName).toBe('DIALOG')
     dialog.close()
     await p
+  })
+
+  it('icono en círculo por tipo y giro al cargar', () => {
+    toast.success('Guardado')
+    toast('Cargando', { type: 'loading' })
+    const [ok, cargando] = items()
+    expect(ok.querySelector('.icon.i-success svg')).not.toBeNull()
+    expect(cargando.querySelector('.spin')).not.toBeNull()
   })
 })
