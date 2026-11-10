@@ -1,0 +1,152 @@
+{
+  "name": "nexus-dialogs",
+  "version": "0.1.0",
+  "description": "Modals, alerts, confirmations, forms, wizards, toasts and drawers built on the native <dialog>: accessible, isolated with Shadow DOM, promise-based and dependency-free.",
+  "license": "MIT",
+  "author": "Angel Uriel Domínguez Medina (DevMedina) (https://devmedina.is-a.dev/)",
+  "homepage": "https://github.com/urieldomingezm/nexus-dialogs#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/urieldomingezm/nexus-dialogs.git"
+  },
+  "bugs": "https://github.com/urieldomingezm/nexus-dialogs/issues",
+  "type": "module",
+  "main": "./dist/nexus-dialogs.umd.cjs",
+  "module": "./dist/nexus-dialogs.js",
+  "types": "./dist/index.d.ts",
+  "unpkg": "./dist/nexus-dialogs.all.iife.js",
+  "jsdelivr": "./dist/nexus-dialogs.all.iife.js",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/nexus-dialogs.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/nexus-dialogs.umd.cjs"
+      }
+    },
+    "./forms": {
+      "import": {
+        "types": "./dist/forms.d.ts",
+        "default": "./dist/forms.js"
+      },
+      "require": {
+        "types": "./dist/forms.d.cts",
+        "default": "./dist/forms.cjs"
+      }
+    },
+    "./toast": {
+      "import": {
+        "types": "./dist/toast.d.ts",
+        "default": "./dist/toast.js"
+      },
+      "require": {
+        "types": "./dist/toast.d.cts",
+        "default": "./dist/toast.cjs"
+      }
+    },
+    "./themes": {
+      "import": {
+        "types": "./dist/themes.d.ts",
+        "default": "./dist/themes.js"
+      },
+      "require": {
+        "types": "./dist/themes.d.cts",
+        "default": "./dist/themes.umd.cjs"
+      }
+    },
+    "./all": {
+      "import": {
+        "types": "./dist/global.d.ts",
+        "default": "./dist/nexus-dialogs.all.js"
+      },
+      "default": {
+        "types": "./dist/global.d.ts",
+        "default": "./dist/nexus-dialogs.all.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "forms": [
+        "./dist/forms.d.ts"
+      ],
+      "toast": [
+        "./dist/toast.d.ts"
+      ],
+      "themes": [
+        "./dist/themes.d.ts"
+      ],
+      "all": [
+        "./dist/global.d.ts"
+      ]
+    }
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "CHANGELOG.md"
+  ],
+  "sideEffects": false,
+  "keywords": [
+    "dialog",
+    "modal",
+    "alert",
+    "confirm",
+    "prompt",
+    "toast",
+    "drawer",
+    "bottom-sheet",
+    "form",
+    "wizard",
+    "sweetalert",
+    "accessibility",
+    "a11y"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  },
+  "scripts": {
+    "dev": "vite --open /test/paginas/",
+    "build": "vite build --mode core && vite build --mode all && vite build --mode forms && vite build --mode toast && vite build --mode themes && tsc -p tsconfig.build.json && node scripts/tipos.mjs",
+    "build:site": "vite build --mode site",
+    "test": "npm run test:unit && npm run test:e2e",
+    "test:unit": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:chromium": "playwright test --project=chromium",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "size": "node scripts/tamano.mjs",
+    "api": "node scripts/api.mjs",
+    "api:check": "node scripts/api.mjs --check",
+    "check:paquete": "attw --pack . --ignore-rules cjs-resolves-to-esm && node scripts/probar-paquete.mjs",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
+    "@axe-core/playwright": "^4.14.0",
+    "@eslint/js": "^9.39.5",
+    "@playwright/test": "^1.65.0",
+    "@vitest/coverage-v8": "^5.1.0",
+    "esbuild": "^0.28.2",
+    "eslint": "^9.39.5",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.14.0",
+    "happy-dom": "^21.0.4",
+    "prettier": "^3.9.10",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.72.2",
+    "vite": "^7.3.8",
+    "vitest": "^5.1.0"
+  }
+}

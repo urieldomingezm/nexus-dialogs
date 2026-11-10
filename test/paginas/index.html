@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<link rel="icon" href="data:,">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>nexus-dialogs · pruebas</title>
+<style>
+  body { font: 15px/1.5 system-ui, sans-serif; margin: 0; padding: 24px; background: #f4f5f9; color: #1c1d26 }
+  h1 { margin: 0 0 4px } p { margin: 0 0 16px; color: #4b4d5c }
+  section { margin: 0 0 18px } h2 { font-size: 14px; text-transform: uppercase; letter-spacing: .04em; color: #5c5f70; margin: 0 0 8px }
+  .fila { display: flex; flex-wrap: wrap; gap: 8px }
+  button { height: 38px; padding: 0 14px; border-radius: 8px; border: 1px solid #c9ccd8; background: #fff; cursor: pointer; font: inherit }
+  pre { background: #fff; border: 1px solid #e6e8ef; border-radius: 8px; padding: 10px; min-height: 40px; white-space: pre-wrap }
+  .alto { height: 1200px }
+</style>
+</head>
+<body>
+<h1>nexus-dialogs</h1>
+<p>Página de pruebas (la usan los tests E2E). Cada botón abre un diálogo; el resultado aparece abajo.</p>
+
+<section><h2>Diálogos</h2><div class="fila">
+  <button id="b-alert">Alerta con timer</button>
+  <button id="b-confirm">Confirmar peligro</button>
+  <button id="b-typed">Escribir para borrar</button>
+  <button id="b-prompt">Prompt</button>
+  <button id="b-drawer">Panel lateral</button>
+  <button id="b-sheet">Hoja inferior</button>
+  <button id="b-nested">Diálogo sobre diálogo</button>
+</div></section>
+
+<section><h2>Formularios</h2><div class="fila">
+  <button id="b-form">Formulario</button>
+  <button id="b-wizard">Asistente</button>
+  <button id="b-gasto">Gasto (importe y RFC)</button>
+</div></section>
+
+<section><h2>Toasts</h2><div class="fila">
+  <button id="t-ok">Éxito</button>
+  <button id="t-undo">Con deshacer</button>
+  <button id="t-err">Error</button>
+  <button id="t-promise">Promesa</button>
+  <button id="t-many">Cinco seguidos (cola)</button>
+  <button id="t-in-dialog">Toast con diálogo abierto</button>
+</div></section>
+
+<section><h2>Temas</h2><div class="fila">
+  <button id="th-dark">Oscuro</button>
+  <button id="th-bootstrap">Bootstrap</button>
+  <button id="th-light">Claro</button>
+  <button id="th-en">English</button>
+</div></section>
+
+<pre id="out" aria-live="polite"></pre>
+<div class="alto"></div>
+
+<script type="module">
+  import * as nd from 'nexus-dialogs'
+  import { form, wizard } from '../../src/forms.ts'
+  import { toast } from '../../src/toast.ts'
+  import { themes } from '../../src/themes.ts'
+  const { dialog, configure } = nd
+  window.nd = { ...nd, form, wizard, toast, themes }
+  const out = document.getElementById('out')
+  const show = (r) => (out.textContent = JSON.stringify(r, null, 1))
+  window.ultimo = null
+  const on = (id, fn) => document.getElementById(id).addEventListener('click', async () => { const r = await fn(); if (r) { window.ultimo = r; show(r) } })
+  const espera = (ms) => new Promise((r) => setTimeout(r, ms))
+
+  on('b-alert', () => dialog.success({ title: 'Empleado guardado', text: 'Laura ya aparece en la nómina de diciembre.', timer: 4000 }))
+  on('b-confirm', () => dialog.confirm({ title: '¿Eliminar el registro?', text: 'Esta acción no se puede deshacer.', danger: true, confirmText: 'Sí, eliminar' }))
+  on('b-typed', () => dialog.confirm({ title: '¿Eliminar el periodo de nómina?', text: 'Se borrarán 148 recibos y 12 incidencias. No se puede deshacer.', danger: true, requireText: 'Quincena 21', confirmText: 'Eliminar periodo' }))
+  on('b-prompt', () => dialog.prompt({ title: 'Nueva área', label: 'Nombre del área', placeholder: 'Ej. Logística', confirmText: 'Crear área',
+    validate: (v) => (v.length < 3 ? 'Escribe al menos 3 caracteres.' : null),
+    preConfirm: async (v) => { await espera(500); if (v.toLowerCase() === 'almacén') throw new Error('Ya existe un área con ese nombre.'); return v } }))
+  on('b-drawer', () => dialog.open({ title: 'Filtros', placement: 'right', html: '<p>Contenido del panel lateral.</p>', confirmText: 'Ver 128 resultados', cancelText: 'Limpiar' }))
+  on('b-sheet', () => dialog.open({ title: 'Compartir reporte', placement: 'bottom', text: 'Elige cómo enviarlo.', confirmText: 'Enviar' }))
+  on('b-nested', () => dialog.open({ title: 'Primer diálogo', text: 'Abre otro encima.', buttons: [
+    { id: 'cancel', role: 'cancel', text: 'Cancelar' },
+    { id: 'otro', text: 'Abrir otro', onClick: async () => { await dialog.alert('Segundo diálogo'); return false } },
+  ] }))
+
+  const areas = ['Almacén', 'Compras', 'Logística', 'Nómina']
+  on('b-form', () => form({ title: 'Nuevo cliente', columns: 2, submitText: 'Crear cliente', fields: [
+    { name: 'nombre', label: 'Nombre', required: true, span: 2, autocomplete: 'name' },
+    { name: 'correo', label: 'Correo', type: 'email', required: true },
+    { name: 'telefono', label: 'Teléfono', type: 'tel', help: '10 dígitos', pattern: '\\d{10}', patternMessage: 'Escribe 10 dígitos.' },
+    { name: 'area', label: 'Área', type: 'select', options: areas, required: true },
+    { name: 'tipo', label: 'Tipo', type: 'segmented', options: ['Persona', 'Empresa'], value: 'Persona' },
+    { name: 'rfc', label: 'RFC', type: 'rfc', visible: (v) => v.tipo === 'Empresa', required: true },
+    { name: 'factura', label: 'Requiere factura', type: 'switch', span: 2 },
+  ], preConfirm: async (v) => { await espera(400); return v } }))
+
+  on('b-wizard', () => wizard({ title: 'Alta de empleado', review: true, submitText: 'Dar de alta', steps: [
+    { title: 'Datos personales', fields: [
+      { name: 'nombre', label: 'Nombre completo', required: true },
+      { name: 'curp', label: 'CURP', required: true, pattern: '[A-Z]{4}\\d{6}[HM][A-Z]{5}[A-Z\\d]\\d', patternMessage: 'La CURP debe tener 18 caracteres.' },
+    ] },
+    { title: 'Puesto', fields: [
+      { name: 'area', label: 'Área', type: 'select', options: areas, required: true },
+      { name: 'salario', label: 'Salario diario', type: 'money', required: true, min: 278.8 },
+      { name: 'ingreso', label: 'Fecha de ingreso', type: 'date', required: true },
+    ] },
+    { title: 'Prestaciones', fields: [
+      { name: 'vales', label: 'Vales de despensa', type: 'switch' },
+      { name: 'seguro', label: 'Seguro de gastos médicos', type: 'radio', options: ['Básico', 'Amplio', 'Ninguno'], value: 'Básico' },
+    ] },
+  ] }))
+
+  on('b-gasto', () => form({ title: 'Nuevo gasto', submitText: 'Enviar a aprobación', fields: [
+    { name: 'rfc', label: 'RFC del proveedor', type: 'rfc', required: true },
+    { name: 'importe', label: 'Importe', type: 'money', required: true, min: 1 },
+    { name: 'concepto', label: 'Concepto', type: 'textarea', maxLength: 200 },
+  ] }))
+
+  on('t-ok', () => void toast.success('Empleado guardado'))
+  on('t-undo', () => void toast('Se archivaron 3 recibos', { action: { label: 'Deshacer', onClick: () => toast.info('Recuperados') } }))
+  on('t-err', () => void toast.error('No se pudo timbrar el recibo', { title: 'Error del SAT' }))
+  on('t-promise', () => void toast.promise(espera(1200).then(() => 148), { loading: 'Calculando nómina…', success: (n) => `${n} recibos listos`, error: 'Falló' }))
+  on('t-many', () => { for (let i = 1; i <= 5; i++) toast(`Aviso ${i}`) })
+  on('t-in-dialog', async () => { setTimeout(() => toast.success('Guardado mientras el diálogo sigue abierto'), 300); return dialog.alert('Un diálogo abierto') })
+
+  on('th-dark', () => { configure({ scheme: 'dark' }); toast.configure({ scheme: 'dark' }) })
+  on('th-bootstrap', () => { configure({ scheme: 'light', theme: themes.bootstrap }) })
+  on('th-light', () => { configure({ scheme: 'light', theme: Object.fromEntries(Object.keys(themes.bootstrap).map((k) => [k, ''])) }); toast.configure({ scheme: 'light' }) })
+  on('th-en', () => configure({ lang: 'en' }))
+</script>
+</body>
+</html>
