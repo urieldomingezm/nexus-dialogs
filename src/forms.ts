@@ -19,6 +19,8 @@ import { INVALID, labels, openDialog } from 'nexus-dialogs'
 import type { ButtonSpec, DialogContext, DialogOptions, DialogResult, Labels } from 'nexus-dialogs'
 import { h, uid } from './core/dom'
 import { isCLABE, isCURP, isNSS, isPostalCode, isRFC } from './mx'
+import { CAMPOS, FIELDS_CSS, type CustomControl, type NestedFieldSet } from './fields'
+export { defaultDatePresets } from './fields'
 
 export type FieldType =
   | 'text'
@@ -41,8 +43,13 @@ export type FieldType =
   | 'nss'
   | 'clabe'
   | 'postal'
+  | 'combobox'
+  | 'file'
+  | 'daterange'
+  | 'otp'
+  | 'items'
 
-export type Option = string | { value: string; label: string; disabled?: boolean }
+export type Option = string | { value: string; label: string; disabled?: boolean; description?: string; group?: string }
 type Msg = string | void | null | undefined
 
 export interface Field {
@@ -76,6 +83,55 @@ export interface Field {
   /** money: código de moneda (por omisión MXN) y locale (por omisión es-MX). */
   currency?: string
   locale?: string
+
+  // ── combobox ──
+  /** combobox y file: permitir varios. */
+  multiple?: boolean
+  /** combobox: busca en tu API mientras el usuario escribe (con espera de 250 ms). Sin esto filtra `options`. */
+  search?: (query: string) => Promise<Option[]> | Option[]
+  /** combobox: ofrecer «Crear «texto»» cuando no hay coincidencia exacta. Con función, crea el registro y devuelve la opción. */
+  creatable?: boolean | ((text: string) => Option | Promise<Option>)
+  /** combobox múltiple: máximo de elementos. */
+  maxItems?: number
+
+  // ── file ──
+  /** Tipos aceptados, como en <input accept>: '.pdf,.xml,image/*'. */
+  accept?: string
+  /** Peso máximo por archivo en bytes (5 * 1024 * 1024 = 5 MB). */
+  maxSize?: number
+  /** Máximo de archivos (con multiple). */
+  maxFiles?: number
+  /** Sube cada archivo al agregarlo, con progreso. El valor del campo pasa a ser lo que devuelva (id, URL…). */
+  upload?: (file: File, progress: (percent: number) => void) => Promise<unknown>
+
+  // ── daterange ──
+  /** Atajos («Quincena actual», «Mes pasado»…). false los oculta; un arreglo pone los tuyos. */
+  presets?: false | DatePreset[]
+  /** Máximo de días del rango. */
+  maxDays?: number
+
+  // ── otp ──
+  /** Dígitos del código. Por omisión 6. */
+  length?: number
+  /** Al completar el código, pulsa el botón principal. Por omisión true. */
+  autoSubmit?: boolean
+
+  // ── items (filas repetibles) ──
+  /** Columnas de cada fila. */
+  fields?: Field[]
+  /** Mínimo de filas (por omisión 1 si es required, si no 0) y máximo. */
+  minRows?: number
+  maxRows?: number
+  /** Texto del botón para agregar una fila. */
+  addText?: string
+  /** Totales bajo la tabla, se recalculan al escribir: (filas) => [{ label: 'Total', value: '$ 1,000.00' }]. */
+  totals?: (rows: Record<string, any>[]) => { label: string; value: string }[]
+}
+
+export interface DatePreset {
+  label: string
+  /** Devuelve [desde, hasta]. */
+  range: () => [Date, Date]
 }
 
 interface Control {
@@ -85,10 +141,12 @@ interface Control {
   group: HTMLInputElement[]
   msg: HTMLElement
   tocado: boolean
+  custom?: CustomControl
 }
 
 const opcion = (o: Option) => (typeof o === 'string' ? { value: o, label: o, disabled: false } : { disabled: false, ...o })
-const vacio = (v: unknown) => v === undefined || v === null || v === '' || (typeof v === 'number' && Number.isNaN(v))
+const vacio = (v: unknown) =>
+  v === undefined || v === null || v === '' || (typeof v === 'number' && Number.isNaN(v)) || (Array.isArray(v) && !v.length)
 /** Tipos mexicanos: largo máximo, si van en mayúsculas, teclado numérico y su validador. */
 const MX: Record<string, { max: number; upper?: boolean; numeric?: boolean; ok: (v: string) => boolean; msg: keyof Labels }> = {
   rfc: { max: 13, upper: true, ok: isRFC, msg: 'invalidRfc' },
@@ -106,6 +164,10 @@ function numeroDe(texto: string): number | null {
 }
 
 /** Un conjunto de campos: dibuja, lee, valida y muestra errores. Lo usan form() y cada paso de wizard(). */
+/** Para comparar valores: los File se comparan por nombre, tamaño y fecha. */
+const serializable = (_k: string, v: unknown) =>
+  typeof File !== 'undefined' && v instanceof File ? `${v.name}:${v.size}:${v.lastModified}` : v
+
 class FieldSet {
   readonly el: HTMLElement
   private controles: Control[] = []
@@ -122,7 +184,7 @@ class FieldSet {
     this.el = h('div', { class: `grid cols-${columns}` })
     for (const f of fields) this.controles.push(this.crear(f, valores[f.name] ?? f.value))
     this.actualizarVisibles()
-    this.inicial = JSON.stringify(this.values())
+    this.inicial = JSON.stringify(this.values(), serializable)
   }
 
   private crear(f: Field, valor: unknown): Control {
@@ -140,7 +202,33 @@ class FieldSet {
     const etiqueta = (forId: string | null) =>
       h('label', { for: forId }, f.label, f.required ? h('span', { class: 'req', 'aria-hidden': 'true' }, ' *') : null)
 
-    if (tipo === 'radio' || tipo === 'segmented') {
+    const fabrica = CAMPOS[tipo]
+    if (fabrica) {
+      const custom = fabrica(
+        {
+          id,
+          describedBy: describe,
+          field: f,
+          required: !!f.required,
+          nested: (campos, valores, alCambiar) => {
+            const fs = new FieldSet(campos, valores, 1, alCambiar)
+            return fs as NestedFieldSet
+          },
+        },
+        valor,
+      )
+      c.custom = custom
+      c.wrap = custom.group
+        ? h(
+            'fieldset',
+            { class: `field ${tipo}`, 'aria-describedby': describe },
+            h('legend', null, f.label, f.required ? h('span', { class: 'req', 'aria-hidden': 'true' }, ' *') : null),
+            custom.el,
+            ayuda,
+            msg,
+          )
+        : h('div', { class: `field ${tipo}` }, etiqueta(id), custom.el, ayuda, msg)
+    } else if (tipo === 'radio' || tipo === 'segmented') {
       const nombre = uid('fr')
       const ops = (f.options ?? []).map(opcion)
       const items = ops.map((o) => {
@@ -157,7 +245,8 @@ class FieldSet {
       })
       c.wrap = h(
         'fieldset',
-        { class: `field ${tipo}`, 'aria-required': requerido },
+        // radiogroup admite aria-required (fieldset no).
+        { class: `field ${tipo}`, role: 'radiogroup', 'aria-required': requerido },
         h('legend', null, f.label, f.required ? h('span', { class: 'req', 'aria-hidden': 'true' }, ' *') : null),
         h('div', { class: tipo === 'segmented' ? 'seg' : 'options' }, ...items),
         ayuda,
@@ -247,7 +336,7 @@ class FieldSet {
       // Primero lo que no espera: mostrar u ocultar campos condicionales. Luego la validación (puede ser async).
       this.actualizarVisibles()
       this.alCambiar()
-      if (c.tocado) this.mostrar(c, await this.validarUno(c))
+      if (c.tocado && (!c.custom?.lazy || c.wrap.classList.contains('invalid'))) this.mostrar(c, await this.validarUno(c))
     }
     c.wrap.addEventListener('input', al)
     c.wrap.addEventListener('change', al)
@@ -262,6 +351,7 @@ class FieldSet {
 
   private valorDe(c: Control): unknown {
     const t = c.f.type ?? 'text'
+    if (c.custom) return c.custom.value()
     if (c.group.length) return c.group.find((r) => r.checked)?.value ?? ''
     const i = c.input!
     if (t === 'checkbox' || t === 'switch') return (i as HTMLInputElement).checked
@@ -297,7 +387,7 @@ class FieldSet {
 
   /** ¿Cambió algo desde que se abrió? */
   dirty(): boolean {
-    return JSON.stringify(this.values()) !== this.inicial
+    return JSON.stringify(this.values(), serializable) !== this.inicial
   }
 
   private async validarUno(c: Control, extra: Record<string, unknown> = {}): Promise<string | null> {
@@ -307,7 +397,11 @@ class FieldSet {
     const t = f.type ?? 'text'
     const v = this.valorDe(c)
     if (f.required && (vacio(v) || v === false)) return L.required
-    if (!vacio(v) && typeof v === 'string') {
+    if (c.custom) {
+      // Siempre: un archivo que se sigue subiendo bloquea el envío aunque el campo sea opcional.
+      const propio = await c.custom.validate?.()
+      if (propio) return propio
+    } else if (!vacio(v) && typeof v === 'string') {
       if (t === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return L.invalidEmail
       if (t === 'url') {
         try {
@@ -322,7 +416,7 @@ class FieldSet {
       if (f.pattern && !(typeof f.pattern === 'string' ? new RegExp(`^(?:${f.pattern})$`) : f.pattern).test(v))
         return f.patternMessage ?? L.pattern
     }
-    if (typeof v === 'number') {
+    if (typeof v === 'number' && !c.custom) {
       if (f.min !== undefined && v < Number(f.min)) return L.min.replace('{0}', String(f.min))
       if (f.max !== undefined && v > Number(f.max)) return L.max.replace('{0}', String(f.max))
     }
@@ -339,6 +433,7 @@ class FieldSet {
   private mostrar(c: Control, error: string | null): void {
     c.msg.textContent = error ?? ''
     const invalido = String(!!error)
+    c.custom?.invalid(!!error)
     if (c.input) c.input.setAttribute('aria-invalid', invalido)
     for (const r of c.group) r.setAttribute('aria-invalid', invalido)
     c.wrap.classList.toggle('invalid', !!error)
@@ -351,7 +446,7 @@ class FieldSet {
       c.tocado = true
       const e = extra[c.f.name] || (await this.validarUno(c))
       this.mostrar(c, e)
-      if (e) errores.push({ label: `${c.f.label}: ${e}`, focus: () => (c.input ?? c.group[0])?.focus() })
+      if (e) errores.push({ label: `${c.f.label}: ${e}`, focus: () => (c.custom ? c.custom.focus() : (c.input ?? c.group[0])?.focus()) })
     }
     return errores
   }
@@ -365,7 +460,8 @@ class FieldSet {
         const v = this.valorDe(c)
         const t = c.f.type ?? 'text'
         let s: string
-        if (typeof v === 'boolean') s = v ? L.yes : L.no
+        if (c.custom) s = vacio(v) ? '—' : (c.custom.summary?.() ?? String(v))
+        else if (typeof v === 'boolean') s = v ? L.yes : L.no
         else if (vacio(v)) s = '—'
         else if (t === 'money') s = `$ ${this.dinero(c.f, v as number)} ${c.f.currency ?? 'MXN'}`
         else if (t === 'password') s = '••••••'
@@ -377,6 +473,7 @@ class FieldSet {
 
   focusFirst(): void {
     const c = this.controles.find((x) => !x.wrap.hidden && !x.f.disabled)
+    if (c?.custom) return c.custom.focus()
     ;(c?.input ?? c?.group.find((r) => r.checked) ?? c?.group[0])?.focus()
   }
 }
@@ -443,7 +540,7 @@ export function form<T extends Record<string, unknown> = Record<string, unknown>
     dismissible: { backdrop: false },
     size: o.columns === 2 ? 'lg' : 'md',
     ...o,
-    moduleCss: FORM_CSS,
+    moduleCss: FORM_CSS + FIELDS_CSS,
     buttons: o.buttons ?? [
       { id: 'cancel', role: 'cancel', text: o.cancelText ?? L.cancel },
       { id: 'confirm', role: 'confirm', text: o.submitText ?? o.confirmText ?? L.submit, variant: o.danger ? 'danger' : 'primary' },
@@ -572,7 +669,7 @@ export function wizard<T extends Record<string, unknown> = Record<string, unknow
     size: 'lg',
     initialFocus: 'first-field',
     ...o,
-    moduleCss: FORM_CSS,
+    moduleCss: FORM_CSS + FIELDS_CSS,
     buttons: [],
     render: (ctx) => {
       ctxRef = ctx
@@ -662,14 +759,14 @@ select.input{appearance:none;background-image:linear-gradient(45deg,transparent 
 .affix:focus-within{outline:3px solid var(--_focus);border-color:var(--_accent)}
 .affix span{color:var(--_muted)}
 .affix .input{border:0;padding:0;outline:none!important;text-align:right;font-variant-numeric:tabular-nums}
-.invalid .affix{border:2px solid var(--_error)}
+.invalid>.affix{border:2px solid var(--_error)}
 .summary{margin:0 0 16px;padding:12px 14px;border-radius:var(--_control-radius);border:1px solid color-mix(in srgb,var(--_error) 35%,transparent);
   background:color-mix(in srgb,var(--_error) 8%,transparent);font-size:14px}
 .summary:focus{outline:3px solid var(--_focus)}
 .summary p{margin:0 0 4px;font-weight:700;color:var(--_error)}
 .summary ul{margin:0;padding-left:20px}
 .summary li{margin:2px 0}
-.summary a{color:var(--_error);display:inline-block;min-height:24px;line-height:24px}
+.summary a{color:var(--_error);display:block;min-height:24px;line-height:24px}
 .stepper{list-style:none;margin:0 0 18px;padding:0;display:flex;gap:18px;font-size:13px;color:var(--_muted)}
 .stepper li{flex:0 1 auto;display:flex;gap:8px;align-items:center;min-width:0}
 .stepper li span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
