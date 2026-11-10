@@ -19,8 +19,32 @@ import { INVALID, labels, language, openDialog } from 'nexus-dialogs'
 import type { ButtonSpec, DialogContext, DialogOptions, DialogResult, Labels } from 'nexus-dialogs'
 import { h, uid } from './core/dom'
 import { isCLABE, isCURP, isNSS, isPostalCode, isRFC } from './mx'
-import { CAMPOS, FIELDS_CSS, type CustomControl, type NestedFieldSet } from './fields'
-export { defaultDatePresets } from './fields'
+import { CAMPOS, FIELDS_CSS, type CustomControl, type NestedFieldSet, type PhoneCountry, type PostalLookup } from './fields'
+export { defaultDatePresets, DEFAULT_COUNTRIES, formatPhone } from './fields'
+export type { Address, PhoneCountry, PostalLookup } from './fields'
+
+/**
+ * Condición declarativa (sirve en JSON): `{ field: 'tipo', equals: 'empresa' }`, `{ field: 'pais', in: ['MX', 'US'] }`,
+ * `{ field: 'rfc', filled: true }`, `{ all: [...] }`, `{ any: [...] }`, `{ not: ... }`.
+ */
+export type Condition =
+  | { field: string; equals?: unknown; notEquals?: unknown; in?: unknown[]; filled?: boolean }
+  | { all: Condition[] }
+  | { any: Condition[] }
+  | { not: Condition }
+
+/** Evalúa una condición contra los valores. */
+export function matches(c: Condition, v: Record<string, unknown>): boolean {
+  if ('all' in c) return c.all.every((x) => matches(x, v))
+  if ('any' in c) return c.any.some((x) => matches(x, v))
+  if ('not' in c) return !matches(c.not, v)
+  const x = v[c.field]
+  if ('equals' in c) return x === c.equals
+  if ('notEquals' in c) return x !== c.notEquals
+  if (c.in) return c.in.includes(x)
+  if (c.filled !== undefined) return c.filled === !(vacio(x) || x === false)
+  return !(vacio(x) || x === false)
+}
 
 export type FieldType =
   | 'text'
@@ -48,6 +72,8 @@ export type FieldType =
   | 'daterange'
   | 'otp'
   | 'items'
+  | 'phone'
+  | 'address'
 
 export type Option = string | { value: string; label: string; disabled?: boolean; description?: string; group?: string; avatar?: string }
 type Msg = string | void | null | undefined
@@ -77,6 +103,14 @@ export interface Field {
   inputmode?: string
   /** Con columns: 2, ocupa las dos columnas. */
   span?: 1 | 2
+  /** Igual que `visible`, pero declarativo (sirve en JSON). */
+  visibleIf?: Condition
+  /** phone: ladas a elegir (por omisión México, EE. UU., España y Latinoamérica). */
+  countries?: PhoneCountry[]
+  /** phone: lada inicial. Por omisión '+52'. */
+  dialCode?: string
+  /** address: busca estado, municipio y colonias por código postal (tu API o SEPOMEX). null si no existe. */
+  lookupPostalCode?: (postalCode: string) => Promise<PostalLookup | null> | PostalLookup | null
   /** Campo condicional: se muestra solo si devuelve true. Los campos ocultos no se validan ni se envían. */
   visible?: (values: Record<string, unknown>) => boolean
   disabled?: boolean
@@ -367,7 +401,7 @@ class FieldSet {
 
   private visible(c: Control, valores: Record<string, unknown>): boolean {
     try {
-      return c.f.visible ? c.f.visible(valores) : true
+      return (c.f.visible ? c.f.visible(valores) : true) && (c.f.visibleIf ? matches(c.f.visibleIf, valores) : true)
     } catch {
       return true
     }
@@ -528,7 +562,107 @@ const descartar = async (): Promise<boolean> => {
   return r.confirmed
 }
 
-export interface FormOptions<T> extends Omit<DialogOptions<T>, 'requireText'> {
+// ── Borrador automático ─────────────────────────────────────────────────────
+
+const TXT = {
+  es: {
+    title: '¿Continuar donde te quedaste?',
+    text: 'Guardamos lo que escribiste la última vez.',
+    resume: 'Continuar',
+    fresh: 'Empezar de nuevo',
+  },
+  en: { title: 'Pick up where you left off?', text: 'We saved what you typed last time.', resume: 'Continue', fresh: 'Start over' },
+}
+const PREFIJO = 'nexus-dialogs:draft:'
+interface Guardado {
+  values: Record<string, unknown>
+  step?: number
+  at: number
+}
+
+/** Guarda en localStorage (sin contraseñas ni archivos) mientras se escribe; se borra al enviar o al descartar. */
+class Borrador {
+  private timer?: ReturnType<typeof setTimeout>
+  private omitir: Set<string>
+  constructor(
+    private clave: string,
+    campos: Field[],
+  ) {
+    this.omitir = new Set(campos.filter((f) => f.type === 'password' || f.type === 'file').map((f) => f.name))
+  }
+  leer(): Guardado | null {
+    try {
+      const g = JSON.parse(localStorage.getItem(PREFIJO + this.clave) ?? 'null') as Guardado | null
+      return g && typeof g.values === 'object' ? g : null
+    } catch {
+      return null
+    }
+  }
+  programar(datos: () => Omit<Guardado, 'at'>): void {
+    clearTimeout(this.timer)
+    this.timer = setTimeout(() => {
+      try {
+        const d = datos()
+        const values = Object.fromEntries(Object.entries(d.values).filter(([k]) => !this.omitir.has(k)))
+        const json = JSON.stringify({ ...d, values, at: Date.now() }, (_k, v) =>
+          typeof File !== 'undefined' && v instanceof File ? undefined : v,
+        )
+        localStorage.setItem(PREFIJO + this.clave, json)
+      } catch {}
+    }, 300)
+  }
+  borrar(): void {
+    clearTimeout(this.timer)
+    try {
+      localStorage.removeItem(PREFIJO + this.clave)
+    } catch {}
+  }
+  /** Detiene el guardado pendiente (al cerrar sin borrar). */
+  parar(): void {
+    clearTimeout(this.timer)
+  }
+}
+
+/** Si hay borrador, pregunta (o lo usa directo con prompt: false). Devuelve lo que hay que restaurar. */
+async function restaurar(b: Borrador | null, preguntar: boolean): Promise<Guardado | null> {
+  const g = b?.leer()
+  if (!b || !g) return null
+  if (!preguntar) return g
+  const t = TXT[language() === 'en' ? 'en' : 'es']
+  const r = await openDialog({
+    role: 'alertdialog',
+    title: t.title,
+    text: t.text,
+    icon: 'info',
+    size: 'sm',
+    dismissible: { escape: false, backdrop: false },
+    buttons: [
+      { id: 'fresh', role: 'deny', text: t.fresh, variant: 'secondary' },
+      { id: 'resume', role: 'confirm', text: t.resume, variant: 'primary' },
+    ],
+  })
+  if (r.confirmed) return g
+  b.borrar()
+  return null
+}
+
+/** Al terminar: enviado → se borra; cerrado → se queda (salvo que se haya descartado, eso lo borra beforeClose). */
+const alTerminar =
+  <T>(b: Borrador | null) =>
+  (r: DialogResult<T>): DialogResult<T> => {
+    if (r.confirmed) b?.borrar()
+    else b?.parar()
+    return r
+  }
+
+interface ConBorrador {
+  /** Guarda lo escrito en este navegador (localStorage) y lo ofrece al volver a abrir. Usa una clave por formulario: 'alta-empleado'. */
+  draftKey?: string
+  /** Preguntar «¿Continuar donde te quedaste?». Con false restaura sin preguntar. Por omisión true. */
+  draftPrompt?: boolean
+}
+
+export interface FormOptions<T> extends ConBorrador, Omit<DialogOptions<T>, 'requireText'> {
   fields: Field[]
   /** Valores iniciales (por nombre). También puedes poner `value` en cada campo. */
   values?: Partial<T>
@@ -544,7 +678,18 @@ export interface FormOptions<T> extends Omit<DialogOptions<T>, 'requireText'> {
 
 /** Formulario en un diálogo. Resuelve con los valores al confirmar (y después de `preConfirm`, si lo hay). */
 export function form<T extends Record<string, unknown> = Record<string, unknown>>(o: FormOptions<T>): Promise<DialogResult<T>> {
+  const b = o.draftKey ? new Borrador(o.draftKey, o.fields) : null
+  // Sin borrador guardado se abre en el acto (sin esperar un ciclo).
+  return b?.leer() ? restaurar(b, o.draftPrompt !== false).then((g) => abrirForm(o, b, g)) : abrirForm(o, b, null)
+}
+
+function abrirForm<T extends Record<string, unknown>>(
+  o: FormOptions<T>,
+  b: Borrador | null,
+  previo: Guardado | null,
+): Promise<DialogResult<T>> {
   const L = labels()
+  const iniciales = { ...(o.values ?? {}), ...(previo?.values ?? {}) } as Record<string, unknown>
   let campos!: FieldSet
   const errores = resumen()
   return openDialog<T>({
@@ -559,7 +704,7 @@ export function form<T extends Record<string, unknown> = Record<string, unknown>
       { id: 'confirm', role: 'confirm', text: o.submitText ?? o.confirmText ?? L.submit, variant: o.danger ? 'danger' : 'primary' },
     ],
     render: () => {
-      campos = new FieldSet(o.fields, (o.values ?? {}) as Record<string, unknown>, o.columns ?? 1)
+      campos = new FieldSet(o.fields, iniciales, o.columns ?? 1, () => b?.programar(() => ({ values: campos.values() })))
       return h('div', { class: 'form' }, errores.el, campos.el)
     },
     collect: async () => {
@@ -571,9 +716,12 @@ export function form<T extends Record<string, unknown> = Record<string, unknown>
     },
     beforeClose: async (reason, ctx) => {
       if (o.beforeClose && !(await o.beforeClose(reason, ctx))) return false
-      return o.confirmDiscard === false || !campos.dirty() || descartar()
+      if (o.confirmDiscard === false || !campos.dirty()) return true
+      const si = await descartar()
+      if (si) b?.borrar()
+      return si
     },
-  })
+  }).then(alTerminar<T>(b))
 }
 
 export interface WizardStep {
@@ -583,9 +731,11 @@ export interface WizardStep {
   columns?: 1 | 2
   /** Validación del paso completo (entre campos). */
   validate?: (values: Record<string, unknown>) => Record<string, string> | void | Promise<Record<string, string> | void>
+  /** Mostrar el paso solo si se cumple (con los valores de los pasos anteriores). Función o condición declarativa. */
+  when?: ((values: Record<string, unknown>) => boolean) | Condition
 }
 
-export interface WizardOptions<T> extends Omit<DialogOptions<T>, 'requireText'> {
+export interface WizardOptions<T> extends ConBorrador, Omit<DialogOptions<T>, 'requireText'> {
   steps: WizardStep[]
   values?: Partial<T>
   /** Paso final de revisión con «Editar» por sección. true usa el título «Revisar»; un texto lo cambia. */
@@ -597,14 +747,30 @@ export interface WizardOptions<T> extends Omit<DialogOptions<T>, 'requireText'> 
   onStepChange?: (index: number, values: Partial<T>) => void
 }
 
-/** Asistente de varios pasos. Cada paso valida antes de avanzar; «Atrás» nunca pierde datos. */
+/** Asistente de varios pasos. Cada paso valida antes de avanzar; «Atrás» nunca pierde datos. Los pasos con `when` aparecen según las respuestas. */
 export function wizard<T extends Record<string, unknown> = Record<string, unknown>>(o: WizardOptions<T>): Promise<DialogResult<T>> {
+  const b = o.draftKey
+    ? new Borrador(
+        o.draftKey,
+        o.steps.flatMap((s) => s.fields),
+      )
+    : null
+  return b?.leer() ? restaurar(b, o.draftPrompt !== false).then((g) => abrirWizard(o, b, g)) : abrirWizard(o, b, null)
+}
+
+function abrirWizard<T extends Record<string, unknown>>(
+  o: WizardOptions<T>,
+  b: Borrador | null,
+  previo: Guardado | null,
+): Promise<DialogResult<T>> {
   const L = labels()
+  const iniciales = { ...(o.values ?? {}), ...(previo?.values ?? {}) } as Record<string, unknown>
   const pasos: FieldSet[] = []
   const conRevision = !!o.review
-  const total = o.steps.length + (conRevision ? 1 : 0)
+  const REV = o.steps.length // índice del paso de revisión
   let actual = 0
-  let ctxRef: DialogContext
+  let ctxRef: DialogContext | undefined
+  let firmaBotones = ''
   const errores = resumen()
   const lista = h('ol', { class: 'stepper' })
   const encabezado = h('h3', { class: 'step-title', tabindex: '-1' })
@@ -614,13 +780,33 @@ export function wizard<T extends Record<string, unknown> = Record<string, unknow
   const revision = h('div', { class: 'review', hidden: true })
 
   const titulos = [...o.steps.map((s) => s.title), ...(conRevision ? [typeof o.review === 'string' ? o.review : L.review] : [])]
-  const valores = (): T => Object.assign({}, ...pasos.map((p) => p.values())) as T
+
+  /** Índices de los pasos que aplican, evaluando en orden con lo contestado antes. */
+  const activos = (): number[] => {
+    const acc: Record<string, unknown> = {}
+    const r: number[] = []
+    o.steps.forEach((s, i) => {
+      let si = true
+      try {
+        si = !s.when || (typeof s.when === 'function' ? s.when(acc) : matches(s.when, acc))
+      } catch {}
+      if (si) {
+        r.push(i)
+        Object.assign(acc, pasos[i]?.values())
+      }
+    })
+    return r
+  }
+  const valores = (): T => Object.assign({}, ...activos().map((i) => pasos[i].values())) as T
+  /** Orden visible: los pasos activos y luego la revisión. */
+  const orden = () => [...activos(), ...(conRevision ? [REV] : [])]
 
   const botones = (): ButtonSpec[] => {
-    const ultimo = actual === total - 1
+    const ord = orden()
+    const ultimo = ord.indexOf(actual) === ord.length - 1
     return [
       { id: 'cancel', role: 'cancel', text: o.cancelText ?? L.cancel },
-      { id: 'back', role: 'custom', text: o.backText ?? L.back, variant: 'secondary', hidden: actual === 0 },
+      { id: 'back', role: 'custom', text: o.backText ?? L.back, variant: 'secondary', hidden: ord.indexOf(actual) <= 0 },
       ultimo
         ? { id: 'confirm', role: 'confirm', text: o.submitText ?? o.confirmText ?? L.submit, variant: 'primary' }
         : { id: 'next', role: 'custom', text: o.nextText ?? L.next, variant: 'primary' },
@@ -629,7 +815,7 @@ export function wizard<T extends Record<string, unknown> = Record<string, unknow
 
   const dibujarRevision = () => {
     revision.replaceChildren(
-      ...pasos.map((p, i) =>
+      ...activos().map((i) =>
         h(
           'section',
           null,
@@ -639,28 +825,45 @@ export function wizard<T extends Record<string, unknown> = Record<string, unknow
             h('h4', null, o.steps[i].title),
             h('button', { type: 'button', class: 'link', onclick: () => ir(i), 'aria-label': `${L.edit}: ${o.steps[i].title}` }, L.edit),
           ),
-          h('dl', null, ...p.summary().flatMap((s) => [h('dt', null, s.label), h('dd', null, s.value)])),
+          h('dl', null, ...pasos[i].summary().flatMap((s) => [h('dt', null, s.label), h('dd', null, s.value)])),
         ),
       ),
     )
   }
 
+  /** Barra de pasos, contador y botones según los pasos que aplican ahora. */
+  const pintar = () => {
+    const ord = orden()
+    const pos = ord.indexOf(actual)
+    ;[...lista.children].forEach((li, k) => {
+      const j = ord.indexOf(k)
+      ;(li as HTMLElement).hidden = j < 0
+      li.className = j < 0 ? '' : j < pos ? 'done' : j === pos ? 'current' : ''
+      if (k === actual) li.setAttribute('aria-current', 'step')
+      else li.removeAttribute('aria-current')
+    })
+    contador.textContent = L.step.replace('{0}', String(pos + 1)).replace('{1}', String(ord.length))
+    const bs = botones()
+    const firma = bs.map((x) => `${x.id}${x.hidden ? 0 : 1}`).join()
+    if (firma !== firmaBotones) {
+      firmaBotones = firma
+      ctxRef?.setButtons(bs)
+    }
+  }
+
+  const guardar = () => b?.programar(() => ({ values: valores(), step: actual }))
+
   function ir(i: number, enfocar = true): void {
     actual = i
     errores.set([])
     pasos.forEach((p, k) => (p.el.hidden = k !== i))
-    revision.hidden = !(conRevision && i === o.steps.length)
+    revision.hidden = i !== REV
     if (!revision.hidden) dibujarRevision()
-    ;[...lista.children].forEach((li, k) => {
-      li.className = k < i ? 'done' : k === i ? 'current' : ''
-      if (k === i) li.setAttribute('aria-current', 'step')
-      else li.removeAttribute('aria-current')
-    })
     encabezado.textContent = titulos[i]
-    contador.textContent = L.step.replace('{0}', String(i + 1)).replace('{1}', String(total))
     descripcion.textContent = o.steps[i]?.description ?? ''
     descripcion.hidden = !descripcion.textContent
-    ctxRef?.setButtons(botones())
+    pintar()
+    guardar()
     if (enfocar) encabezado.focus({ preventScroll: true })
     try {
       o.onStepChange?.(i, valores())
@@ -690,11 +893,16 @@ export function wizard<T extends Record<string, unknown> = Record<string, unknow
         lista.appendChild(h('li', null, h('span', { class: 'num', 'aria-hidden': 'true' }, String(i + 1)), h('span', null, t))),
       )
       o.steps.forEach((s) => {
-        const p = new FieldSet(s.fields, (o.values ?? {}) as Record<string, unknown>, s.columns ?? 1)
+        const p = new FieldSet(s.fields, iniciales, s.columns ?? 1, () => {
+          pintar()
+          guardar()
+        })
         pasos.push(p)
         contenedor.appendChild(p.el)
       })
-      ir(0, false)
+      // Al restaurar un borrador, vuelve al paso donde se quedó (si sigue aplicando).
+      const ord = orden()
+      ir(previo?.step !== undefined && ord.includes(previo.step) ? previo.step : ord[0], false)
       return h(
         'div',
         { class: 'form' },
@@ -706,24 +914,31 @@ export function wizard<T extends Record<string, unknown> = Record<string, unknow
       )
     },
     onOpen: (ctx) => {
-      ctx.setButtons(botones())
-      pasos[0]?.focusFirst()
+      firmaBotones = ''
+      pintar()
+      if (actual === REV) encabezado.focus()
+      else pasos[actual]?.focusFirst()
       o.onOpen?.(ctx)
     },
-    onAction: async (b) => {
-      if (b.id === 'back') {
-        if (actual > 0) ir(actual - 1)
+    onAction: async (btn) => {
+      const ord = orden()
+      const pos = ord.indexOf(actual)
+      if (btn.id === 'back') {
+        if (pos > 0) ir(ord[pos - 1])
         return true
       }
-      if (b.id === 'next') {
-        if (actual < o.steps.length && !(await validarPaso(actual))) return true
-        ir(actual + 1)
+      if (btn.id === 'next') {
+        if (actual !== REV && !(await validarPaso(actual))) return true
+        // Recalcula: lo que se contestó en este paso puede activar o quitar los siguientes.
+        const nuevo = orden()
+        const sig = nuevo[nuevo.indexOf(actual) + 1]
+        if (sig !== undefined) ir(sig)
         return true
       }
       return false
     },
     collect: async () => {
-      for (let i = 0; i < o.steps.length; i++) {
+      for (const i of activos()) {
         if (!(await validarPaso(i))) {
           if (actual !== i) {
             ir(i)
@@ -736,9 +951,124 @@ export function wizard<T extends Record<string, unknown> = Record<string, unknow
     },
     beforeClose: async (reason, ctx) => {
       if (o.beforeClose && !(await o.beforeClose(reason, ctx))) return false
-      return o.confirmDiscard === false || !pasos.some((p) => p.dirty()) || descartar()
+      if (o.confirmDiscard === false || !pasos.some((p) => p.dirty())) return true
+      const si = await descartar()
+      if (si) b?.borrar()
+      return si
     },
+  }).then(alTerminar<T>(b))
+}
+
+// ── Formularios desde JSON ──────────────────────────────────────────────────
+
+type Funciones =
+  'validate' | 'visible' | 'search' | 'creatable' | 'upload' | 'totals' | 'lookupPostalCode' | 'pattern' | 'fields' | 'presets'
+/** Un campo en JSON: lo mismo que `Field`, pero las funciones van por nombre (se buscan en `resolvers`). */
+export interface JSONField extends Omit<Field, Funciones> {
+  pattern?: string
+  validate?: string
+  search?: string
+  creatable?: boolean | string
+  upload?: string
+  totals?: string
+  lookupPostalCode?: string
+  presets?: false
+  fields?: JSONField[]
+}
+export interface JSONStep extends Omit<WizardStep, 'fields' | 'validate' | 'when'> {
+  fields: JSONField[]
+  when?: Condition
+  validate?: string
+}
+/** Formulario descrito en JSON (por ejemplo, guardado en tu base de datos por empresa). Con `steps` es un asistente. */
+export interface FormSchema {
+  title: string
+  text?: string
+  columns?: 1 | 2
+  size?: 'sm' | 'md' | 'lg' | 'xl'
+  submitText?: string
+  cancelText?: string
+  draftKey?: string
+  fields?: JSONField[]
+  steps?: JSONStep[]
+  review?: boolean | string
+  /** Validación entre campos, por nombre. */
+  validate?: string
+}
+export interface FromJSONOptions<T> {
+  /** Funciones a las que el JSON se refiere por nombre: { rfcUnico: async (v) => …, buscarClientes: (q) => … }. */
+  resolvers?: Record<string, (...args: any[]) => any>
+  values?: Partial<T>
+  /** Cualquier otra opción de form() o wizard() (preConfirm, onOpen, theme…). */
+  options?: Partial<FormOptions<T> & WizardOptions<T>>
+}
+
+const TIPOS = new Set<string>(
+  'text email tel url password number date time textarea select radio segmented checkbox switch money rfc curp nss clabe postal combobox file daterange otp items phone address'.split(
+    ' ',
+  ),
+)
+
+/** Convierte el JSON en campos reales. Lanza un error claro si un tipo no existe o falta un resolver. */
+export function fieldsFromJSON(campos: JSONField[], resolvers: Record<string, (...args: any[]) => any> = {}): Field[] {
+  const fn = (nombre: string, campo: string) => {
+    const r = resolvers[nombre]
+    if (typeof r !== 'function') throw new Error(`nexus-dialogs: falta el resolver «${nombre}» (campo «${campo}»)`)
+    return r
+  }
+  return campos.map((c) => {
+    if (!c || typeof c.name !== 'string' || typeof c.label !== 'string') throw new Error('nexus-dialogs: cada campo necesita name y label')
+    if (c.type && !TIPOS.has(c.type)) throw new Error(`nexus-dialogs: tipo desconocido «${c.type}» (campo «${c.name}»)`)
+    const f = { ...c } as unknown as Field
+    for (const k of ['validate', 'search', 'upload', 'totals', 'lookupPostalCode'] as const)
+      if (typeof c[k] === 'string') (f as any)[k] = fn(c[k] as string, c.name)
+    if (typeof c.creatable === 'string') f.creatable = fn(c.creatable, c.name)
+    if (c.fields) f.fields = fieldsFromJSON(c.fields, resolvers)
+    return f
   })
+}
+
+/** Abre un form() o un wizard() (si trae `steps`) a partir de JSON. Acepta el objeto o el texto JSON. */
+export function formFromJSON<T extends Record<string, unknown> = Record<string, unknown>>(
+  schema: FormSchema | string,
+  opts: FromJSONOptions<T> = {},
+): Promise<DialogResult<T>> {
+  try {
+    const sc: FormSchema = typeof schema === 'string' ? JSON.parse(schema) : schema
+    const r = opts.resolvers ?? {}
+    const global = sc.validate ? r[sc.validate] : undefined
+    if (sc.validate && typeof global !== 'function') throw new Error(`nexus-dialogs: falta el resolver «${sc.validate}» (validate)`)
+    const comunes = {
+      title: sc.title,
+      text: sc.text,
+      size: sc.size,
+      submitText: sc.submitText,
+      cancelText: sc.cancelText,
+      draftKey: sc.draftKey,
+      values: opts.values,
+    }
+    if (sc.steps) {
+      return wizard<T>({
+        ...comunes,
+        review: sc.review,
+        steps: sc.steps.map((p) => {
+          const v = p.validate ? r[p.validate] : undefined
+          if (p.validate && typeof v !== 'function') throw new Error(`nexus-dialogs: falta el resolver «${p.validate}» (paso «${p.title}»)`)
+          return { ...p, fields: fieldsFromJSON(p.fields, r), validate: v as WizardStep['validate'] }
+        }),
+        ...opts.options,
+      } as WizardOptions<T>)
+    }
+    return form<T>({
+      ...comunes,
+      columns: sc.columns,
+      fields: fieldsFromJSON(sc.fields ?? [], r),
+      validate: global as FormOptions<T>['validate'],
+      ...opts.options,
+    } as FormOptions<T>)
+  } catch (e) {
+    return Promise.reject(e)
+  }
 }
 
 const FORM_CSS = `

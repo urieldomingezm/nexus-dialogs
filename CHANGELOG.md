@@ -18,6 +18,12 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
   - `items`: filas repetibles con `fields`, `minRows`, `maxRows` y `totals` que se recalculan al escribir.
 - Un control dentro del diálogo puede «consumir» Esc (evento `nexus-dialogs:escape`): Esc cierra la lista del combobox, no el diálogo.
 - `combobox`: `avatars: true` muestra iniciales con un color fijo por nombre; con `avatar` (URL) en la opción, la foto.
+- Campo `phone`: lada a elegir (+52 por omisión), formato mientras se escribe y valor completo (`+528112345678`). `formatPhone()` exportado.
+- Campo `address`: dirección por código postal con `lookupPostalCode` (llena estado y municipio, ofrece las colonias).
+- Borrador automático en `form()` y `wizard()` con `draftKey` (y `draftPrompt`): sobrevive a recargar la página.
+- Pasos condicionales en `wizard()` con `when`.
+- Condiciones declarativas: `visibleIf` en campos y `when` en pasos (`equals`, `notEquals`, `in`, `filled`, `all`, `any`, `not`). `matches()` exportado.
+- `formFromJSON()` y `fieldsFromJSON()`: formularios y asistentes desde JSON, con funciones por nombre (`resolvers`).
 - Iconos `delete` (papelera) y `clock`. Las confirmaciones de peligro llevan la papelera por omisión.
 
 ### Cambiado

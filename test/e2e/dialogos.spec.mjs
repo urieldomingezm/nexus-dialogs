@@ -57,10 +57,11 @@ test.describe('diálogos', () => {
 
   test('alerta con timer: se cierra sola; el mouse encima la pausa', async ({ pagina: p }) => {
     await p.evaluate(() => {
-      nd.dialog.alert({ title: 'Rápida', timer: 400 }).then((r) => (window.ultimo = r))
+      nd.dialog.alert({ title: 'Rápida', timer: 1500 }).then((r) => (window.ultimo = r))
     })
+    // 1.5 s de margen: en CI lento el hover puede tardar; si no pausara, se cerraría antes de los 1.8 s de espera.
     await enDialogo(p, '.panel').hover()
-    await p.waitForTimeout(700)
+    await p.waitForTimeout(1800)
     await expect(p.locator('dialog[data-nexus-dialog]')).toHaveCount(1)
     await p.mouse.move(2, 2)
     expect(await resultado(p)).toMatchObject({ reason: 'timer' })
