@@ -391,7 +391,7 @@ const combobox: Fabrica = (ctx, valor) => {
   })
   input.addEventListener('blur', () => {
     setTimeout(() => {
-      if ((input.getRootNode() as ShadowRoot).activeElement === input) return
+      if (!input.isConnected || (input.getRootNode() as ShadowRoot).activeElement === input) return
       abrir(false)
       if (multiple) input.value = ''
       else textoSimple()
@@ -764,7 +764,7 @@ const otp: Fabrica = (ctx, valor) => {
   const pintar = () => {
     const v = input.value
     const pos = Math.min(input.selectionStart ?? v.length, n - 1)
-    const foco = (input.getRootNode() as ShadowRoot | Document).activeElement === input
+    const foco = input.isConnected && (input.getRootNode() as ShadowRoot | Document).activeElement === input
     cajas.forEach((c, i) => {
       c.textContent = v[i] ?? ''
       c.classList.toggle('active', foco && i === pos)

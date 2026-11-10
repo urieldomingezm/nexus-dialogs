@@ -313,7 +313,7 @@ export function openDialog<T = unknown>(opciones: EngineOptions<T>): Promise<Dia
   // ── Eventos ───────────────────────────────────────────────────────────────
   // Un control interno (la lista de un combobox) puede «consumir» el Esc: cierra lo suyo y el diálogo sigue abierto.
   // Chrome dispara 'cancel' aunque el keydown se haya cancelado, por eso se avisa con un evento propio.
-  let escapeConsumido = 0
+  let escapeConsumido = -Infinity
   dialog.addEventListener('nexus-dialogs:escape', () => (escapeConsumido = performance.now()))
   dialog.addEventListener('cancel', (e) => {
     e.preventDefault()
