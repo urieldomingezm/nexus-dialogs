@@ -3,8 +3,10 @@ import * as core from './index'
 import { form, wizard } from './forms'
 import { toast } from './toast'
 import { themes, fromBootstrap, applyTheme } from './themes'
+import * as patterns from './patterns'
+import * as mx from './mx'
 
-const NexusDialogs = { ...core, form, wizard, toast, themes, fromBootstrap, applyTheme }
+const NexusDialogs = { ...core, ...patterns, ...mx, form, wizard, toast, themes, fromBootstrap, applyTheme }
 
 declare global {
   interface Window {
@@ -15,3 +17,5 @@ if (typeof window !== 'undefined') window.NexusDialogs = NexusDialogs
 
 export { form, wizard, toast, themes, fromBootstrap, applyTheme }
 export * from './index'
+export * from './patterns'
+export * from './mx'

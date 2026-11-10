@@ -40,3 +40,5 @@ export function configure(c: GlobalConfig): void {
 
 export const config = (): Readonly<typeof estado> => estado
 export const labels = (): Labels => estado.labels
+/** Idioma configurado ('es' o 'en'). */
+export const language = (): 'es' | 'en' => estado.lang

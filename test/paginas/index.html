@@ -35,6 +35,17 @@
   <button id="b-gasto">Gasto (importe y RFC)</button>
 </div></section>
 
+<section><h2>Recetas (nexus-dialogs/patterns)</h2><div class="fila">
+  <button id="r-delete">Eliminar con nombre</button>
+  <button id="r-unsaved">Cambios sin guardar</button>
+  <button id="r-session">Sesión por expirar</button>
+  <button id="r-approval">Aprobar vacaciones</button>
+  <button id="r-bulk">Acción masiva</button>
+  <button id="r-choose">Elegir una opción</button>
+  <button id="r-loading">Pantalla de espera</button>
+  <button id="r-mx">Datos de México</button>
+</div></section>
+
 <section><h2>Toasts</h2><div class="fila">
   <button id="t-ok">Éxito</button>
   <button id="t-undo">Con deshacer</button>
@@ -59,8 +70,10 @@
   import { form, wizard } from '../../src/forms.ts'
   import { toast } from '../../src/toast.ts'
   import { themes } from '../../src/themes.ts'
+  import * as patterns from '../../src/patterns.ts'
   const { dialog, configure } = nd
-  window.nd = { ...nd, form, wizard, toast, themes }
+  window.nd = { ...nd, ...patterns, form, wizard, toast, themes }
+  const { confirmDelete, unsavedChanges, sessionTimeout, approval, bulkAction, choose, loading } = patterns
   const out = document.getElementById('out')
   const show = (r) => (out.textContent = JSON.stringify(r, null, 1))
   window.ultimo = null
@@ -111,6 +124,39 @@
     { name: 'rfc', label: 'RFC del proveedor', type: 'rfc', required: true },
     { name: 'importe', label: 'Importe', type: 'money', required: true, min: 1 },
     { name: 'concepto', label: 'Concepto', type: 'textarea', maxLength: 200 },
+  ] }))
+
+  on('r-delete', () => confirmDelete({ what: 'el periodo de nómina', name: 'Quincena 21', requireName: true,
+    consequences: ['148 recibos calculados', '12 incidencias capturadas', 'El borrador de dispersión bancaria'] }).then((ok) => ({ ok })))
+  on('r-unsaved', () => unsavedChanges({ changes: [
+    { label: 'Puesto', from: 'Analista de nómina', to: 'Coordinadora de nómina' },
+    { label: 'Salario diario', from: '$ 980.00', to: '$ 1,150.00' },
+  ], onSave: () => espera(300) }).then((decision) => ({ decision })))
+  on('r-session', () => sessionTimeout({ seconds: 90, text: 'Lo que llevas ya se guardó como borrador.' }).then((decision) => ({ decision })))
+  on('r-approval', () => approval({
+    title: 'Vacaciones de Diego Ramírez', subtitle: 'Solicitud SOL-2026-0412 · hace 2 h',
+    details: [{ label: 'Fechas', value: '16 – 20 dic' }, { label: 'Días hábiles', value: '5' }, { label: 'Saldo después', value: '7 de 12' }],
+    warning: '2 personas de Almacén ya tienen vacaciones esos días.',
+    reasons: ['Cubre otro turno', 'Cierre de inventario', 'Sin saldo'], allowRequestInfo: true,
+  }))
+  const empleados = ['Ana Torres', 'Luis Herrera', 'Marta Gil', 'Óscar Núñez', 'Pedro Salas', 'Rosa Vega', 'Iván Cruz'].map((n, i) => ({ n, area: i === 3 ? 'Logística' : 'Almacén' }))
+  on('r-bulk', () => bulkAction({ title: 'Cambiar de área a 7 empleados', items: empleados, label: (e) => e.n,
+    describe: (e) => `${e.area} → Logística`, skip: (e) => e.area === 'Logística' && 'ya está en Logística',
+    confirmText: (n) => `Mover ${n} empleados`,
+    run: async (e) => { await espera(150); if (e.n === 'Pedro Salas') throw new Error('tiene una baja vigente') } })
+    .then((r) => ({ confirmed: r.confirmed, done: r.done.length, failed: r.failed.map((x) => x.error), skipped: r.skipped.length })))
+  on('r-choose', () => choose({ title: 'Exportar nómina', text: '¿En qué formato?', options: [
+    { value: 'xlsx', label: 'Excel (.xlsx)', description: 'Para revisar y filtrar' },
+    { value: 'csv', label: 'CSV', description: 'Para importar en otro sistema' },
+    { value: 'pdf', label: 'PDF', description: 'Recibos listos para imprimir', disabled: true },
+  ] }).then((value) => ({ value })))
+  on('r-loading', () => loading('Timbrando 148 recibos…', () => espera(1200).then(() => 148)).then((n) => ({ n })))
+  on('r-mx', () => form({ title: 'Datos fiscales y de nómina', columns: 2, submitText: 'Guardar', fields: [
+    { name: 'rfc', label: 'RFC', type: 'rfc', required: true },
+    { name: 'curp', label: 'CURP', type: 'curp', required: true },
+    { name: 'nss', label: 'NSS', type: 'nss', required: true },
+    { name: 'cp', label: 'Código postal', type: 'postal', required: true },
+    { name: 'clabe', label: 'CLABE', type: 'clabe', required: true, span: 2 },
   ] }))
 
   on('t-ok', () => void toast.success('Empleado guardado'))

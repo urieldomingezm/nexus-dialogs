@@ -23,16 +23,18 @@ Las librerías de alertas resuelven el «¿Seguro?» y poco más. En un sistema 
 
 1. [Instalación](#1-instalación)
 2. [Inicio rápido](#2-inicio-rápido)
-3. [Estándar de botones](#3-estándar-de-botones)
-4. [Diálogos](#4-diálogos)
-5. [Formularios](#5-formularios)
-6. [Asistentes (wizard)](#6-asistentes-wizard)
-7. [Toasts](#7-toasts)
-8. [Temas y apariencia](#8-temas-y-apariencia)
-9. [Idioma y textos](#9-idioma-y-textos)
-10. [Referencia rápida](#10-referencia-rápida)
-11. [Compatibilidad](#11-compatibilidad)
-12. [Desarrollo](#12-desarrollo)
+3. [Recetas: lo de todos los días en una línea](#3-recetas-lo-de-todos-los-días-en-una-línea)
+4. [Estándar de botones](#4-estándar-de-botones)
+5. [Diálogos](#5-diálogos)
+6. [Formularios](#6-formularios)
+7. [Asistentes (wizard)](#7-asistentes-wizard)
+8. [Toasts](#8-toasts)
+9. [Validadores de México](#9-validadores-de-méxico)
+10. [Temas y apariencia](#10-temas-y-apariencia)
+11. [Idioma y textos](#11-idioma-y-textos)
+12. [Referencia rápida](#12-referencia-rápida)
+13. [Compatibilidad](#13-compatibilidad)
+14. [Desarrollo](#14-desarrollo)
 
 ## 1. Instalación
 
@@ -46,13 +48,15 @@ npm i nexus-dialogs
 | `nexus-dialogs/forms` | `form()` y `wizard()` |
 | `nexus-dialogs/toast` | `toast()` con cola |
 | `nexus-dialogs/themes` | Temas listos (Bootstrap, Tailwind, Material, oscuro) |
+| `nexus-dialogs/patterns` | Recetas en una línea: borrar, cambios sin guardar, sesión, aprobaciones, acciones masivas… |
+| `nexus-dialogs/mx` | Validadores de RFC, CURP, NSS, CLABE y código postal (también en Node) |
 
 Sin bundler, con un `<script>`:
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/nexus-dialogs/dist/nexus-dialogs.all.iife.js"></script>
 <script>
-  const { dialog, form, toast } = NexusDialogs
+  const { dialog, form, toast, confirmDelete, isCURP } = NexusDialogs
 </script>
 ```
 
@@ -86,7 +90,132 @@ const nuevo = await form<{ nombre: string; correo: string }>({
 if (nuevo.confirmed) toast.success('Cliente creado')
 ```
 
-## 3. Estándar de botones
+## 3. Recetas: lo de todos los días en una línea
+
+¿No sabes qué diálogo usar? Empieza aquí. Cada receta ya trae el texto, los botones, el foco y la accesibilidad correctos; tú solo dices qué pasa.
+
+```ts
+import { confirmDelete, unsavedChanges, sessionTimeout, watchIdle, approval, bulkAction, choose, loading } from 'nexus-dialogs/patterns'
+```
+
+| Necesito… | Usa | Te devuelve |
+|---|---|---|
+| Confirmar un borrado | `confirmDelete` | `true` / `false` |
+| Avisar que hay cambios sin guardar | `unsavedChanges` | `'save'` / `'discard'` / `'keep'` |
+| Avisar que la sesión expira | `sessionTimeout` o `watchIdle` | `'extend'` / `'logout'` / `'expired'` |
+| Aprobar o rechazar una solicitud | `approval` | `{ decision, comment, reason }` |
+| Aplicar algo a muchos registros | `bulkAction` | `{ done, failed, skipped }` |
+| Elegir una opción entre varias | `choose` | el valor o `null` |
+| Bloquear mientras termina algo | `loading` | lo que devuelva la tarea |
+
+### Borrar algo
+
+```ts
+if (await confirmDelete({ what: 'a Laura Méndez' })) await api.empleados.borrar(id)
+
+// Algo grande e irreversible: lista lo que se pierde y pide escribir el nombre
+await confirmDelete({
+  what: 'el periodo de nómina',
+  name: 'Quincena 21',
+  requireName: true,
+  consequences: ['148 recibos calculados', '12 incidencias capturadas'],
+  onConfirm: () => api.periodos.borrar(21), // muestra «Procesando…»; si falla, enseña el error
+})
+```
+
+### Salir con cambios sin guardar
+
+```ts
+const decision = await unsavedChanges({
+  changes: [{ label: 'Salario diario', from: '$ 980.00', to: '$ 1,150.00' }],
+  onSave: () => guardar(),
+})
+if (decision !== 'keep') router.back()
+```
+
+El foco empieza en «Seguir editando» (lo más común es haber cerrado sin querer) y Esc también regresa al formulario.
+
+### Sesión por expirar
+
+```ts
+// Una sola línea al iniciar la app: vigila la inactividad y avisa 2 minutos antes
+const sesion = watchIdle({
+  minutes: 30,
+  onExtend: () => api.renovarToken(),
+  onLogout: () => (location.href = '/login'),
+})
+// sesion.reset() cuenta como actividad; sesion.stop() deja de vigilar (al cerrar sesión).
+```
+
+O el aviso suelto: `await sessionTimeout({ seconds: 120 })`. Cumple WCAG 2.2.1: cuenta regresiva visible, foco en «Seguir trabajando», extensiones sin límite y al lector de pantalla solo se anuncia cada minuto.
+
+### Aprobar o rechazar
+
+```ts
+const r = await approval({
+  title: 'Vacaciones de Diego Ramírez',
+  subtitle: 'Solicitud SOL-2026-0412 · hace 2 h',
+  details: [
+    { label: 'Fechas', value: '16 – 20 dic' },
+    { label: 'Días hábiles', value: '5' },
+  ],
+  warning: '2 personas de Almacén ya tienen vacaciones esos días.',
+  reasons: ['Cubre otro turno', 'Cierre de inventario', 'Sin saldo'],
+  allowRequestInfo: true,
+  onApprove: (comentario) => api.aprobar(id, comentario),
+  onReject: (comentario, motivo) => api.rechazar(id, comentario, motivo),
+})
+r.decision // 'approved' | 'rejected' | 'info' | 'cancelled'
+```
+
+Aprobar: comentario opcional. Rechazar: abre un segundo paso con motivos rápidos y explicación obligatoria (mínimo 10 caracteres, `minReasonLength`).
+
+### Acciones masivas
+
+```ts
+const r = await bulkAction({
+  title: 'Cambiar de área a 12 empleados',
+  items: seleccionados,
+  label: (e) => e.nombre,
+  describe: (e) => `${e.area} → Logística`,
+  skip: (e) => e.area === 'Logística' && 'ya está en Logística',
+  confirmText: (n) => `Mover ${n} empleados`,
+  run: (e) => api.empleados.mover(e.id, 'logistica'), // si lanza, esa fila queda con error y sigue con las demás
+})
+toast.success(`${r.done.length} movidos`)
+```
+
+Vista previa, confirmación, barra de progreso, resultado fila por fila y «Reintentar» solo los que fallaron. No se puede cerrar mientras corre.
+
+### Elegir entre opciones
+
+```ts
+const formato = await choose({
+  title: 'Exportar nómina',
+  options: [
+    { value: 'xlsx', label: 'Excel', description: 'Para revisar y filtrar' },
+    { value: 'csv', label: 'CSV', description: 'Para importar en otro sistema' },
+  ],
+})
+if (formato) exportar(formato)
+```
+
+### Esperar algo que bloquea
+
+```ts
+const folios = await loading('Timbrando 148 recibos…', () => api.timbrar())
+
+// Con avance
+const espera = loading.open('Preparando…')
+espera.update('Timbrando 40 de 148…')
+espera.close()
+```
+
+Si la tarea falla, la espera se cierra y el error se relanza para que lo muestres (por ejemplo con `dialog.error`). Para lo que no bloquea, mejor `toast.promise`.
+
+Textos de las recetas: siguen el idioma de `configure({ lang })`; cambia los que quieras con `configurePatterns({ stay: 'Continuar aquí' })`.
+
+## 4. Estándar de botones
 
 Cada botón dice **la acción** («Crear cliente», no «Aceptar») y su color dice **qué tipo de acción es**. Los botones no llevan iconos.
 
@@ -105,7 +234,7 @@ Reglas que la librería aplica sola:
 
 Si defines tus botones, la variante sale del `role` (`confirm` → primary, `cancel`/`deny` → cancel, `custom` → secondary) o la pones tú con `variant`.
 
-## 4. Diálogos
+## 5. Diálogos
 
 ### Alertas
 
@@ -191,7 +320,7 @@ dialog.open({ title: 'Compartir', placement: 'bottom' })
 
 `ctx` permite `setLoading`, `setError`, `setTitle`, `setButtons`, `button(id)` y `close()`.
 
-## 5. Formularios
+## 6. Formularios
 
 ```ts
 import { form } from 'nexus-dialogs/forms'
@@ -211,10 +340,10 @@ const r = await form({
 })
 ```
 
-**Tipos de campo**: `text`, `email`, `tel`, `url`, `password`, `number`, `date`, `time`, `textarea`, `select`, `radio`, `segmented`, `checkbox`, `switch`, y dos para México:
+**Tipos de campo**: `text`, `email`, `tel`, `url`, `password`, `number`, `date`, `time`, `textarea`, `select`, `radio`, `segmented`, `checkbox`, `switch`, y para México:
 
 - `money`: muestra `$ 12,500.50 MXN` al salir del campo, teclado numérico en celular, devuelve `number`. Cambia `currency` y `locale` si hace falta.
-- `rfc`: convierte a mayúsculas y valida 12 (moral) o 13 (física) caracteres.
+- `rfc`, `curp`, `nss`, `clabe`, `postal`: ver [Validadores de México](#9-validadores-de-méxico).
 
 **Validación**: `required`, `minLength`, `maxLength`, `min`, `max`, `pattern` (+ `patternMessage`) y `validate(valor, valores)` por campo, que puede ser async («¿ya existe este RFC?»). Al enviar con errores aparece un **resumen arriba con enlaces** a cada campo, cada campo queda con `aria-invalid` y su mensaje ligado con `aria-describedby`.
 
@@ -224,7 +353,7 @@ const r = await form({
 
 Los valores llegan con su tipo: `number`/`money` → `number | null`, `checkbox`/`switch` → `boolean`, lo demás → `string` (sin espacios al inicio y al final).
 
-## 6. Asistentes (wizard)
+## 7. Asistentes (wizard)
 
 ```ts
 import { wizard } from 'nexus-dialogs/forms'
@@ -242,7 +371,7 @@ const r = await wizard({
 
 Cada paso valida antes de avanzar, «Atrás» nunca pierde datos, Enter avanza, el título del paso recibe el foco para que el lector de pantalla lo anuncie («Paso 2 de 3») y en celular el indicador muestra solo el paso actual. `onStepChange(i, valores)` avisa cada cambio.
 
-## 7. Toasts
+## 8. Toasts
 
 ```ts
 import { toast } from 'nexus-dialogs/toast'
@@ -269,7 +398,43 @@ toast.configure({ position: 'top-right', max: 3, duration: 4000 })
 - **Dentro de modales**: con un diálogo modal abierto (de esta librería o cualquier `<dialog>`), el toast se monta dentro de él; si no, quedaría inerte detrás y no se podría pulsar «Deshacer». Sin modal, usa el Popover API para quedar sobre cualquier `z-index`.
 - En celular salen arriba para no tapar los botones de la hoja inferior.
 
-## 8. Temas y apariencia
+## 9. Validadores de México
+
+En formularios, usa el tipo de campo y listo:
+
+```ts
+fields: [
+  { name: 'rfc', label: 'RFC', type: 'rfc', required: true },
+  { name: 'curp', label: 'CURP', type: 'curp', required: true },
+  { name: 'nss', label: 'NSS', type: 'nss' },
+  { name: 'clabe', label: 'CLABE', type: 'clabe' },
+  { name: 'cp', label: 'Código postal', type: 'postal' },
+]
+```
+
+Pasan a mayúsculas, ponen el teclado numérico en celular, limitan el largo y validan **el dígito verificador** (CURP, NSS, CLABE), no solo el formato.
+
+Los mismos validadores, sin DOM, para usarlos donde quieras (también en tu API con Node):
+
+```ts
+import { isRFC, isCURP, isNSS, isCLABE, isPostalCode, normalize } from 'nexus-dialogs/mx'
+
+isCLABE('002010077777777771') // true
+isCURP('PELJ900515HJCRPN03')  // true
+normalize(' pem840101ab3 ')   // 'PEM840101AB3'
+```
+
+| Función | Revisa |
+|---|---|
+| `isRFC` | 12 (moral) o 13 (física) caracteres con fecha válida. No calcula la homoclave. |
+| `isCURP` | 18 caracteres, fecha, sexo, estado y dígito verificador |
+| `isNSS` | 11 dígitos y dígito verificador (Luhn) |
+| `isCLABE` | 18 dígitos y dígito de control (pesos 3, 7, 1) |
+| `isPostalCode` | 5 dígitos, de 01000 a 99999 |
+
+Validan la forma, no que el dato exista ante el SAT, el IMSS o un banco.
+
+## 10. Temas y apariencia
 
 Todo color y medida sale de variables `--nd-*`. Ponlas en `:root` (se heredan dentro del Shadow DOM) o con `configure`:
 
@@ -301,7 +466,7 @@ Temas incluidos: `light`, `dark`, `bootstrap`, `tailwind`, `material`. Para CSS 
 
 El CSS se aplica con hojas de estilo construibles (`adoptedStyleSheets`), así que funciona con una Content-Security-Policy estricta sin `unsafe-inline`.
 
-## 9. Idioma y textos
+## 11. Idioma y textos
 
 Español por omisión. Inglés con `configure({ lang: 'en' })` (y `toast.configure({ lang: 'en' })`). Cambia textos sueltos:
 
@@ -309,7 +474,7 @@ Español por omisión. Inglés con `configure({ lang: 'en' })` (y `toast.configu
 configure({ labels: { cancel: 'Cerrar', submit: 'Guardar cambios' } })
 ```
 
-## 10. Referencia rápida
+## 12. Referencia rápida
 
 | | |
 |---|---|
@@ -322,20 +487,22 @@ configure({ labels: { cancel: 'Cerrar', submit: 'Guardar cambios' } })
 | `form(opts)`, `wizard(opts)` | `nexus-dialogs/forms` |
 | `toast(...)`, `toast.success/error/warning/info/loading/promise/update/dismiss/configure` | `nexus-dialogs/toast` |
 | `themes`, `fromBootstrap()`, `applyTheme()` | `nexus-dialogs/themes` |
+| `confirmDelete`, `unsavedChanges`, `sessionTimeout`, `watchIdle`, `approval`, `bulkAction`, `choose`, `loading`, `configurePatterns` | `nexus-dialogs/patterns` |
+| `isRFC`, `isCURP`, `isNSS`, `isCLABE`, `isPostalCode`, `normalize` | `nexus-dialogs/mx` |
 | `configure({ lang, labels, theme, scheme, defaults, sheetOnMobile })` | Global |
 
 Eventos en `document`: `nexus-dialogs:open` y `nexus-dialogs:close` (con `detail.dialog`).
 
 La API pública completa, generada de los tipos, está en [`api/nexus-dialogs.api.md`](api/nexus-dialogs.api.md).
 
-## 11. Compatibilidad
+## 13. Compatibilidad
 
 - Navegadores actuales: Chrome/Edge 111+, Firefox 113+, Safari 16.4+ (usa `<dialog>` modal y `color-mix()`). Probado en Chromium, Firefox y WebKit.
 - **nexus-tours**: los diálogos son `<dialog open>` de verdad, así que los tours los detectan y pueden explicar lo que hay dentro.
 - Bootstrap, Tailwind, SweetAlert2: sin choques de `z-index` ni de CSS.
 - Node/SSR: importar no toca el DOM; los diálogos se abren solo en el navegador.
 
-## 12. Desarrollo
+## 14. Desarrollo
 
 ```bash
 npm ci

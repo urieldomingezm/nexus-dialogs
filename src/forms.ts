@@ -18,6 +18,7 @@
 import { INVALID, labels, openDialog } from 'nexus-dialogs'
 import type { ButtonSpec, DialogContext, DialogOptions, DialogResult, Labels } from 'nexus-dialogs'
 import { h, uid } from './core/dom'
+import { isCLABE, isCURP, isNSS, isPostalCode, isRFC } from './mx'
 
 export type FieldType =
   | 'text'
@@ -36,6 +37,10 @@ export type FieldType =
   | 'switch'
   | 'money'
   | 'rfc'
+  | 'curp'
+  | 'nss'
+  | 'clabe'
+  | 'postal'
 
 export type Option = string | { value: string; label: string; disabled?: boolean }
 type Msg = string | void | null | undefined
@@ -44,7 +49,7 @@ export interface Field {
   /** Clave en el objeto de valores. */
   name: string
   label: string
-  /** Por omisión 'text'. money: importe con separador de miles; rfc: RFC mexicano (12 o 13 caracteres). */
+  /** Por omisión 'text'. money: importe con separador de miles. México: rfc, curp, nss, clabe, postal (con dígito verificador). */
   type?: FieldType
   value?: unknown
   placeholder?: string
@@ -84,7 +89,14 @@ interface Control {
 
 const opcion = (o: Option) => (typeof o === 'string' ? { value: o, label: o, disabled: false } : { disabled: false, ...o })
 const vacio = (v: unknown) => v === undefined || v === null || v === '' || (typeof v === 'number' && Number.isNaN(v))
-const RFC = /^[A-ZÑ&]{3,4}\d{6}[A-Z\d]{3}$/
+/** Tipos mexicanos: largo máximo, si van en mayúsculas, teclado numérico y su validador. */
+const MX: Record<string, { max: number; upper?: boolean; numeric?: boolean; ok: (v: string) => boolean; msg: keyof Labels }> = {
+  rfc: { max: 13, upper: true, ok: isRFC, msg: 'invalidRfc' },
+  curp: { max: 18, upper: true, ok: isCURP, msg: 'invalidCurp' },
+  nss: { max: 11, numeric: true, ok: isNSS, msg: 'invalidNss' },
+  clabe: { max: 18, numeric: true, ok: isCLABE, msg: 'invalidClabe' },
+  postal: { max: 5, numeric: true, ok: isPostalCode, msg: 'invalidPostal' },
+}
 
 function numeroDe(texto: string): number | null {
   const limpio = texto.replace(/[^\d.-]/g, '')
@@ -182,12 +194,12 @@ class FieldSet {
         name: f.name,
         placeholder: f.placeholder,
         disabled: f.disabled,
-        autocomplete: f.autocomplete ?? (tipo === 'rfc' ? 'off' : null),
-        inputmode: f.inputmode ?? (tipo === 'money' ? 'decimal' : tipo === 'number' ? 'decimal' : null),
+        autocomplete: f.autocomplete ?? (tipo === 'postal' ? 'postal-code' : MX[tipo] ? 'off' : null),
+        inputmode: f.inputmode ?? (tipo === 'money' || tipo === 'number' ? 'decimal' : MX[tipo]?.numeric ? 'numeric' : null),
         'aria-describedby': describe,
         'aria-required': requerido,
         minlength: f.minLength,
-        maxlength: f.maxLength ?? (tipo === 'rfc' ? 13 : null),
+        maxlength: f.maxLength ?? MX[tipo]?.max ?? null,
       }
       let input: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
       if (tipo === 'textarea') input = h('textarea', { ...comunes, rows: 3 })
@@ -199,18 +211,18 @@ class FieldSet {
           ...(f.options ?? []).map(opcion).map((o) => h('option', { value: o.value, disabled: o.disabled }, o.label)),
         )
       } else {
-        const html: Record<string, string> = { money: 'text', rfc: 'text', number: 'number' }
+        const html: Record<string, string> = { money: 'text', number: 'number' }
         input = h('input', {
           ...comunes,
-          type: html[tipo] ?? tipo,
+          type: html[tipo] ?? (MX[tipo] ? 'text' : tipo),
           min: f.min,
           max: f.max,
           step: f.step ?? (tipo === 'number' ? 'any' : null),
-          spellcheck: tipo === 'rfc' ? 'false' : null,
+          spellcheck: MX[tipo] ? 'false' : null,
         })
       }
       input.value = vacio(valor) ? '' : tipo === 'money' ? this.dinero(f, Number(valor)) : String(valor)
-      if (tipo === 'rfc') input.addEventListener('input', () => ((input as HTMLInputElement).value = input.value.toUpperCase()))
+      if (MX[tipo]?.upper) input.addEventListener('input', () => ((input as HTMLInputElement).value = input.value.toUpperCase()))
       if (tipo === 'money') {
         input.addEventListener('focus', () => {
           const n = numeroDe(input.value)
@@ -304,7 +316,7 @@ class FieldSet {
           return L.invalidUrl
         }
       }
-      if (t === 'rfc' && !RFC.test(v)) return L.invalidRfc
+      if (MX[t] && !MX[t].ok(v)) return L[MX[t].msg] as string
       if (f.minLength && v.length < f.minLength) return L.minLength.replace('{0}', String(f.minLength))
       if (f.maxLength && v.length > f.maxLength) return L.maxLength.replace('{0}', String(f.maxLength))
       if (f.pattern && !(typeof f.pattern === 'string' ? new RegExp(`^(?:${f.pattern})$`) : f.pattern).test(v))

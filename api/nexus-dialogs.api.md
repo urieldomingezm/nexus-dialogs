@@ -144,6 +144,10 @@ interface Labels {
     max: string;
     pattern: string;
     invalidRfc: string;
+    invalidCurp: string;
+    invalidNss: string;
+    invalidClabe: string;
+    invalidPostal: string;
     errorSummary: string;
     next: string;
     back: string;
@@ -165,6 +169,8 @@ interface Labels {
     warning: string;
     info: string;
 }
+
+const language: () => "es" | "en";
 
 const open: <T = unknown>(opciones: DialogOptions<T> & {
     render?: (ctx: DialogContext) => Node | null | void;
@@ -229,7 +235,7 @@ interface Field {
     locale?: string;
 }
 
-type FieldType = 'text' | 'email' | 'tel' | 'url' | 'password' | 'number' | 'date' | 'time' | 'textarea' | 'select' | 'radio' | 'segmented' | 'checkbox' | 'switch' | 'money' | 'rfc';
+type FieldType = 'text' | 'email' | 'tel' | 'url' | 'password' | 'number' | 'date' | 'time' | 'textarea' | 'select' | 'radio' | 'segmented' | 'checkbox' | 'switch' | 'money' | 'rfc' | 'curp' | 'nss' | 'clabe' | 'postal';
 
 function form<T extends Record<string, unknown> = Record<string, unknown>>(o: FormOptions<T>): Promise<DialogResult<T>>;
 
@@ -346,12 +352,211 @@ const themes: {
 };
 ```
 
+## `nexus-dialogs/patterns`
+
+```ts
+function approval(o: ApprovalOptions): Promise<ApprovalResult>;
+
+interface ApprovalOptions {
+    title: string;
+    subtitle?: string;
+    details?: {
+        label: string;
+        value: string;
+    }[];
+    warning?: string;
+    reasons?: string[];
+    minReasonLength?: number;
+    allowRequestInfo?: boolean;
+    approveText?: string;
+    onApprove?: (comment: string) => unknown;
+    onReject?: (comment: string, reason?: string) => unknown;
+    onRequestInfo?: (comment: string) => unknown;
+}
+
+interface ApprovalResult {
+    decision: 'approved' | 'rejected' | 'info' | 'cancelled';
+    comment: string;
+    reason?: string;
+}
+
+function bulkAction<T>(o: BulkActionOptions<T>): Promise<BulkActionResult<T>>;
+
+interface BulkActionOptions<T> {
+    title: string;
+    items: T[];
+    label: (item: T) => string;
+    describe?: (item: T) => string;
+    skip?: (item: T) => string | false | null | undefined;
+    run: (item: T) => unknown;
+    confirmText?: string | ((n: number) => string);
+    concurrency?: number;
+    preview?: number;
+}
+
+interface BulkActionResult<T> {
+    confirmed: boolean;
+    done: T[];
+    failed: {
+        item: T;
+        error: string;
+    }[];
+    skipped: {
+        item: T;
+        reason: string;
+    }[];
+}
+
+interface Change {
+    label: string;
+    from?: string;
+    to?: string;
+}
+
+function choose<V extends string>(o: ChooseOptions<V>): Promise<V | null>;
+
+interface ChooseOption<V extends string> {
+    value: V;
+    label: string;
+    description?: string;
+    disabled?: boolean;
+}
+
+interface ChooseOptions<V extends string> {
+    title: string;
+    text?: string;
+    options: ChooseOption<V>[];
+    value?: V;
+    confirmText?: string;
+}
+
+function configurePatterns(textos: Partial<Textos>): void;
+
+function confirmDelete(o: ConfirmDeleteOptions): Promise<boolean>;
+
+interface ConfirmDeleteOptions {
+    what: string;
+    name?: string;
+    consequences?: string[];
+    requireName?: boolean;
+    irreversible?: boolean;
+    confirmText?: string;
+    onConfirm?: () => unknown;
+}
+
+function loading<R>(texto: string, tarea: Promise<R> | (() => Promise<R> | R)): Promise<R>;
+namespace loading {
+    var open: typeof abrirCarga;
+}
+
+interface LoadingHandle {
+    update(text: string): void;
+    close(): void;
+}
+
+function sessionTimeout(o?: SessionTimeoutOptions): Promise<'extend' | 'logout' | 'expired'>;
+
+interface SessionTimeoutOptions {
+    seconds?: number;
+    text?: string;
+}
+
+function unsavedChanges(o?: UnsavedChangesOptions): Promise<'save' | 'discard' | 'keep'>;
+
+interface UnsavedChangesOptions {
+    changes?: Change[];
+    canSave?: boolean;
+    onSave?: () => unknown;
+}
+
+function watchIdle(o: WatchIdleOptions): {
+    stop: () => void;
+    reset: () => void;
+};
+
+interface WatchIdleOptions {
+    minutes: number;
+    warnSeconds?: number;
+    onExtend?: () => unknown;
+    onLogout: (reason: 'logout' | 'expired') => unknown;
+    text?: string;
+}
+```
+
+## `nexus-dialogs/mx`
+
+```ts
+function isCLABE(valor: string): boolean;
+
+function isCURP(valor: string): boolean;
+
+function isNSS(valor: string): boolean;
+
+const isPostalCode: (valor: string) => boolean;
+
+function isRFC(valor: string): boolean;
+
+const normalize: (v: string) => string;
+```
+
 ## `nexus-dialogs/all`
 
 ```ts
 function alert(opciones: DialogInput<true>, text?: string): Promise<DialogResult<true>>;
 
 function applyTheme(theme: Theme, el?: HTMLElement): void;
+
+function approval(o: ApprovalOptions): Promise<ApprovalResult>;
+
+interface ApprovalOptions {
+    title: string;
+    subtitle?: string;
+    details?: {
+        label: string;
+        value: string;
+    }[];
+    warning?: string;
+    reasons?: string[];
+    minReasonLength?: number;
+    allowRequestInfo?: boolean;
+    approveText?: string;
+    onApprove?: (comment: string) => unknown;
+    onReject?: (comment: string, reason?: string) => unknown;
+    onRequestInfo?: (comment: string) => unknown;
+}
+
+interface ApprovalResult {
+    decision: 'approved' | 'rejected' | 'info' | 'cancelled';
+    comment: string;
+    reason?: string;
+}
+
+function bulkAction<T>(o: BulkActionOptions<T>): Promise<BulkActionResult<T>>;
+
+interface BulkActionOptions<T> {
+    title: string;
+    items: T[];
+    label: (item: T) => string;
+    describe?: (item: T) => string;
+    skip?: (item: T) => string | false | null | undefined;
+    run: (item: T) => unknown;
+    confirmText?: string | ((n: number) => string);
+    concurrency?: number;
+    preview?: number;
+}
+
+interface BulkActionResult<T> {
+    confirmed: boolean;
+    done: T[];
+    failed: {
+        item: T;
+        error: string;
+    }[];
+    skipped: {
+        item: T;
+        reason: string;
+    }[];
+}
 
 type ButtonRole = 'confirm' | 'cancel' | 'deny' | 'custom';
 
@@ -368,11 +573,48 @@ interface ButtonSpec {
 
 type ButtonVariant = 'primary' | 'cancel' | 'danger' | 'secondary';
 
+interface Change {
+    label: string;
+    from?: string;
+    to?: string;
+}
+
+function choose<V extends string>(o: ChooseOptions<V>): Promise<V | null>;
+
+interface ChooseOption<V extends string> {
+    value: V;
+    label: string;
+    description?: string;
+    disabled?: boolean;
+}
+
+interface ChooseOptions<V extends string> {
+    title: string;
+    text?: string;
+    options: ChooseOption<V>[];
+    value?: V;
+    confirmText?: string;
+}
+
 type CloseReason = 'confirm' | 'cancel' | 'deny' | 'escape' | 'backdrop' | 'close' | 'timer' | 'program' | (string & {});
 
 function configure(c: GlobalConfig): void;
 
+function configurePatterns(textos: Partial<Textos>): void;
+
 function confirm(opciones: DialogInput<true>, text?: string): Promise<DialogResult<true>>;
+
+function confirmDelete(o: ConfirmDeleteOptions): Promise<boolean>;
+
+interface ConfirmDeleteOptions {
+    what: string;
+    name?: string;
+    consequences?: string[];
+    requireName?: boolean;
+    irreversible?: boolean;
+    confirmText?: string;
+    onConfirm?: () => unknown;
+}
 
 const dialog: {
     alert: typeof alert;
@@ -474,6 +716,16 @@ type IconName = 'success' | 'error' | 'warning' | 'info' | 'question';
 
 const INVALID: unique symbol;
 
+function isCLABE(valor: string): boolean;
+
+function isCURP(valor: string): boolean;
+
+function isNSS(valor: string): boolean;
+
+const isPostalCode: (valor: string) => boolean;
+
+function isRFC(valor: string): boolean;
+
 const labels: () => Labels;
 
 interface Labels {
@@ -493,6 +745,10 @@ interface Labels {
     max: string;
     pattern: string;
     invalidRfc: string;
+    invalidCurp: string;
+    invalidNss: string;
+    invalidClabe: string;
+    invalidPostal: string;
     errorSummary: string;
     next: string;
     back: string;
@@ -514,6 +770,20 @@ interface Labels {
     warning: string;
     info: string;
 }
+
+const language: () => "es" | "en";
+
+function loading<R>(texto: string, tarea: Promise<R> | (() => Promise<R> | R)): Promise<R>;
+namespace loading {
+    var open: typeof abrirCarga;
+}
+
+interface LoadingHandle {
+    update(text: string): void;
+    close(): void;
+}
+
+const normalize: (v: string) => string;
 
 const open: <T = unknown>(opciones: DialogOptions<T> & {
     render?: (ctx: DialogContext) => Node | null | void;
@@ -544,6 +814,13 @@ interface PromptOptions extends DialogOptions<string> {
 
 type Scheme = 'light' | 'dark' | 'auto';
 
+function sessionTimeout(o?: SessionTimeoutOptions): Promise<'extend' | 'logout' | 'expired'>;
+
+interface SessionTimeoutOptions {
+    seconds?: number;
+    text?: string;
+}
+
 type Size = 'sm' | 'md' | 'lg' | 'xl' | number;
 
 const themes: {
@@ -567,7 +844,28 @@ namespace toast {
     var configure: typeof configureToast;
 }
 
+function unsavedChanges(o?: UnsavedChangesOptions): Promise<'save' | 'discard' | 'keep'>;
+
+interface UnsavedChangesOptions {
+    changes?: Change[];
+    canSave?: boolean;
+    onSave?: () => unknown;
+}
+
 const version: string;
+
+function watchIdle(o: WatchIdleOptions): {
+    stop: () => void;
+    reset: () => void;
+};
+
+interface WatchIdleOptions {
+    minutes: number;
+    warnSeconds?: number;
+    onExtend?: () => unknown;
+    onLogout: (reason: 'logout' | 'expired') => unknown;
+    text?: string;
+}
 
 function wizard<T extends Record<string, unknown> = Record<string, unknown>>(o: WizardOptions<T>): Promise<DialogResult<T>>;
 ```
