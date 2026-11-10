@@ -8,8 +8,8 @@ import { transformSync } from 'esbuild'
 
 const LIMITES = {
   'nexus-dialogs': 9.5,
-  'nexus-dialogs.all': 23,
-  forms: 6.5,
+  'nexus-dialogs.all': 31,
+  forms: 14,
   toast: 6,
   themes: 1,
   patterns: 7,

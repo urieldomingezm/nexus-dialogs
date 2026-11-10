@@ -408,10 +408,82 @@ const r = await form({
 })
 ```
 
-**Tipos de campo**: `text`, `email`, `tel`, `url`, `password`, `number`, `date`, `time`, `textarea`, `select`, `radio`, `segmented`, `checkbox`, `switch`, y para México:
+**Tipos de campo**: `text`, `email`, `tel`, `url`, `password`, `number`, `date`, `time`, `textarea`, `select`, `radio`, `segmented`, `checkbox`, `switch`, los [avanzados](#campos-avanzados) `combobox`, `file`, `daterange`, `otp` e `items`, y para México:
 
 - `money`: muestra `$ 12,500.50 MXN` al salir del campo, teclado numérico en celular, devuelve `number`. Cambia `currency` y `locale` si hace falta.
 - `rfc`, `curp`, `nss`, `clabe`, `postal`: ver [Validadores de México](#9-validadores-de-méxico).
+
+### Campos avanzados
+
+Cinco tipos más, con teclado, lector de pantalla y validación incluidos:
+
+| Tipo | Para | Devuelve |
+|---|---|---|
+| `combobox` | Buscar y elegir (clientes, empleados), uno o varios | `string` o `string[]` |
+| `file` | Subir archivos, con arrastrar y soltar | `File`, `File[]` o lo que devuelva `upload` |
+| `daterange` | Periodos con atajos («Quincena actual») | `{ from, to }` en `AAAA-MM-DD` |
+| `otp` | Código de verificación | `string` |
+| `items` | Filas repetibles con totales (partidas, conceptos) | arreglo de filas |
+
+**Buscar y seleccionar**
+
+```ts
+{ name: 'cliente', label: 'Cliente', type: 'combobox', required: true,
+  search: (q) => api.clientes.buscar(q),     // o `options: [...]` para una lista fija
+  creatable: (texto) => api.clientes.crear(texto) }, // ofrece «Crear «texto»» si no existe
+
+{ name: 'equipo', label: 'Equipo', type: 'combobox', multiple: true, maxItems: 3,
+  options: [{ value: 'ana', label: 'Ana Torres', description: 'Almacén', group: 'Almacén' }, …] }
+```
+
+Busca sin acentos («nomina» encuentra «Nómina»). Flechas para moverse, Enter elige y Esc cierra solo la lista. En múltiple, cada elegido es un chip con su botón «Quitar» y Retroceso borra el último. Con `search`, espera 250 ms a que dejes de escribir.
+
+**Subir archivos**
+
+```ts
+{ name: 'ine', label: 'INE', type: 'file', multiple: true, maxFiles: 2,
+  accept: '.pdf,image/*', maxSize: 5 * 1024 * 1024,
+  upload: (file, progreso) => api.subir(file, progreso) } // opcional: sube al agregarlo
+```
+
+Siempre hay botón «Elegir archivos» además de arrastrar. Los archivos de otro tipo o demasiado pesados no se agregan y se avisa por qué. Con `upload`, cada archivo muestra su progreso y, si falla, «Reintentar». El formulario no se envía mientras algo se esté subiendo.
+
+**Rango de fechas**
+
+```ts
+{ name: 'periodo', label: 'Periodo', type: 'daterange', required: true, maxDays: 31 }
+```
+
+Atajos: Hoy, Esta semana, Quincena actual, Este mes, Mes pasado y Últimos 30 días. Cambia los tuyos con `presets: [{ label: 'Bimestre', range: () => [inicio, fin] }]` o quítalos con `presets: false`. También admite `min` y `max` en `AAAA-MM-DD`.
+
+**Código de verificación**
+
+```ts
+{ name: 'codigo', label: 'Código', type: 'otp', length: 6 }
+```
+
+Es un solo campo con cajas visuales: pegar funciona, el celular sugiere el código del SMS (`one-time-code`) y al completarlo pulsa el botón principal (`autoSubmit: false` para evitarlo).
+
+**Filas repetibles con totales**
+
+```ts
+{ name: 'partidas', label: 'Partidas', type: 'items', required: true, maxRows: 20, addText: 'Agregar partida',
+  fields: [
+    { name: 'concepto', label: 'Concepto', required: true },
+    { name: 'cantidad', label: 'Cantidad', type: 'number', min: 1, value: 1 },
+    { name: 'precio', label: 'Precio unitario', type: 'money', required: true },
+  ],
+  totals: (filas) => {
+    const subtotal = filas.reduce((s, f) => s + (f.cantidad ?? 0) * (f.precio ?? 0), 0)
+    return [
+      { label: 'Subtotal', value: pesos(subtotal) },
+      { label: 'IVA', value: pesos(subtotal * 0.16) },
+      { label: 'Total', value: pesos(subtotal * 1.16) },
+    ]
+  } }
+```
+
+Cada fila valida sus campos (los errores se marcan en la fila) y tiene su botón «Quitar fila N». Los totales se recalculan al escribir. En celular, cada fila se apila como tarjeta.
 
 **Validación**: `required`, `minLength`, `maxLength`, `min`, `max`, `pattern` (+ `patternMessage`) y `validate(valor, valores)` por campo, que puede ser async («¿ya existe este RFC?»). Al enviar con errores aparece un **resumen arriba con enlaces** a cada campo, cada campo queda con `aria-invalid` y su mensaje ligado con `aria-describedby`.
 

@@ -10,10 +10,21 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 - `nexus-dialogs/swal`: adaptador compatible con SweetAlert2 (`Swal.fire`, `mixin`, toasts, inputs, `inputValidator`, `preConfirm`, `preDeny`, timer, `DismissReason` y los métodos estáticos comunes). Aplica el estándar de botones: una confirmación que dice «eliminar» o «borrar» pasa sola a «peligro» con el foco en Cancelar.
 - `dist/nexus-dialogs.swal.iife.js`: reemplazo directo de SweetAlert2 por `<script>` (define `window.Swal`).
 - `closeDialog(el)` en el núcleo, para cerrar un diálogo concreto.
+- Campos avanzados en `form()` y `wizard()`:
+  - `combobox`: buscar y elegir uno o varios, sin acentos, con grupos, descripción, búsqueda async (`search`), «Crear» (`creatable`) y `maxItems`.
+  - `file`: arrastrar o elegir, `accept`, `maxSize`, `maxFiles` y subida con progreso y reintento (`upload`); no deja enviar mientras sube.
+  - `daterange`: desde/hasta con atajos (incluye «Quincena actual»), `maxDays`, `min`, `max` y `presets` propios. `defaultDatePresets()` exportado.
+  - `otp`: código con cajas visuales, `one-time-code` y envío automático al completar.
+  - `items`: filas repetibles con `fields`, `minRows`, `maxRows` y `totals` que se recalculan al escribir.
+- Un control dentro del diálogo puede «consumir» Esc (evento `nexus-dialogs:escape`): Esc cierra la lista del combobox, no el diálogo.
 
 ### Corregido
 
 - `toast.configure` ignora las opciones `undefined` en lugar de borrar las anteriores.
+- Los grupos de radio usan `role="radiogroup"` (un `<fieldset>` no admite `aria-required`).
+- En el resumen de errores, los textos largos ya no separan la viñeta del enlace.
+- Salir de un campo sin haberlo cambiado ya no muestra «Este campo es obligatorio»: el error aparecía al hacer clic en «Enviar», movía el botón y el clic se perdía. Los errores de campos vacíos esperan al envío.
+- Un Esc en los primeros 250 ms de la página se ignoraba.
 
 ## [0.1.0] - 2026-11-10
 

@@ -211,6 +211,16 @@ const version: string;
 ## `nexus-dialogs/forms`
 
 ```ts
+interface DatePreset {
+    label: string;
+    range: () => [
+        Date,
+        Date
+    ];
+}
+
+function defaultDatePresets(): DatePreset[];
+
 interface Field {
     name: string;
     label: string;
@@ -235,9 +245,29 @@ interface Field {
     disabled?: boolean;
     currency?: string;
     locale?: string;
+    multiple?: boolean;
+    search?: (query: string) => Promise<Option[]> | Option[];
+    creatable?: boolean | ((text: string) => Option | Promise<Option>);
+    maxItems?: number;
+    accept?: string;
+    maxSize?: number;
+    maxFiles?: number;
+    upload?: (file: File, progress: (percent: number) => void) => Promise<unknown>;
+    presets?: false | DatePreset[];
+    maxDays?: number;
+    length?: number;
+    autoSubmit?: boolean;
+    fields?: Field[];
+    minRows?: number;
+    maxRows?: number;
+    addText?: string;
+    totals?: (rows: Record<string, any>[]) => {
+        label: string;
+        value: string;
+    }[];
 }
 
-type FieldType = 'text' | 'email' | 'tel' | 'url' | 'password' | 'number' | 'date' | 'time' | 'textarea' | 'select' | 'radio' | 'segmented' | 'checkbox' | 'switch' | 'money' | 'rfc' | 'curp' | 'nss' | 'clabe' | 'postal';
+type FieldType = 'text' | 'email' | 'tel' | 'url' | 'password' | 'number' | 'date' | 'time' | 'textarea' | 'select' | 'radio' | 'segmented' | 'checkbox' | 'switch' | 'money' | 'rfc' | 'curp' | 'nss' | 'clabe' | 'postal' | 'combobox' | 'file' | 'daterange' | 'otp' | 'items';
 
 function form<T extends Record<string, unknown> = Record<string, unknown>>(o: FormOptions<T>): Promise<DialogResult<T>>;
 
@@ -254,6 +284,8 @@ type Option = string | {
     value: string;
     label: string;
     disabled?: boolean;
+    description?: string;
+    group?: string;
 };
 
 function wizard<T extends Record<string, unknown> = Record<string, unknown>>(o: WizardOptions<T>): Promise<DialogResult<T>>;

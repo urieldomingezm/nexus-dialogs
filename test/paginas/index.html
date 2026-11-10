@@ -35,6 +35,14 @@
   <button id="b-gasto">Gasto (importe y RFC)</button>
 </div></section>
 
+<section><h2>Campos avanzados</h2><div class="fila">
+  <button id="c-combo">Buscar y seleccionar</button>
+  <button id="c-file">Subir archivos</button>
+  <button id="c-range">Rango de fechas</button>
+  <button id="c-otp">Código de verificación</button>
+  <button id="c-items">Partidas con totales</button>
+</div></section>
+
 <section><h2>Recetas (nexus-dialogs/patterns)</h2><div class="fila">
   <button id="r-delete">Eliminar con nombre</button>
   <button id="r-unsaved">Cambios sin guardar</button>
@@ -157,6 +165,46 @@
     { name: 'nss', label: 'NSS', type: 'nss', required: true },
     { name: 'cp', label: 'Código postal', type: 'postal', required: true },
     { name: 'clabe', label: 'CLABE', type: 'clabe', required: true, span: 2 },
+  ] }))
+
+  const personas = [
+    { value: 'ana', label: 'Ana Torres', description: 'Almacén · Supervisora', group: 'Almacén' },
+    { value: 'luis', label: 'Luis Herrera', description: 'Almacén · Montacargas', group: 'Almacén' },
+    { value: 'marta', label: 'Marta Gil', description: 'Nómina · Analista', group: 'Nómina' },
+    { value: 'oscar', label: 'Óscar Núñez', description: 'Nómina · Coordinador', group: 'Nómina' },
+    { value: 'rosa', label: 'Rosa Vega', description: 'Compras · Jefa', group: 'Compras', disabled: true },
+  ]
+  on('c-combo', () => form({ title: 'Asignar responsables', submitText: 'Asignar', fields: [
+    { name: 'cliente', label: 'Cliente', type: 'combobox', required: true, placeholder: 'Escribe para buscar', creatable: true,
+      search: async (q) => { await espera(200); return ['Abarrotes Lupita', 'Aceros del Norte', 'Agrícola San Juan', 'Bodegas Ramírez'].filter((x) => x.toLowerCase().includes(q.toLowerCase())) } },
+    { name: 'equipo', label: 'Equipo', type: 'combobox', multiple: true, maxItems: 3, options: personas, value: ['ana'], required: true },
+  ] }))
+  on('c-file', () => form({ title: 'Documentos del empleado', submitText: 'Guardar', fields: [
+    { name: 'ine', label: 'INE (frente y vuelta)', type: 'file', accept: '.pdf,image/*', maxSize: 5 * 1024 * 1024, required: true, multiple: true, maxFiles: 2,
+      upload: (file, progreso) => new Promise((ok, mal) => { let p = 0; const t = setInterval(() => { p += 25; progreso(p); if (p >= 100) { clearInterval(t); file.name.includes('error') ? mal(new Error('el servidor rechazó el archivo')) : ok('id-' + file.name) } }, 120) }) },
+    { name: 'cfdi', label: 'Factura (XML)', type: 'file', accept: '.xml', help: 'El XML del CFDI, no el PDF.' },
+  ] }))
+  on('c-range', () => form({ title: 'Reporte de incidencias', submitText: 'Generar', fields: [
+    { name: 'periodo', label: 'Periodo', type: 'daterange', required: true, maxDays: 62 },
+  ] }))
+  on('c-otp', () => form({ title: 'Confirma que eres tú', text: 'Escribe el código de 6 dígitos que enviamos a an•••@empresa.mx.', submitText: 'Verificar', size: 'sm', fields: [
+    { name: 'codigo', label: 'Código de verificación', type: 'otp', required: true, validate: (v) => (v === '123456' ? null : 'El código no coincide.') },
+  ] }))
+  const pesos = (n) => '$ ' + n.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  on('c-items', () => form({ title: 'Nuevo gasto por comprobar', size: 'xl', submitText: 'Enviar a aprobación', fields: [
+    { name: 'rfc', label: 'RFC del proveedor', type: 'rfc', required: true },
+    { name: 'partidas', label: 'Partidas', type: 'items', required: true, addText: 'Agregar partida', maxRows: 10,
+      fields: [
+        { name: 'concepto', label: 'Concepto', required: true },
+        { name: 'cantidad', label: 'Cantidad', type: 'number', required: true, min: 1, value: 1 },
+        { name: 'precio', label: 'Precio unitario', type: 'money', required: true },
+        { name: 'iva', label: 'IVA', type: 'select', options: [{ value: '0.16', label: '16 %' }, { value: '0', label: '0 %' }], value: '0.16' },
+      ],
+      totals: (filas) => {
+        const sub = filas.reduce((s, r) => s + (r.cantidad || 0) * (r.precio || 0), 0)
+        const iva = filas.reduce((s, r) => s + (r.cantidad || 0) * (r.precio || 0) * Number(r.iva || 0), 0)
+        return [{ label: 'Subtotal', value: pesos(sub) }, { label: 'IVA', value: pesos(iva) }, { label: 'Total', value: pesos(sub + iva) }]
+      } },
   ] }))
 
   on('t-ok', () => void toast.success('Empleado guardado'))

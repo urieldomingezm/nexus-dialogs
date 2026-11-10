@@ -78,18 +78,26 @@ test.describe('diálogos', () => {
   test('panel lateral y hoja inferior en celular', async ({ pagina: p }) => {
     await p.click('#b-drawer')
     const panel = enDialogo(p, '.panel')
-    const caja = await panel.boundingBox()
     const ancho = p.viewportSize().width
-    expect(Math.round(caja.x + caja.width)).toBe(ancho)
+    await expect
+      .poll(async () => {
+        const caja = await panel.boundingBox()
+        return Math.round(caja.x + caja.width)
+      })
+      .toBe(ancho)
     expect(await axe(p)).toEqual([])
     await enDialogo(p, '.x').click()
     await sinDialogos(p)
 
     await p.setViewportSize({ width: 390, height: 800 })
     await p.click('#b-confirm')
-    const hoja = await enDialogo(p, '.panel').boundingBox()
-    expect(Math.round(hoja.y + hoja.height)).toBe(800)
-    expect(Math.round(hoja.width)).toBe(390)
+    // Espera a que termine de entrar (el estado «open» se pone en el siguiente cuadro).
+    await expect
+      .poll(async () => {
+        const hoja = await enDialogo(p, '.panel').boundingBox()
+        return [Math.round(hoja.y + hoja.height), Math.round(hoja.width)]
+      })
+      .toEqual([800, 390])
   })
 })
 
