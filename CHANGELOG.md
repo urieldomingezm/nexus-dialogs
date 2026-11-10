@@ -23,6 +23,8 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 - `toast.configure` ignora las opciones `undefined` en lugar de borrar las anteriores.
 - Los grupos de radio usan `role="radiogroup"` (un `<fieldset>` no admite `aria-required`).
 - En el resumen de errores, los textos largos ya no separan la viñeta del enlace.
+- Salir de un campo sin haberlo cambiado ya no muestra «Este campo es obligatorio»: el error aparecía al hacer clic en «Enviar», movía el botón y el clic se perdía. Los errores de campos vacíos esperan al envío.
+- Un Esc en los primeros 250 ms de la página se ignoraba.
 
 ## [0.1.0] - 2026-11-10
 

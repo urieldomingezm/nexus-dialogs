@@ -113,6 +113,20 @@ describe('form', () => {
     expect((await p).value).toEqual({ curp: 'PELJ900515HJCRPN03', nss: '12169012346', clabe: '002010077777777771', cp: '06600' })
   })
 
+  it('salir de un campo sin cambiarlo no muestra error (el botón no se mueve bajo el clic)', async () => {
+    const p = form({ title: 'X', confirmDiscard: false, fields: [{ name: 'a', label: 'A', required: true }] })
+    input('a').dispatchEvent(new FocusEvent('focusout', { bubbles: true }))
+    await esperar()
+    expect($('.msg').textContent).toBe('')
+    escribir(input('a'), 'x')
+    escribir(input('a'), '')
+    input('a').dispatchEvent(new FocusEvent('focusout', { bubbles: true }))
+    await esperar()
+    expect($('.msg').textContent).toBe(es.required)
+    ;(document.querySelector('dialog') as HTMLDialogElement).close()
+    await p
+  })
+
   it('money: formatea con miles al salir y devuelve número', async () => {
     const p = form({ title: 'Gasto', fields: [{ name: 'importe', label: 'Importe', type: 'money', min: 1 }] })
     const i = input('importe')

@@ -141,6 +141,8 @@ interface Control {
   group: HTMLInputElement[]
   msg: HTMLElement
   tocado: boolean
+  /** Valor al abrir: salir del campo sin cambiarlo no muestra errores (así el botón no se mueve bajo el clic). */
+  inicial?: string
   custom?: CustomControl
 }
 
@@ -331,8 +333,10 @@ class FieldSet {
     }
     if (f.span === 2 && this.columns === 2) c.wrap.classList.add('span-2')
 
+    c.inicial = JSON.stringify(this.valorDe(c), serializable)
     const al = async (ev: Event) => {
-      if (ev.type === 'focusout' || ev.type === 'change') c.tocado = true
+      if (ev.type === 'change') c.tocado = true
+      else if (ev.type === 'focusout' && JSON.stringify(this.valorDe(c), serializable) !== c.inicial) c.tocado = true
       // Primero lo que no espera: mostrar u ocultar campos condicionales. Luego la validación (puede ser async).
       this.actualizarVisibles()
       this.alCambiar()
