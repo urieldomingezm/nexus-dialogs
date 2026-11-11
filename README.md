@@ -26,6 +26,7 @@ Las librerías de alertas resuelven el «¿Seguro?» y poco más. En un sistema 
 3. [Recetas: lo de todos los días en una línea](#3-recetas-lo-de-todos-los-días-en-una-línea)
    - [Vue 3](#vue-3)
    - [React](#react)
+   - [Angular](#angular)
    - [¿Vienes de SweetAlert2?](#vienes-de-sweetalert2)
 4. [Estándar de botones](#4-estándar-de-botones)
 5. [Diálogos](#5-diálogos)
@@ -55,6 +56,7 @@ npm i nexus-dialogs
 | `nexus-dialogs/mx` | Validadores de RFC, CURP, NSS, CLABE y código postal (también en Node) |
 | `nexus-dialogs/vue` | Plugin y composables para Vue 3 |
 | `nexus-dialogs/react` | Hooks y proveedor para React 18+ |
+| `nexus-dialogs/angular` | Funciones de inyección y señales para Angular 16+ |
 | `nexus-dialogs/swal` | Compatible con SweetAlert2: cambia el import y listo |
 
 Sin bundler, con un `<script>`:
@@ -290,8 +292,48 @@ function Empleados() {
 - Funciona con `StrictMode`. Los toasts no se cierran al desmontar: «Guardado» sigue visible en la siguiente pantalla.
 - `NexusDialogsProvider` no pinta nada propio y configura antes de que corran los efectos de los hijos. Si no necesitas configurar nada, no hace falta.
 - Con Next.js, úsalos en componentes de cliente (`'use client'`). Importar el paquete no toca el DOM, así que el render en servidor no falla.
-- Si dos componentes tienen diálogos abiertos a la vez, el que abrió primero también registra los del otro: al desmontarlo se cerrarían los dos. Es lo mismo en Vue.
+- Cada diálogo queda a nombre del componente que lo pidió (también los anidados), aunque dos componentes tengan diálogos abiertos a la vez: al desmontar uno se cierran solo los suyos. Un diálogo abierto desde fuera de los hooks no es de nadie.
 - `react` (18 o superior) es dependencia opcional: solo se necesita si importas `nexus-dialogs/react`.
+
+### Angular
+
+Funciones de inyección y señales, sin decoradores (Angular 16 o superior; con o sin zone.js):
+
+```ts
+// app.config.ts (opcional: solo para idioma, tema, esquema, dirección o toasts)
+import { provideNexusDialogs } from 'nexus-dialogs/angular'
+
+export const appConfig: ApplicationConfig = {
+  providers: [provideNexusDialogs({ scheme: 'auto', toast: { position: 'top-right' } })],
+}
+```
+
+```ts
+// En un componente o servicio
+import { Component } from '@angular/core'
+import { injectDialog, injectForm, injectToast } from 'nexus-dialogs/angular'
+import { confirmDelete } from 'nexus-dialogs/patterns'
+
+@Component({
+  selector: 'app-empleados',
+  template: `<button (click)="borrar()" [disabled]="dialog.isOpen()">Borrar</button>`,
+})
+export class Empleados {
+  dialog = injectDialog()
+  forms = injectForm()
+  toast = injectToast()
+  private confirmarBorrado = this.dialog.scoped(confirmDelete)
+
+  async borrar() {
+    if (await this.confirmarBorrado({ what: 'a Laura Méndez' })) this.toast.success('Eliminada')
+  }
+}
+```
+
+- `injectDialog()` trae `alert`, `confirm`, `prompt`, `open`, `success`, `error`, `warning` e `info`; `injectForm()` trae `form`, `wizard` y `formFromJSON`. Los dos incluyen `isOpen` (una **señal**), `closeAll()` y `scoped()` para recetas y otras funciones que abren diálogos.
+- Llámalas en un contexto de inyección (campo de la clase, constructor o `inject`). Los diálogos que abre el componente se cierran solos cuando Angular lo destruye, por ejemplo al cambiar de ruta; los toasts no.
+- Cada diálogo queda a nombre del componente que lo pidió, aunque haya varios abiertos a la vez.
+- `@angular/core` (16 o superior) es dependencia opcional y este módulo solo existe como ESM, igual que Angular. Importar el paquete no toca el DOM, así que SSR no falla.
 
 ### ¿Vienes de SweetAlert2?
 
@@ -317,7 +359,7 @@ Sin bundler, cambia el `<script>` de SweetAlert2 por este (define `window.Swal`)
 <script src="https://cdn.jsdelivr.net/npm/nexus-dialogs/dist/nexus-dialogs.swal.iife.js"></script>
 ```
 
-**Qué cubre**: `Swal.fire(título, html, icono)` y `Swal.fire({…})`, `Swal.mixin`, toasts (`toast: true`, `position`, `timer`), botones confirm/deny/cancel, `input` (text, email, password, number, tel, url, date, week, range, file, textarea, select, radio, checkbox) con `inputOptions`, `inputValidator`, `validationMessage`, `inputAutoTrim`, `inputAutoFocus` y `returnInputValueOnDeny`, `preConfirm`, `preDeny`, `timer` (con `stopTimer`, `resumeTimer`, `toggleTimer`, `increaseTimer`, `getTimerLeft`), `imageUrl`, `iconHtml`, `progressSteps`, `reverseButtons`, `allowEnterKey`, `draggable`, `template`, `theme` (light, dark y auto), `target`, los `aria-label` de los botones, los ganchos `willOpen`, `didOpen`, `willClose`, `didClose` y `didDestroy`, el resultado `{ isConfirmed, isDenied, isDismissed, value, dismiss }`, `Swal.DismissReason` y los métodos `close(resultado)`, `update` (título, texto, html, icono, imagen, pasos, pie y botones), `isVisible`, `showLoading`, `hideLoading`, `isLoading`, `showValidationMessage`, `resetValidationMessage`, `enableButtons`, `disableButtons`, `enableInput`, `disableInput`, los accesores (`getPopup`, `getContainer`, `getTitle`, `getHtmlContainer`, `getIcon`, `getImage`, `getInput`, `getActions`, `getFooter`, `getCloseButton`, `getTimerProgressBar`, `getProgressSteps`, `getFocusableElements`…) y `clickConfirm` y similares.
+**Qué cubre**: `Swal.fire(título, html, icono)` y `Swal.fire({…})`, `Swal.mixin`, toasts (`toast: true`, `position`, `timer`), botones confirm/deny/cancel, `input` (text, email, password, number, tel, url, date, week, range, file, textarea, select, radio, checkbox) con `inputOptions`, `inputValidator`, `validationMessage`, `inputAutoTrim`, `inputAutoFocus` y `returnInputValueOnDeny`, `preConfirm`, `preDeny`, `timer` (con `stopTimer`, `resumeTimer`, `toggleTimer`, `increaseTimer`, `getTimerLeft`), `imageUrl`, `iconHtml`, `progressSteps`, `reverseButtons`, `allowEnterKey`, `draggable`, `template`, `theme` (light, dark y auto), `target`, los `aria-label` de los botones, los ganchos `willOpen`, `didOpen`, `willClose`, `didClose` y `didDestroy`, el resultado `{ isConfirmed, isDenied, isDismissed, value, dismiss }`, `Swal.DismissReason` y los métodos `close(resultado)`, `update` (título, texto, html, icono, imagen, pasos, pie y botones), `isVisible`, `showLoading`, `hideLoading`, `isLoading`, `getLoader` (con `loaderHtml`), `argsToParams`, `isValidParameter`, `isUpdatableParameter`, `bindClickHandler`, `showValidationMessage`, `resetValidationMessage`, `enableButtons`, `disableButtons`, `enableInput`, `disableInput`, los accesores (`getPopup`, `getContainer`, `getTitle`, `getHtmlContainer`, `getIcon`, `getImage`, `getInput`, `getActions`, `getFooter`, `getCloseButton`, `getTimerProgressBar`, `getProgressSteps`, `getFocusableElements`…) y `clickConfirm` y similares.
 
 **Qué cambia a propósito**:
 - Se aplica el [estándar de botones](#4-estándar-de-botones). Una confirmación cuyo botón dice «eliminar», «borrar» o «delete» pasa sola a **peligro**: botón rojo y el foco en Cancelar. Fuérzalo con `danger: true`.
@@ -327,7 +369,7 @@ Sin bundler, cambia el `<script>` de SweetAlert2 por este (define `window.Swal`)
 - Los toasts usan la cola de `nexus-dialogs/toast`; la posición es una sola para todos.
 - El contenido vive dentro del Shadow DOM: en vez de `document.getElementById('x')` usa `Swal.getHtmlContainer().querySelector('#x')`. El «popup» que reciben los ganchos y devuelve `getPopup()` es el panel, así que `popup.querySelector(…)` funciona.
 - `theme` entiende `light`, `dark` y `auto`; `target` monta el diálogo en ese elemento pero sigue siendo modal; `reverseButtons: true` pone Confirmar primero; `template` no acepta `<swal-function-param>`.
-- Falta `loaderHtml`/`getLoader`, `bindClickHandler`, `isValidParameter`, `isUpdatableParameter` y `argsToParams`.
+- Sin equivalente: `Swal.version`, `topLayer`, `showClass`/`hideClass` y `animation` (el movimiento sale del tema y respeta «reducir movimiento»).
 
 Cuando tengas tiempo, pasa a la API propia (`dialog.confirm`, recetas): es más corta y tiene tipos más precisos.
 
@@ -703,7 +745,7 @@ Sin dependencias: el .xlsx se arma aquí mismo, con encabezados en negrita, fila
 
 ### Plantillas de RR. HH.
 
-Seis formularios listos, en JSON puro (se guardan en tu base de datos y se ajustan por empresa): `altaEmpleado` (asistente de 4 pasos con revisión), `vacaciones` (calendario con días hábiles), `permiso`, `incapacidad` (IMSS), `baja` (motivo, finiquito, entrega y firma) y `gastos` (partidas y comprobantes).
+Nueve formularios listos, en JSON puro (se guardan en tu base de datos y se ajustan por empresa): `altaEmpleado` (asistente de 4 pasos con revisión), `vacaciones` (calendario con días hábiles), `permiso`, `incapacidad` (IMSS), `baja` (motivo, finiquito, entrega y firma) `gastos` (partidas y comprobantes), `evaluacion` (competencias de 1 a 5, resultado y compromisos), `capacitacion` (curso, asistentes y constancia DC-3) y `cambioPuesto` (ascenso, transferencia o cambio de sueldo con aprobación).
 
 ```ts
 import { formFromJSON } from 'nexus-dialogs/forms'
@@ -833,6 +875,17 @@ Español por omisión. Inglés con `configure({ lang: 'en' })` (y `toast.configu
 configure({ labels: { cancel: 'Cerrar', submit: 'Guardar cambios' } })
 ```
 
+### Derecha a izquierda (RTL)
+
+Los diálogos y toasts siguen la dirección de tu página: con `<html dir="rtl">` todo se espeja (botón ×, orden de los botones, iconos, interruptores, calendario con las flechas invertidas, tablas y listas). También se puede fijar a mano:
+
+```ts
+configure({ dir: 'rtl' })              // 'ltr' | 'rtl' | 'auto' (por omisión: la de la página)
+await dialog.alert({ title: 'مرحبا', dir: 'rtl' }) // solo este diálogo
+```
+
+Los teléfonos se escriben siempre de izquierda a derecha. `placement: 'left' | 'right'` y las posiciones de los toasts (`top-left`…) son físicas: en una página RTL elige el lado que quieras.
+
 ## 12. Referencia rápida
 
 | | |
@@ -850,8 +903,9 @@ configure({ labels: { cancel: 'Cerrar', submit: 'Guardar cambios' } })
 | `isRFC`, `isCURP`, `isNSS`, `isCLABE`, `isPostalCode`, `normalize` | `nexus-dialogs/mx` |
 | `NexusDialogs` (plugin), `useDialog`, `useToast` | `nexus-dialogs/vue` |
 | `NexusDialogsProvider`, `useDialog`, `useForm`, `useToast` | `nexus-dialogs/react` |
+| `provideNexusDialogs`, `injectDialog`, `injectForm`, `injectToast` | `nexus-dialogs/angular` |
 | `Swal` (por omisión), `DismissReason` | `nexus-dialogs/swal` |
-| `configure({ lang, labels, theme, scheme, defaults, sheetOnMobile })` | Global |
+| `configure({ lang, labels, theme, scheme, dir, defaults, sheetOnMobile })` | Global |
 
 Eventos en `document`: `nexus-dialogs:open` y `nexus-dialogs:close` (con `detail.dialog`).
 
@@ -862,7 +916,7 @@ La API pública completa, generada de los tipos, está en [`api/nexus-dialogs.ap
 - Navegadores actuales: Chrome/Edge 111+, Firefox 113+, Safari 16.4+ (usa `<dialog>` modal y `color-mix()`). Probado en Chromium, Firefox y WebKit.
 - **nexus-tours**: los diálogos son `<dialog open>` de verdad, así que los tours los detectan y pueden explicar lo que hay dentro.
 - Bootstrap, Tailwind, SweetAlert2: sin choques de `z-index` ni de CSS. Para migrar de SweetAlert2, ver [¿Vienes de SweetAlert2?](#vienes-de-sweetalert2).
-- Vue 3.3+ con `nexus-dialogs/vue`. React 18+ con `nexus-dialogs/react` (probado con 18 y 19).
+- Vue 3.3+ con `nexus-dialogs/vue`. React 18+ con `nexus-dialogs/react` (probado con 18 y 19). Angular 16+ con `nexus-dialogs/angular`.
 - Node/SSR: importar no toca el DOM; los diálogos se abren solo en el navegador.
 
 ## 14. Desarrollo

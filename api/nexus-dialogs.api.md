@@ -86,6 +86,7 @@ interface DialogOptions<T = unknown> {
     styles?: string;
     theme?: Record<string, string>;
     scheme?: Scheme;
+    dir?: 'ltr' | 'rtl';
     onOpen?: (ctx: DialogContext) => void;
     onClose?: (result: DialogResult<T>) => void;
 }
@@ -113,6 +114,7 @@ interface EngineOptions<T> extends DialogOptions<T> {
     moduleCss?: string;
     target?: Element;
     allowEnter?: boolean;
+    onLoading?: (loading: boolean, ctx: DialogContext) => void;
     onClosing?: (ctx: DialogContext) => void;
 }
 
@@ -123,6 +125,7 @@ interface GlobalConfig {
     labels?: Partial<Labels>;
     theme?: Record<string, string>;
     scheme?: Scheme;
+    dir?: 'ltr' | 'rtl' | 'auto';
     defaults?: Partial<DialogOptions<any>>;
     sheetOnMobile?: boolean;
 }
@@ -452,6 +455,7 @@ interface ToastConfig {
     duration?: number;
     lang?: 'es' | 'en';
     scheme?: Scheme;
+    dir?: 'ltr' | 'rtl' | 'auto';
     theme?: Record<string, string>;
 }
 
@@ -682,6 +686,45 @@ interface UseDialogReturn {
 const useToast: () => typeof toast;
 ```
 
+## `nexus-dialogs/angular`
+
+```ts
+function injectDialog(): InjectDialogReturn;
+
+interface InjectDialogReturn {
+    alert: typeof base.alert;
+    confirm: typeof base.confirm;
+    prompt: typeof base.prompt;
+    open: typeof base.open;
+    success: typeof base.success;
+    error: typeof base.error;
+    warning: typeof base.warning;
+    info: typeof base.info;
+    isOpen: Signal<boolean>;
+    closeAll: () => void;
+    scoped: <F extends Fn>(fn: F) => F;
+}
+
+function injectForm(): InjectFormReturn;
+
+interface InjectFormReturn {
+    form: typeof form;
+    wizard: typeof wizard;
+    formFromJSON: typeof formFromJSON;
+    isOpen: Signal<boolean>;
+    closeAll: () => void;
+    scoped: <F extends Fn>(fn: F) => F;
+}
+
+const injectToast: () => typeof toast;
+
+interface PluginOptions extends GlobalConfig {
+    toast?: ToastConfig;
+}
+
+function provideNexusDialogs(opciones?: PluginOptions): EnvironmentProviders;
+```
+
 ## `nexus-dialogs/react`
 
 ```ts
@@ -759,6 +802,7 @@ const Swal: {
     getProgressSteps: () => HTMLElement | null;
     getValidationMessage: () => HTMLElement | null;
     getInputLabel: () => HTMLElement | null;
+    getLoader: () => HTMLElement | null;
     getFocusableElements: () => HTMLElement[];
     getInput: () => HTMLElement | null;
     getConfirmButton: () => HTMLButtonElement | null;
@@ -777,6 +821,10 @@ const Swal: {
     resumeTimer: () => number | undefined;
     toggleTimer: () => number | undefined;
     increaseTimer: (ms: number) => number | undefined;
+    argsToParams: (args: unknown[]) => SweetAlertOptions;
+    isValidParameter: (nombre: string) => boolean;
+    isUpdatableParameter: (nombre: string) => boolean;
+    bindClickHandler: (atributo?: string) => void;
     DismissReason: {
         readonly cancel: "cancel";
         readonly backdrop: "backdrop";
@@ -826,6 +874,7 @@ const Swal: {
     getProgressSteps: () => HTMLElement | null;
     getValidationMessage: () => HTMLElement | null;
     getInputLabel: () => HTMLElement | null;
+    getLoader: () => HTMLElement | null;
     getFocusableElements: () => HTMLElement[];
     getInput: () => HTMLElement | null;
     getConfirmButton: () => HTMLButtonElement | null;
@@ -844,6 +893,10 @@ const Swal: {
     resumeTimer: () => number | undefined;
     toggleTimer: () => number | undefined;
     increaseTimer: (ms: number) => number | undefined;
+    argsToParams: (args: unknown[]) => SweetAlertOptions;
+    isValidParameter: (nombre: string) => boolean;
+    isUpdatableParameter: (nombre: string) => boolean;
+    bindClickHandler: (atributo?: string) => void;
     DismissReason: {
         readonly cancel: "cancel";
         readonly backdrop: "backdrop";
@@ -914,6 +967,7 @@ interface SweetAlertOptions {
     draggable?: boolean;
     template?: string | HTMLTemplateElement;
     closeButtonHtml?: string;
+    loaderHtml?: string;
     closeButtonAriaLabel?: string;
     confirmButtonAriaLabel?: string;
     denyButtonAriaLabel?: string;
@@ -1079,6 +1133,12 @@ const altaEmpleado: FormSchema;
 
 const baja: FormSchema;
 
+const cambioPuesto: FormSchema;
+
+const capacitacion: FormSchema;
+
+const evaluacion: FormSchema;
+
 const gastos: FormSchema;
 
 const incapacidad: FormSchema;
@@ -1094,6 +1154,9 @@ const plantillas: {
     readonly incapacidad: FormSchema;
     readonly baja: FormSchema;
     readonly gastos: FormSchema;
+    readonly evaluacion: FormSchema;
+    readonly capacitacion: FormSchema;
+    readonly cambioPuesto: FormSchema;
 };
 
 function sinResolvers(schema: FormSchema): FormSchema;
@@ -1285,6 +1348,7 @@ interface DialogOptions<T = unknown> {
     styles?: string;
     theme?: Record<string, string>;
     scheme?: Scheme;
+    dir?: 'ltr' | 'rtl';
     onOpen?: (ctx: DialogContext) => void;
     onClose?: (result: DialogResult<T>) => void;
 }
@@ -1312,6 +1376,7 @@ interface EngineOptions<T> extends DialogOptions<T> {
     moduleCss?: string;
     target?: Element;
     allowEnter?: boolean;
+    onLoading?: (loading: boolean, ctx: DialogContext) => void;
     onClosing?: (ctx: DialogContext) => void;
 }
 
@@ -1330,6 +1395,7 @@ interface GlobalConfig {
     labels?: Partial<Labels>;
     theme?: Record<string, string>;
     scheme?: Scheme;
+    dir?: 'ltr' | 'rtl' | 'auto';
     defaults?: Partial<DialogOptions<any>>;
     sheetOnMobile?: boolean;
 }

@@ -499,7 +499,7 @@ const CSS = `
 .check{display:flex;gap:10px;align-items:center;font-size:14px;margin:0 0 12px;color:var(--_label)}
 .check input{width:18px;height:18px;accent-color:var(--_accent);margin:0}
 .map{width:100%;border-collapse:separate;border-spacing:0;border:1px solid var(--_line);border-radius:12px;overflow:hidden;font-size:14px}
-.map th{background:var(--_surface);color:var(--_subtle);font-size:12px;font-weight:600;text-align:left;padding:10px 14px}
+.map th{background:var(--_surface);color:var(--_subtle);font-size:12px;font-weight:600;text-align:start;padding:10px 14px}
 .map td{padding:8px 14px;border-top:1px solid var(--_line);vertical-align:middle;color:var(--_fg)}
 .map td:last-child{color:var(--_subtle);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .map select{width:100%;height:36px;border:1px solid var(--_border);border-radius:8px;background:var(--_bg);color:var(--_fg);font:14px var(--_font);padding:0 8px}

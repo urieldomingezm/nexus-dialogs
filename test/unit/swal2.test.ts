@@ -322,3 +322,53 @@ describe('swal: timer', () => {
     expect(performance.now() - t0).toBeGreaterThanOrEqual(110)
   })
 })
+
+describe('swal: loader, utilidades y bindClickHandler', () => {
+  it('getLoader existe, se muestra con showLoading y acepta loaderHtml', async () => {
+    const p = Swal.fire({ title: 'x', loaderHtml: '<i id="mi-loader">…</i>' })
+    await esperar()
+    const loader = Swal.getLoader()!
+    expect(loader.hidden).toBe(true)
+    expect(loader.querySelector('#mi-loader')).toBeTruthy()
+    Swal.showLoading()
+    expect(loader.hidden).toBe(false)
+    Swal.hideLoading()
+    expect(loader.hidden).toBe(true)
+    Swal.close()
+    await p
+    expect(Swal.getLoader()).toBeNull()
+  })
+
+  it('el loader también aparece mientras corre preConfirm', async () => {
+    let soltar!: () => void
+    const p = Swal.fire({ title: 'x', preConfirm: () => new Promise<void>((r) => (soltar = r)) })
+    await esperar()
+    expect(Swal.getLoader()!.querySelector('.swal-spin')).toBeTruthy()
+    boton('confirm').click()
+    await esperar()
+    expect(Swal.getLoader()!.hidden).toBe(false)
+    soltar()
+    expect((await p).isConfirmed).toBe(true)
+  })
+
+  it('argsToParams, isValidParameter e isUpdatableParameter', () => {
+    expect(Swal.argsToParams(['Hola', 'texto', 'success'])).toEqual({ title: 'Hola', html: 'texto', icon: 'success' })
+    expect(Swal.argsToParams([{ title: 'x' }])).toEqual({ title: 'x' })
+    expect(Swal.isValidParameter('title')).toBe(true)
+    expect(Swal.isValidParameter('loaderHtml')).toBe(true)
+    expect(Swal.isValidParameter('noExiste')).toBe(false)
+    expect(Swal.isUpdatableParameter('title')).toBe(true)
+    expect(Swal.isUpdatableParameter('input')).toBe(false)
+  })
+
+  it('bindClickHandler abre la plantilla del elemento pulsado', async () => {
+    document.body.innerHTML = `<button id="b" data-swal-template="#t">Abrir</button><template id="t"><swal-title>Por clic</swal-title></template>`
+    Swal.bindClickHandler()
+    document.getElementById('b')!.click()
+    await esperar()
+    expect($('.title').textContent).toBe('Por clic')
+    Swal.close()
+    await esperar()
+    expect(abiertos()).toBe(0)
+  })
+})

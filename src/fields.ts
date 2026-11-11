@@ -2,7 +2,7 @@
 // Cada uno es una «fábrica» que devuelve un control propio; FieldSet (forms.ts) pone la etiqueta, la ayuda y el error.
 import { language } from 'nexus-dialogs'
 import type { DatePreset, Field, Option } from './forms'
-import { css, h, svg, uid } from './core/dom'
+import { css, esRtl, h, svg, uid } from './core/dom'
 import { businessDays, isBusinessDay, type BusinessDaysOptions } from './mx'
 
 /** Lo que FieldSet necesita de un control propio. */
@@ -926,8 +926,9 @@ function calendario(o: { min?: string; max?: string; habiles?: BusinessDaysOptio
   }
   dias.addEventListener('keydown', (e) => {
     const k: Record<string, () => void> = {
-      ArrowLeft: () => mover(-1),
-      ArrowRight: () => mover(1),
+      // En derecha a izquierda la cuadrícula va al revés: la flecha izquierda avanza.
+      ArrowLeft: () => mover(esRtl(dias) ? 1 : -1),
+      ArrowRight: () => mover(esRtl(dias) ? -1 : 1),
       ArrowUp: () => mover(-7),
       ArrowDown: () => mover(7),
       PageUp: () => mover(-1, true),
@@ -1771,7 +1772,7 @@ export const FIELDS_CSS = `
 .t0{background:#e0e7ff;color:#3451d1}.t1{background:#fce7f6;color:#c11574}.t2{background:#d1fadf;color:#067647}.t3{background:#fef0c7;color:#b54708}
 .t4{background:#e0f2fe;color:#026aa2}.t5{background:#ebe9fe;color:#5925dc}.t6{background:#ffe4e8;color:#c01048}
 .cb-box{position:relative}
-.cb-list{position:absolute;z-index:5;left:0;right:0;top:calc(100% + 6px);margin:0;padding:6px;list-style:none;max-height:260px;overflow:auto;
+.cb-list{position:absolute;z-index:5;inset-inline:0;top:calc(100% + 6px);margin:0;padding:6px;list-style:none;max-height:260px;overflow:auto;
   background:var(--_bg);border:1px solid var(--_line);border-radius:12px;box-shadow:0 12px 24px -4px rgba(16,24,40,.12),0 4px 8px -2px rgba(16,24,40,.04)}
 .cb-list[hidden]{display:none}
 .cb-list:popover-open{inset:auto;border:1px solid var(--_line);overflow:auto;color:var(--_fg)}
@@ -1789,7 +1790,7 @@ export const FIELDS_CSS = `
 .cb-chips{list-style:none;margin:0 0 8px;padding:0;display:flex;flex-wrap:wrap;gap:6px}
 .cb-chips[hidden]{display:none}
 .cb-chips li{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 4px 0 8px;border-radius:8px;border:1px solid var(--_border);background:var(--_bg);font-size:14px;font-weight:500;color:var(--_label)}
-.cb-chips li:has(.av){padding-left:4px}
+.cb-chips li:has(.av){padding-inline-start:4px}
 .cb-x{width:24px;height:24px;border:0;border-radius:6px;background:transparent;color:var(--_subtle);cursor:pointer;font-size:16px;line-height:1}
 .cb-x:hover{background:var(--_surface)}
 .cb-x:focus-visible{outline:none;box-shadow:0 0 0 4px var(--_focus)}
@@ -1840,8 +1841,8 @@ export const FIELDS_CSS = `
 .row>.btn{margin-top:3px}
 .rows-foot{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-top:14px}
 .totals{margin:0;display:grid;grid-template-columns:auto minmax(110px,auto);gap:6px 24px;font-size:14px;font-variant-numeric:tabular-nums}
-.totals dt{color:var(--_subtle);text-align:right}
-.totals dd{margin:0;text-align:right;font-weight:500;color:var(--_fg)}
+.totals dt{color:var(--_subtle);text-align:end}
+.totals dd{margin:0;text-align:end;font-weight:500;color:var(--_fg)}
 .totals dt:last-of-type,.totals dd:last-of-type{font-size:18px;color:var(--_fg);font-weight:700;padding-top:2px}
 .narrow .rows-head{display:none}
 .narrow .tbl{border:0}
@@ -1853,16 +1854,16 @@ export const FIELDS_CSS = `
 .sig-box{position:relative;border:1px dashed var(--_border);border-radius:12px;background:#fff;overflow:hidden}
 .sig.bad .sig-box{border-color:color-mix(in srgb,var(--_error) 55%,var(--_bg))}
 .sig-pad{display:block;width:100%;height:160px;touch-action:none;cursor:crosshair}
-.sig-hint{position:absolute;left:24px;right:24px;bottom:12px;text-align:center;font-size:13px;color:#667085;pointer-events:none;border-top:1px solid #d0d5dd;padding-top:6px}
+.sig-hint{position:absolute;inset-inline:24px;bottom:12px;text-align:center;font-size:13px;color:#667085;pointer-events:none;border-top:1px solid #d0d5dd;padding-top:6px}
 .sig.has .sig-hint{color:transparent}
 .sig-name{margin-top:10px}
 .sig-tools{display:flex;justify-content:space-between;margin-top:6px}
-.datecal{position:relative;padding-right:0;gap:0;overflow:visible}
-.datecal .input{text-align:left;flex:1;min-width:0}
-.cal-btn{flex:none;width:40px;align-self:stretch;margin-left:8px;border:0;border-left:1px solid var(--_line);border-radius:0 11px 11px 0;background:var(--_surface);color:var(--_muted);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.datecal{position:relative;padding-inline-end:0;gap:0;overflow:visible}
+.datecal .input{text-align:start;flex:1;min-width:0}
+.cal-btn{flex:none;width:40px;align-self:stretch;margin-inline-start:8px;border:0;border-inline-start:1px solid var(--_line);border-radius:0;border-start-end-radius:11px;border-end-end-radius:11px;background:var(--_surface);color:var(--_muted);cursor:pointer;display:flex;align-items:center;justify-content:center}
 .cal-btn:hover{color:var(--_fg)}
 .cal-btn:focus-visible{outline:none;box-shadow:inset 0 0 0 2px var(--_accent)}
-.cal-pop{position:absolute;z-index:5;left:0;top:calc(100% + 6px);margin:0;background:var(--_bg);box-shadow:0 12px 24px -4px rgba(16,24,40,.12),0 4px 8px -2px rgba(16,24,40,.04);width:max-content;min-width:300px}
+.cal-pop{position:absolute;z-index:5;inset-inline-start:0;top:calc(100% + 6px);margin:0;background:var(--_bg);box-shadow:0 12px 24px -4px rgba(16,24,40,.12),0 4px 8px -2px rgba(16,24,40,.04);width:max-content;min-width:300px}
 .cal-pop[hidden]{display:none}
 .cal-pop.up{top:auto;bottom:calc(100% + 6px)}
 .cal-pop:popover-open{inset:auto;width:max-content!important;min-width:300px;border:1px solid var(--_line);color:var(--_fg);overflow:visible;max-height:none!important}
@@ -1872,13 +1873,14 @@ export const FIELDS_CSS = `
 .cal-title::first-letter{text-transform:uppercase}
 .cal-nav{width:32px;height:32px;border:0;border-radius:8px;background:transparent;color:var(--_muted);cursor:pointer;display:flex;align-items:center;justify-content:center}
 .cal-nav:hover{background:var(--_surface)}
+:host([dir=rtl]) .cal-nav svg{transform:scaleX(-1)}
 .cal-nav:focus-visible,.cal-day:focus-visible{outline:none;box-shadow:0 0 0 3px var(--_focus)}
 .cal-row{display:grid;grid-template-columns:repeat(7,1fr)}
 .cal-dow{text-align:center;font-size:12px;font-weight:500;color:var(--_subtle);padding:4px 0;text-transform:uppercase}
 .cal-row>[role=gridcell]{display:flex;justify-content:center;padding:1px 0}
 .cal-row>[role=gridcell]:has(.in),.cal-row>[role=gridcell]:has(.start),.cal-row>[role=gridcell]:has(.end){background:color-mix(in srgb,var(--_accent) 9%,var(--_bg))}
-.cal-row>[role=gridcell]:has(.start){border-radius:20px 0 0 20px}
-.cal-row>[role=gridcell]:has(.end){border-radius:0 20px 20px 0}
+.cal-row>[role=gridcell]:has(.start){border-start-start-radius:20px;border-end-start-radius:20px}
+.cal-row>[role=gridcell]:has(.end){border-start-end-radius:20px;border-end-end-radius:20px}
 .cal-day{width:40px;height:40px;border:0;border-radius:50%;background:transparent;color:var(--_fg);font:500 14px var(--_font);cursor:pointer;font-variant-numeric:tabular-nums}
 .cal-day:hover{background:var(--_surface)}
 .cal-day.out{color:var(--_subtle)}
@@ -1892,11 +1894,11 @@ export const FIELDS_CSS = `
 .cal-day:disabled{opacity:.35;cursor:not-allowed;background:transparent}
 .narrow .cal{max-width:none}
 .narrow .cal-day{width:100%;max-width:44px;height:44px}
-.phone .dial{flex:none;width:auto;max-width:156px;height:auto;border:0;border-right:1px solid var(--_line);border-radius:0;background:var(--_surface);
+.phone .dial{flex:none;width:auto;max-width:156px;height:auto;border:0;border-inline-end:1px solid var(--_line);border-radius:0;background:var(--_surface);
   padding:0 8px 0 12px;font:500 14px var(--_font);color:var(--_label);cursor:pointer;text-overflow:ellipsis}
 .phone .dial:focus-visible{outline:none;box-shadow:inset 0 0 0 2px var(--_accent)}
 .affix.phone{padding:0 14px 0 0;overflow:hidden;align-items:stretch}
-.phone .input{text-align:left;letter-spacing:.02em;flex:1;min-width:0}
+.phone .input{direction:ltr;text-align:left;letter-spacing:.02em;flex:1;min-width:0}
 .addr{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .addr>div{display:flex;flex-direction:column;gap:6px;min-width:0}
 .addr label{font-size:13px;color:var(--_subtle)}

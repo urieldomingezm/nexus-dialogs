@@ -3,7 +3,7 @@
 import { config, labels } from '../config'
 import { CORE_CSS } from '../styles'
 import type { ButtonSpec, CloseReason, DialogContext, DialogOptions, DialogResult, Dismissible, TimerControl } from '../types'
-import { activeDeep, angosto, focusables, h, reducedMotion, uid } from './dom'
+import { activeDeep, angosto, direccion, focusables, h, reducedMotion, uid } from './dom'
 import { closeIcon, icon } from './icons'
 import { adopt, globalStyles } from './sheet'
 
@@ -25,6 +25,8 @@ export interface EngineOptions<T> extends DialogOptions<T> {
   target?: Element
   /** `false`: Enter dentro de un campo ya no confirma. */
   allowEnter?: boolean
+  /** Cada vez que el diálogo entra o sale del estado «procesando». */
+  onLoading?: (loading: boolean, ctx: DialogContext) => void
   /** Justo al empezar a cerrar, antes de la animación y de quitarlo del DOM. */
   onClosing?: (ctx: DialogContext) => void
 }
@@ -93,7 +95,7 @@ export function openDialog<T = unknown>(opciones: EngineOptions<T>): Promise<Dia
   dialog.setAttribute('aria-label', o.title || o.text?.slice(0, 120) || L.info)
   if (o.title && o.text) dialog.setAttribute('aria-description', o.text)
 
-  const host = h('div', { 'data-nexus-host': '', 'data-scheme': o.scheme ?? cfg.scheme })
+  const host = h('div', { 'data-nexus-host': '', 'data-scheme': o.scheme ?? cfg.scheme, dir: direccion(o.dir ?? cfg.dir) })
   for (const [k, v] of Object.entries({ ...cfg.theme, ...o.theme })) host.style.setProperty(k.startsWith('--') ? k : `--nd-${k}`, v)
   const w = typeof o.size === 'number' ? o.size : o.size ? SIZES[o.size] : undefined
   if (w) host.style.setProperty('--_w', `${w}px`)
@@ -164,6 +166,7 @@ export function openDialog<T = unknown>(opciones: EngineOptions<T>): Promise<Dia
     setLoading(si, txt) {
       cargando = si
       panel.setAttribute('aria-busy', String(si))
+      o.onLoading?.(si, ctx)
       for (const b of foot.querySelectorAll('button')) {
         if (si) {
           textos.set(b, b.textContent ?? '')

@@ -122,7 +122,7 @@ const ESTILOS = `
 .pick-count{font-size:13px;color:var(--_subtle);white-space:nowrap}
 .tbl-wrap{border:1px solid var(--_line);border-radius:12px;overflow:auto;max-height:min(52vh,460px)}
 table{width:100%;border-collapse:collapse;font-size:14px}
-th{position:sticky;top:0;z-index:1;background:var(--_surface);color:var(--_subtle);font-size:12px;font-weight:600;text-align:left;padding:10px 12px;border-bottom:1px solid var(--_line)}
+th{position:sticky;top:0;z-index:1;background:var(--_surface);color:var(--_subtle);font-size:12px;font-weight:600;text-align:start;padding:10px 12px;border-bottom:1px solid var(--_line)}
 td{padding:10px 12px;border-top:1px solid var(--_line);color:var(--_fg)}
 tbody tr:first-child td{border-top:0}
 tbody tr{cursor:pointer}
@@ -130,9 +130,9 @@ tbody tr:hover td{background:var(--_surface)}
 tbody tr.sel td{background:color-mix(in srgb,var(--_accent) 7%,var(--_bg))}
 tbody tr.off{cursor:not-allowed;color:var(--_subtle)}
 tbody tr.off td{color:var(--_subtle)}
-.c-check{width:44px;padding-right:0}
+.c-check{width:44px;padding-inline-end:0}
 .c-check input{width:18px;height:18px;margin:0;accent-color:var(--_accent);cursor:pointer;vertical-align:middle}
-.a-right{text-align:right;font-variant-numeric:tabular-nums}.a-center{text-align:center}
+.a-right{text-align:end;font-variant-numeric:tabular-nums}.a-center{text-align:center}
 .empty td{text-align:center;color:var(--_subtle);padding:28px 12px;cursor:default}
 .pick-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:10px;font-size:13px;color:var(--_subtle)}
 .pager{display:flex;align-items:center;gap:4px}

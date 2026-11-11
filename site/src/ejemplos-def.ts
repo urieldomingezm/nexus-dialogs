@@ -513,7 +513,7 @@ export async function plantillaAlta() {
  * id: plantilla-permiso
  * grupo: RR. HH. y México
  * titulo: Plantilla: permiso
- * desc: Seis plantillas de RR. HH.: alta, vacaciones, permiso, incapacidad, baja y gastos.
+ * desc: Nueve plantillas de RR. HH.: alta, vacaciones, permiso, incapacidad, baja, gastos, evaluación, capacitación y cambio de puesto.
  * import: import { formFromJSON } from 'nexus-dialogs/forms'\nimport { plantillas } from 'nexus-dialogs/rrhh'
  */
 export async function plantillaPermiso() {

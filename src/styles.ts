@@ -64,7 +64,7 @@ export const CORE_CSS =
 .head{padding:24px 24px 0;display:flex;gap:16px;align-items:flex-start}
 .head>div{min-width:0;flex:1}
 .head.centered{flex-direction:column;align-items:center;text-align:center;padding-top:28px;gap:12px}
-.panel.has-x .head>div{padding-right:28px}
+.panel.has-x .head>div{padding-inline-end:28px}
 .title{margin:0;font:600 18px/28px var(--_title-font);letter-spacing:-.01em;overflow-wrap:anywhere}
 .text{margin:4px 0 0;font-size:14px;line-height:20px;color:var(--_muted)}
 .text b,.text strong{color:var(--_fg)}
@@ -73,7 +73,7 @@ export const CORE_CSS =
 .foot{margin-top:24px;padding:16px 24px 20px;display:flex;gap:12px;justify-content:flex-end;align-items:center;flex-wrap:wrap;border-top:1px solid var(--_line)}
 .foot:empty{display:none}
 /* Con tres o más botones, el primero (Cancelar, Guardar borrador) se va a la izquierda. */
-.foot>.btn:first-child:nth-last-child(n+3){margin-right:auto}
+.foot>.btn:first-child:nth-last-child(n+3){margin-inline-end:auto}
 .foot.plain{border-top:0;padding-top:0}
 .foot.plain .btn{flex:1}
 .p-right .foot,.p-left .foot{margin-top:auto}
@@ -82,7 +82,7 @@ export const CORE_CSS =
 .err{margin:16px 24px 0;padding:10px 12px;border-radius:12px;color:var(--_error);font-size:14px;
   background:color-mix(in srgb,var(--_error) 6%,var(--_bg));border:1px solid color-mix(in srgb,var(--_error) 25%,var(--_bg))}
 .err[hidden]{display:none}
-.x{position:absolute;top:16px;right:16px;width:36px;height:36px;border-radius:10px;border:0;background:transparent;color:var(--_subtle);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.x{position:absolute;top:16px;inset-inline-end:16px;width:36px;height:36px;border-radius:10px;border:0;background:transparent;color:var(--_subtle);cursor:pointer;display:flex;align-items:center;justify-content:center}
 .x:hover{background:var(--_surface);color:var(--_muted)}
 .x:focus-visible{outline:none;box-shadow:0 0 0 4px var(--_focus)}
 /* Icono de contexto junto al título: cuadro suave con anillo. */
@@ -92,7 +92,8 @@ export const CORE_CSS =
 .icon path{stroke-dasharray:40;stroke-dashoffset:40;animation:draw .45s .1s forwards}
 @keyframes draw{to{stroke-dashoffset:0}}
 .i-success{color:var(--_success)}.i-error,.i-delete{color:var(--_danger)}.i-warning,.i-clock{color:var(--_warning)}.i-info,.i-question{color:var(--_info)}
-.timer{position:absolute;left:0;bottom:0;height:3px;background:var(--_accent);opacity:.6;width:100%;transform-origin:left}
+.timer{position:absolute;inset-inline-start:0;bottom:0;height:3px;background:var(--_accent);opacity:.6;width:100%;transform-origin:left}
+:host([dir=rtl]) .timer{transform-origin:right}
 .body>*+.typed{margin-top:16px}
 .typed label{display:block;font-size:14px;font-weight:500;color:var(--_label);margin-bottom:6px}
 .typed code{font:600 13px ui-monospace,Menlo,monospace;background:var(--_surface);border:1px solid var(--_line);padding:1px 6px;border-radius:6px;user-select:all;color:var(--_fg)}

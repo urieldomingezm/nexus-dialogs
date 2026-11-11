@@ -4,6 +4,17 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ## [Sin publicar]
 
+### Agregado
+
+- `nexus-dialogs/angular`: `provideNexusDialogs()`, `injectDialog()`, `injectForm()` e `injectToast()` para Angular 16+. `isOpen` es una señal, los diálogos se cierran al destruir el componente y no usa decoradores. Solo ESM, como `@angular/core`, que es dependencia opcional.
+- Soporte RTL (derecha a izquierda): los diálogos y toasts siguen `<html dir="rtl">` o `configure({ dir })` / `dir` por diálogo. CSS con propiedades lógicas, calendario y temporizador espejados y teclado invertido en el calendario.
+- Plantillas de RR. HH.: `evaluacion`, `capacitacion` y `cambioPuesto` (ya son nueve).
+- `nexus-dialogs/swal`: `loaderHtml` y `getLoader` (indicador de «procesando» visible), `argsToParams`, `isValidParameter`, `isUpdatableParameter` y `bindClickHandler` (`data-swal-template`).
+
+### Corregido
+
+- Vue y React: cada diálogo queda a nombre del componente que lo pidió (también los anidados). Con dos componentes con diálogos abiertos a la vez, desmontar uno ya no cierra los del otro.
+
 ## [0.4.0] - 2026-11-11
 
 ### Agregado
@@ -27,6 +38,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 - `nexus-dialogs/swal`: `getPopup()` y el popup que reciben los ganchos son ahora el panel (dentro del Shadow DOM) y no el `<dialog>`, para que `querySelector` sobre él encuentre el contenido. `willClose` se llama al empezar a cerrar y recibe el panel. El adaptador pesa unos 3.6 KB gzip más (límite 7 KB).
 
 ### Corregido
+
 
 - La lista del buscador y el calendario desplegable ya no se recortan en el borde del diálogo: se abren en la capa superior (Popover API) y hacia arriba cuando abajo no caben.
 

@@ -28,6 +28,7 @@ const ENTRADAS = [
   'nexus-dialogs/patterns',
   'nexus-dialogs/mx',
   'nexus-dialogs/react',
+  'nexus-dialogs/angular',
   'nexus-dialogs/import',
   'nexus-dialogs/table',
   'nexus-dialogs/sepomex',
@@ -46,8 +47,8 @@ try {
     )
   })
 
-  paso('instalar vue, react, typescript, vite y webpack', () => {
-    sh('npm i --no-audit --no-fund --silent vue react @types/react typescript@5 vite webpack webpack-cli', dir)
+  paso('instalar vue, react, angular, typescript, vite y webpack', () => {
+    sh('npm i --no-audit --no-fund --silent vue react @types/react @angular/core rxjs typescript@5 vite webpack webpack-cli', dir)
   })
 
   paso('Node ESM: import de cada entrada (más /all)', () => {
@@ -62,7 +63,10 @@ try {
   })
 
   paso('Node CJS: require de cada entrada', () => {
-    const codigo = ENTRADAS.map((e) => `if (!Object.keys(require('${e}')).length) throw new Error('${e} vacío')`).join('\n')
+    // angular es solo ESM (@angular/core no tiene versión CommonJS).
+    const codigo = ENTRADAS.filter((e) => !e.endsWith('/angular'))
+      .map((e) => `if (!Object.keys(require('${e}')).length) throw new Error('${e} vacío')`)
+      .join('\n')
     writeFileSync(join(dir, 'cjs.cjs'), codigo + "\nconsole.log('cjs')\n")
     sh('node cjs.cjs', dir)
   })
@@ -77,6 +81,7 @@ import { isCLABE, businessDays, mexicanHolidays } from 'nexus-dialogs/mx'
 import Swal, { type SweetAlertResult } from 'nexus-dialogs/swal'
 import { useDialog, NexusDialogs } from 'nexus-dialogs/vue'
 import { useDialog as useDialogReact, useForm, NexusDialogsProvider } from 'nexus-dialogs/react'
+import { injectDialog, injectForm, provideNexusDialogs } from 'nexus-dialogs/angular'
 import { importData, parseCSV, exportData, type ImportColumn } from 'nexus-dialogs/import'
 import { pickRows } from 'nexus-dialogs/table'
 import { sepomexLookup } from 'nexus-dialogs/sepomex'
@@ -100,6 +105,7 @@ async function uso() {
   const s: SweetAlertResult = await Swal.fire({ title: 'X', icon: 'warning', showCancelButton: true }); void s.isConfirmed
   const d = useDialog(); await d.scoped(confirmDelete)({ what: 'x' }); void NexusDialogs
   const rd = useDialogReact(); const rf = useForm(); const abierto: boolean = rd.isOpen; void abierto; void rf.wizard; void NexusDialogsProvider
+  void provideNexusDialogs; void injectForm; const ini: () => boolean = () => injectDialog().isOpen()
   const cols: ImportColumn[] = [{ name: 'rfc', label: 'RFC', type: 'rfc', unique: true }]
   const im = await importData<{ rfc: string }>({ columns: cols })
   if (im.value) im.value.rows.map((x) => x.rfc)
@@ -127,7 +133,12 @@ void uso
   })
 
   paso('TypeScript, node16 CJS (require)', () => {
-    writeFileSync(join(dir, 'node16.cts'), usoTs)
+    // Sin angular: solo ESM, un `require` no puede cargarlo.
+    const sinAngular = usoTs
+      .split('\n')
+      .filter((l) => !/nexus-dialogs\/angular|provideNexusDialogs/.test(l))
+      .join('\n')
+    writeFileSync(join(dir, 'node16.cts'), sinAngular)
     tsc('node16.cts', '--module node16 --moduleResolution node16')
   })
 

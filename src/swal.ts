@@ -115,6 +115,7 @@ export interface SweetAlertOptions {
   /** Selector o elemento `<template>` con `<swal-title>`, `<swal-html>`, `<swal-button>`, `<swal-param>`… */
   template?: string | HTMLTemplateElement
   closeButtonHtml?: string
+  loaderHtml?: string
   closeButtonAriaLabel?: string
   confirmButtonAriaLabel?: string
   denyButtonAriaLabel?: string
@@ -401,7 +402,10 @@ const CSS_SWAL = `.check{display:flex;gap:10px;align-items:center;cursor:pointer
 .swal-line{width:var(--swal-d,2.5em);height:2px;background:var(--_border)}.swal-step.is-done .swal-line{background:var(--_accent)}
 .swal-range{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center}.swal-range label{grid-column:1/-1}.swal-range .input{padding:0;accent-color:var(--_accent)}
 .swal-range-out{font:600 14px/1 var(--_font);color:var(--_fg)}
-.head.drag{cursor:move;touch-action:none;user-select:none}`
+.head.drag{cursor:move;touch-action:none;user-select:none}
+.swal-loader{display:flex;justify-content:center;padding:14px 24px 0}.swal-loader[hidden]{display:none}
+.swal-spin{width:28px;height:28px;border-radius:50%;border:3px solid var(--_border);border-top-color:var(--_accent);animation:swal-giro .8s linear infinite}
+@keyframes swal-giro{to{transform:rotate(360deg)}}@media (prefers-reduced-motion:reduce){.swal-spin{animation:none}}`
 
 /** Reconstruye la cabecera (icono, imagen, pasos, título, texto, html) y el pie con las opciones actuales. */
 function pintarCabecera(e: Entrada): void {
@@ -524,6 +528,20 @@ function construirBotones(e: Entrada): ButtonSpec[] {
   return o.reverseButtons ? botones.reverse() : botones
 }
 
+/** Indicador de «procesando»: aparece sobre los botones mientras corre `preConfirm` o tras `Swal.showLoading()`. */
+function pintarLoader(e: Entrada): void {
+  const panel = panelDe(e.ctx)
+  let l = panel.querySelector<HTMLElement>('.swal-loader')
+  if (!l) {
+    l = h('div', { class: 'swal-loader', role: 'status', hidden: true })
+    panel.insertBefore(l, panel.querySelector('.foot'))
+  }
+  l.setAttribute('aria-label', labels().loading)
+  if (e.o.loaderHtml) l.innerHTML = e.o.loaderHtml
+  else if (!l.firstChild) l.appendChild(h('span', { class: 'swal-spin', 'aria-hidden': 'true' }))
+  l.hidden = panel.getAttribute('aria-busy') !== 'true'
+}
+
 function aplicarBotones(e: Entrada): void {
   e.ctx.setButtons(construirBotones(e))
   etiquetarBotones(e)
@@ -618,6 +636,10 @@ async function fireCon(defaults: SweetAlertOptions, args: unknown[]): Promise<Sw
     scheme: esquema,
     target: objetivo ?? undefined,
     allowEnter: o.allowEnterKey,
+    onLoading: (si) => {
+      const l = e.ctx?.root.querySelector<HTMLElement>('.swal-loader')
+      if (l) l.hidden = !si
+    },
     buttons: construirBotones(e),
     initialFocus: enfoque,
     dismissible: {
@@ -654,6 +676,7 @@ async function fireCon(defaults: SweetAlertOptions, args: unknown[]): Promise<Sw
       // Lo que el motor no pinta: imagen, pasos, icono propio, etiquetas de los botones.
       if (o.imageUrl || o.progressSteps?.length || o.iconHtml || o.draggable) pintarCabecera(e)
       pintarCerrar(e)
+      pintarLoader(e)
       etiquetarBotones(e)
       if (o.draggable) hacerArrastrable(panel)
       o.willOpen?.(panel)
@@ -683,6 +706,12 @@ async function fireCon(defaults: SweetAlertOptions, args: unknown[]): Promise<Sw
   if (r.reason === 'deny') return { isConfirmed: false, isDenied: true, isDismissed: false, value: r.value ?? false }
   return { isConfirmed: false, isDenied: false, isDismissed: true, dismiss: RAZON[r.reason] }
 }
+
+/** Todas las opciones de `Swal.fire()` de SweetAlert2 11 (para `isValidParameter`). */
+const PARAMS_VALIDOS =
+  'title titleText text html icon footer toast position width timer timerProgressBar showConfirmButton showDenyButton showCancelButton showCloseButton confirmButtonText denyButtonText cancelButtonText focusCancel focusDeny allowOutsideClick allowEscapeKey input inputLabel inputPlaceholder inputValue inputOptions inputAttributes inputValidator validationMessage preConfirm preDeny willOpen didOpen didRender willClose didClose didDestroy iconHtml imageUrl imageWidth imageHeight imageAlt progressSteps currentProgressStep progressStepsDistance closeButtonHtml closeButtonAriaLabel confirmButtonAriaLabel denyButtonAriaLabel cancelButtonAriaLabel reverseButtons allowEnterKey inputAutoFocus inputAutoTrim returnInputValueOnDeny target theme template draggable confirmButtonColor denyButtonColor cancelButtonColor buttonsStyling customClass background color padding iconColor backdrop grow animation showClass hideClass heightAuto scrollbarPadding topLayer stopKeydownPropagation keydownListenerCapture showLoaderOnConfirm showLoaderOnDeny focusConfirm returnFocus loaderHtml'.split(
+    ' ',
+  )
 
 const PARAMS_ACTUALIZABLES = [
   'title',
@@ -725,6 +754,7 @@ function actualizar(nuevas: SweetAlertOptions): void {
   if ('title' in nuevas && !('titleText' in nuevas)) delete e.o.titleText
   pintarCabecera(e)
   pintarCerrar(e)
+  pintarLoader(e)
   aplicarBotones(e)
 }
 
@@ -765,6 +795,7 @@ function crear(defaults: SweetAlertOptions) {
     getProgressSteps: () => buscar('.swal-steps'),
     getValidationMessage: () => buscar('.err'),
     getInputLabel: () => buscar('.body label'),
+    getLoader: () => buscar('.swal-loader'),
     getFocusableElements: () => (actual() ? focusables(panelDe(actual()!.ctx)) : []),
     getInput: () => actual()?.input() ?? null,
     getConfirmButton: () => actual()?.ctx.button('confirm') ?? null,
@@ -809,6 +840,20 @@ function crear(defaults: SweetAlertOptions) {
       if (c) return c.running() ? c.stop() : c.resume()
     },
     increaseTimer: (ms: number) => t()?.increase(ms),
+    /** Convierte los argumentos de `fire` (`título, html, icono` u objeto) en opciones. */
+    argsToParams: (args: unknown[]): SweetAlertOptions => normalizar(args),
+    isValidParameter: (nombre: string) => PARAMS_VALIDOS.includes(nombre),
+    isUpdatableParameter: (nombre: string) => PARAMS_ACTUALIZABLES.includes(nombre),
+    /** Abre una alerta con la plantilla de cada elemento que tenga el atributo (por omisión `data-swal-template="#id"`). */
+    bindClickHandler: (atributo = 'data-swal-template') => {
+      document.addEventListener('click', (ev) => {
+        const el = (ev.target as Element | null)?.closest?.(`[${atributo}]`)
+        const plantilla = el?.getAttribute(atributo)
+        if (!plantilla) return
+        ev.preventDefault()
+        void fireCon(defaults, [{ template: plantilla }])
+      })
+    },
     DismissReason,
   }
 }
