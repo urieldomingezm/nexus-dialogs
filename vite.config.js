@@ -85,7 +85,7 @@ export default defineConfig(({ mode, command }) => {
   }
   // Sitio de documentación: `npm run build:site` → site-dist/ (rutas relativas: sirve en GitHub Pages bajo cualquier ruta).
   if (command === 'build' && mode === 'site') {
-    const paginas = ['index', 'guia', 'ejemplos', 'api']
+    const paginas = ['index', 'guia', 'ejemplos', 'erp', 'migracion', 'accesibilidad', 'api']
     return {
       root: 'site',
       base: './',

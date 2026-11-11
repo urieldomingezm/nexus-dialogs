@@ -6,7 +6,7 @@ const DARK = `--_bg:var(--nd-bg,#161b26);--_fg:var(--nd-fg,#f5f5f6);--_label:var
   --_subtle:var(--nd-subtle,#85888e);--_border:var(--nd-border,#333741);--_surface:var(--nd-surface,#1f242f);--_line:var(--nd-line,#2b3341);
   --_accent:var(--nd-accent,#8ea4ff);--_accent-fg:var(--nd-accent-contrast,#12142a);
   --_cancel-fg:var(--nd-cancel-fg,#fda29b);--_cancel-border:var(--nd-cancel-border,#7a271a);
-  --_danger:var(--nd-danger,#f04438);--_error:var(--nd-error,#fda29b);--_success:var(--nd-success,#47cd89);--_warning:var(--nd-warning,#fdb022);
+  --_danger:var(--nd-danger,#d92d20);--_error:var(--nd-error,#fda29b);--_success:var(--nd-success,#47cd89);--_warning:var(--nd-warning,#fdb022);
   --_overlay:var(--nd-overlay,rgba(0,0,0,.6));--_shadow:var(--nd-shadow,0 24px 48px -12px rgba(0,0,0,.6));--_edge:var(--nd-edge,#2b3341);color-scheme:dark;`
 
 export const VARS = `

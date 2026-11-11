@@ -27,7 +27,7 @@ export function adopt(root: ShadowRoot | Document, css: string): void {
   }
   const el = document.createElement('style')
   el.textContent = css
-  ;(root instanceof Document ? root.head : root).appendChild(el)
+  ;(root.nodeType === Node.DOCUMENT_NODE ? (root as Document).head : root).appendChild(el)
 }
 
 let global = false

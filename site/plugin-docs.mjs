@@ -3,6 +3,7 @@
 //   <!--@pie-->             pie de página
 //   <!--@readme-->          README.md convertido a HTML (sin el índice, que lo reemplaza el menú lateral)
 //   <!--@api-->             api/nexus-dialogs.api.md convertido a HTML
+//   <!--@md:docs/archivo.md-->  un Markdown del repositorio convertido a HTML (sin su título de nivel 1)
 //   <!--@version-->         versión de package.json
 //   <!--@tam:forms-->       tamaño min+gzip de dist/forms.js (necesita `npm run build` antes); `a+b` suma varios archivos
 import { readFileSync, existsSync } from 'node:fs'
@@ -19,6 +20,8 @@ const MENU = [
   ['inicio', 'index.html', 'Inicio'],
   ['guia', 'guia.html', 'Guía'],
   ['ejemplos', 'ejemplos.html', 'Ejemplos'],
+  ['erp', 'erp.html', 'Mini ERP'],
+  ['migracion', 'migracion.html', 'Migrar'],
   ['api', 'api.html', 'API'],
 ]
 
@@ -86,6 +89,11 @@ function apiHtml() {
   return markdown().parse(md)
 }
 
+/** Cualquier archivo Markdown del repositorio (por ejemplo docs/accesibilidad.md) convertido a HTML. */
+function mdHtml(ruta) {
+  return markdown().parse(leer(`../${ruta}`).replace(/^# .*\n/, ''))
+}
+
 const tamano = (ruta) => {
   if (!existsSync(ruta)) return null
   const min = transformSync(readFileSync(ruta, 'utf8'), { minify: true, format: 'esm' }).code
@@ -114,7 +122,7 @@ const ICONO =
 
 const pie = () => `<footer class="pie">
   <p>nexus-dialogs <strong>v${pkg.version}</strong> · Licencia MIT · Hecho por <a href="https://devmedina.is-a.dev/" rel="noopener">DevMedina</a> · rama de librerías de Nexus</p>
-  <p><a href="${REPO}" rel="noopener">Código</a> · <a href="${NPM}" rel="noopener">npm</a> · <a href="${REPO}/blob/main/CHANGELOG.md" rel="noopener">Cambios</a> · <a href="${REPO}/issues" rel="noopener">Reportar un problema</a></p>
+  <p><a href="${REPO}" rel="noopener">Código</a> · <a href="${NPM}" rel="noopener">npm</a> · <a href="${REPO}/blob/main/CHANGELOG.md" rel="noopener">Cambios</a> · <a href="accesibilidad.html">Accesibilidad</a> · <a href="migracion.html">Migrar de SweetAlert2</a> · <a href="${REPO}/issues" rel="noopener">Reportar un problema</a></p>
 </footer>`
 
 export function docsPlugin() {
@@ -125,6 +133,7 @@ export function docsPlugin() {
       handler(html) {
         if (!html.includes('<!--@')) return html
         return html
+          .replace(/<!--@md:([\w./-]+)-->/g, (_, ruta) => mdHtml(ruta))
           .replace('</head>', `    ${ICONO}\n  </head>`)
           .replace(/<!--@cabecera:(\w+)-->/g, (_, id) => cabecera(id))
           .replace(/<!--@pie-->/g, pie())

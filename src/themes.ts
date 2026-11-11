@@ -26,7 +26,7 @@ export const themes = {
     '--nd-accent-contrast': '#12142a',
     '--nd-cancel-fg': '#ff8a80',
     '--nd-cancel-border': '#8c3a36',
-    '--nd-danger': '#ef5350',
+    '--nd-danger': '#d92d20',
     '--nd-error': '#ff8a80',
     '--nd-overlay': 'rgba(0,0,0,.6)',
   } as Theme,
