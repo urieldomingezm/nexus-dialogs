@@ -135,7 +135,12 @@ export function openDialog<T = unknown>(opciones: EngineOptions<T>): Promise<Dia
   const centrado = !!icono && (o.buttons ? o.buttons.filter((b) => !b.hidden).length : 2) <= 1
   const head =
     titulo || texto || html || icono
-      ? h('header', { class: centrado ? 'head centered' : icono ? 'head hi' : 'head' }, icono ? icon(icono) : null, h('div', null, titulo, texto, html))
+      ? h(
+          'header',
+          { class: centrado ? 'head centered' : icono ? 'head hi' : 'head' },
+          icono ? icon(icono) : null,
+          h('div', null, titulo, texto, html),
+        )
       : null
   const body = h('div', { class: 'body' })
   const error = h('div', { class: 'err', role: 'alert', hidden: true })
