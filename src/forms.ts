@@ -187,6 +187,8 @@ interface Control {
   group: HTMLInputElement[]
   msg: HTMLElement
   tocado: boolean
+  /** Se incrementa con cada validación: una respuesta asíncrona vieja no debe pisar a la más reciente. */
+  seq: number
   /** Valor al abrir: salir del campo sin cambiarlo no muestra errores (así el botón no se mueve bajo el clic). */
   inicial?: string
   custom?: CustomControl
@@ -245,7 +247,7 @@ class FieldSet {
     const ayuda = f.help ? h('div', { class: 'help', id: helpId }) : null
     if (ayuda) ayuda.textContent = f.help!
     const describe = [f.help ? helpId : '', msgId].filter(Boolean).join(' ')
-    const c: Control = { f, wrap: h('div'), input: null, group: [], msg, tocado: false }
+    const c: Control = { f, wrap: h('div'), input: null, group: [], msg, tocado: false, seq: 0 }
     const requerido = f.required ? 'true' : null
     const etiqueta = (forId: string | null) =>
       h('label', { for: forId }, f.label, f.required ? h('span', { class: 'req', 'aria-hidden': 'true' }, ' *') : null)
@@ -386,7 +388,11 @@ class FieldSet {
       // Primero lo que no espera: mostrar u ocultar campos condicionales. Luego la validación (puede ser async).
       this.actualizarVisibles()
       this.alCambiar()
-      if (c.tocado && (!c.custom?.lazy || c.wrap.classList.contains('invalid'))) this.mostrar(c, await this.validarUno(c))
+      if (c.tocado && (!c.custom?.lazy || c.wrap.classList.contains('invalid'))) {
+        const n = ++c.seq
+        const e = await this.validarUno(c)
+        if (n === c.seq) this.mostrar(c, e)
+      }
     }
     c.wrap.addEventListener('input', al)
     c.wrap.addEventListener('change', al)
@@ -494,8 +500,9 @@ class FieldSet {
     const errores: { label: string; focus: () => void }[] = []
     for (const c of this.controles) {
       c.tocado = true
+      const n = ++c.seq
       const e = extra[c.f.name] || (await this.validarUno(c))
-      this.mostrar(c, e)
+      if (n === c.seq) this.mostrar(c, e)
       if (e) errores.push({ label: `${c.f.label}: ${e}`, focus: () => (c.custom ? c.custom.focus() : (c.input ?? c.group[0])?.focus()) })
     }
     return errores

@@ -10,7 +10,7 @@
  */
 
 /** Mayúsculas y sin espacios. */
-export const normalize = (v: string): string => v.trim().toUpperCase().replace(/\s+/g, '')
+export const normalize = (v: string): string => (typeof v === 'string' ? v : '').trim().toUpperCase().replace(/\s+/g, '')
 
 const fechaValida = (aa: string, mm: string, dd: string): boolean => {
   const m = +mm

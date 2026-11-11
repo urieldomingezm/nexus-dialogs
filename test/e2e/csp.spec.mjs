@@ -61,7 +61,8 @@ test.describe('CSP sin estilos en línea', () => {
     const p0 = await conCsp("style-src 'self'", { sinHojas: true })
     await marcar(page, p0)
     await page.click('#b-confirm')
-    expect((await violaciones(page)).some((v) => v.startsWith('style-src'))).toBe(true)
+    // El evento securitypolicyviolation llega de forma asíncrona, un instante después de abrir el diálogo.
+    await expect.poll(async () => (await violaciones(page)).some((v) => v.startsWith('style-src'))).toBe(true)
   })
 
   test('sin hojas construibles y con nonce configurado, el <style> alternativo sí se permite', async ({ page, conCsp }) => {

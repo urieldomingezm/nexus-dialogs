@@ -27,13 +27,20 @@ test.describe('Sitio de documentación', () => {
     ['accesibilidad.html', /Accesibilidad/],
     ['seguridad.html', /Seguridad/],
     ['arquitectura.html', /Arquitectura/],
+    ['limitaciones.html', /Limitaciones/],
+    ['swal-compat.html', /SweetAlert2/],
+    ['contratos.html', /Contratos/],
     ['api.html', /API/],
   ]) {
     test(`${pagina}: carga, sin marcadores sin resolver ni errores`, async ({ pagina: page }) => {
       await page.goto(SITIO + pagina)
       await expect(page).toHaveTitle(titulo)
       await expect(page.locator('header.cabecera nav a[aria-current="page"]')).toHaveCount(
-        ['accesibilidad.html', 'seguridad.html', 'arquitectura.html'].includes(pagina) ? 0 : 1,
+        ['accesibilidad.html', 'seguridad.html', 'arquitectura.html', 'limitaciones.html', 'swal-compat.html', 'contratos.html'].includes(
+          pagina,
+        )
+          ? 0
+          : 1,
       )
       expect(await page.content()).not.toContain('<!--@')
       await expect(page.locator('footer.pie')).toContainText('MIT')
@@ -213,6 +220,9 @@ test.describe('Sitio de documentación', () => {
       'accesibilidad.html',
       'seguridad.html',
       'arquitectura.html',
+      'limitaciones.html',
+      'swal-compat.html',
+      'contratos.html',
     ]) {
       await page.goto(SITIO + p)
       const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze()
