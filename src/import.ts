@@ -779,7 +779,10 @@ const serieExcel = (v: unknown): number | null => {
 /** Texto CSV (con BOM, para que Excel respete los acentos). */
 export function toCSV<R>(rows: R[], columns: ExportColumn<R>[], separador = ','): string {
   const celda = (v: unknown) => {
-    const s = v === null || v === undefined ? '' : v instanceof Date ? v.toISOString().slice(0, 10) : String(v)
+    let s = v === null || v === undefined ? '' : v instanceof Date ? v.toISOString().slice(0, 10) : String(v)
+    // Inyección de fórmulas: Excel y LibreOffice evalúan lo que empieza con = + - @ (o tab/retorno). Un apóstrofo delante lo deja como
+    // texto. Los números de verdad (-5, +3.2, o un `number`) no se tocan.
+    if (typeof v !== 'number' && /^[=+\-@\t\r]/.test(s) && !/^[+-]?\d+(\.\d+)?$/.test(s)) s = `'${s}`
     return /[",;\n\r\t]/.test(s) || s.includes(separador) ? `"${s.replace(/"/g, '""')}"` : s
   }
   const lineas = [columns.map((c) => celda(c.label)).join(separador)]

@@ -158,8 +158,8 @@ const ICONOS: IconName[] = ['success', 'error', 'warning', 'info', 'question']
 
 const textoPlano = (html: string): string => {
   const t = document.createElement('template')
-  t.innerHTML = html
-  return t.content.textContent?.trim() ?? ''
+  setHtml(t, html)
+  return (t.content.textContent || t.textContent)?.trim() ?? ''
 }
 
 const valor = <T>(v: T | (() => T) | undefined, omision: T): T => (typeof v === 'function' ? (v as () => T)() : (v ?? omision))

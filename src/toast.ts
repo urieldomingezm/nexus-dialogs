@@ -9,7 +9,7 @@
  * ```
  * Se monta dentro del diálogo modal de arriba cuando hay uno abierto (si no, quedaría inerte detrás).
  */
-import { angosto, direccion, h, uid } from './core/dom'
+import { angosto, direccion, h, svg, uid } from './core/dom'
 import { icon } from './core/icons'
 import { adopt } from './core/sheet'
 import { en, es } from './i18n'
@@ -236,12 +236,9 @@ function dibujar(it: Item): HTMLElement {
       : h(
           'button',
           { type: 'button', class: 'x', 'aria-label': L().dismiss, onclick: () => dismiss(it.id) },
-          (() => {
-            const t = document.createElement('template')
-            t.innerHTML =
-              '<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>'
-            return t.content.firstChild as Node
-          })(),
+          svg(
+            '<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
+          ),
         ),
   )
   return li

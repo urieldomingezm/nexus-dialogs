@@ -211,7 +211,7 @@ describe('importar y exportar con archivos difíciles', () => {
     )
     expect(csv).toContain('"Ana ""la"" grande"')
     expect(csv).toContain('"línea1\nlínea2"')
-    expect(csv).not.toMatch(/(^|,)=HYPERLINK/)
+    expect(csv).toContain(`"'=HYPERLINK(""http://x"")"`)
   })
 })
 

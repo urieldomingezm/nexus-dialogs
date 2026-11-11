@@ -6,6 +6,10 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ### Agregado
 
+- `configure({ strictHtml: true })`: el `html` en cadena que no pase por un `sanitize` se muestra como texto. Será el comportamiento por omisión en la 1.0. `sanitize: null` quita el filtro y `sanitize` puede devolver un `TrustedHTML`.
+- `configure({ nonce })`: nonce de CSP para el `<style>` alternativo de navegadores sin hojas de estilo construibles.
+- Pruebas: CSP y Trusted Types en Chromium, inyección de fórmulas con LibreOffice, fugas de memoria (300 diálogos, formularios y toasts) y *tree-shaking* del núcleo en `check:paquete`. `npm audit` de producción en el CI.
+- `SECURITY.md`: canal privado, tiempos de respuesta, versiones con correcciones y cómo se publica una versión.
 - `configure({ sanitize })`: filtro para todo el `html` en cadena (`html`, y en swal `iconHtml`, `closeButtonHtml` y `loaderHtml`); también se exporta `setHtml`. Los textos siguen insertándose siempre como texto y un `Node` no pasa por el filtro. Documentado en `docs/seguridad.md` y `SECURITY.md`.
 - Documentación de niveles (`docs/arquitectura.md`: núcleo, UI avanzada, empresa, integraciones, pesos y qué está validado) y una prueba que impide que un nivel importe de uno superior.
 - Sitio: páginas **Seguridad** y **Arquitectura**, y tabla de diferencias de comportamiento con SweetAlert2 en la guía de migración.
@@ -19,6 +23,8 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ### Corregido
 
+- **Seguridad**: `toCSV` no neutralizaba la inyección de fórmulas (`=1+1`, `@SUM(…)`, `+cmd`, `-1+2`): Excel y LibreOffice las evaluaban al abrir el CSV. Ahora los textos que empiezan con `= + - @` (o tab/retorno) llevan un apóstrofo delante; los números de verdad no cambian. El `.xlsx` ya guardaba esos valores como texto.
+- **Trusted Types**: con `require-trusted-types-for 'script'` la librería fallaba al abrir cualquier diálogo (sus iconos usaban `innerHTML`). Ahora se arman con `createElementNS`.
 - Contraste: el botón de peligro del esquema oscuro y del tema `dark` pasa de 3.8:1 a 4.9:1, y el texto del resumen de errores del formulario cumple 4.5:1 con los temas Bootstrap y Tailwind.
 - Con navegadores sin hojas de estilo construibles, los estilos globales se agregan al `<head>` sin depender de `instanceof Document`.
 - Vue y React: cada diálogo queda a nombre del componente que lo pidió (también los anidados). Con dos componentes con diálogos abiertos a la vez, desmontar uno ya no cierra los del otro.
