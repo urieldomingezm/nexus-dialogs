@@ -7,7 +7,7 @@ const define = { __VERSION__: JSON.stringify(version) }
 
 const src = (f) => fileURLToPath(new URL(`./src/${f}`, import.meta.url))
 // Lo más específico primero: 'nexus-dialogs' también coincidiría con 'nexus-dialogs/toast'.
-const ALIAS = { 'nexus-dialogs/toast': src('toast.ts'), 'nexus-dialogs': src('index.ts') }
+const ALIAS = { 'nexus-dialogs/toast': src('toast.ts'), 'nexus-dialogs/forms': src('forms.ts'), 'nexus-dialogs': src('index.ts') }
 
 // Un build por modo. `npm run build` los corre todos. forms depende del núcleo como paquete externo
 // para compartir la misma configuración (configure) y la misma pila de diálogos.
@@ -31,6 +31,13 @@ const LIBS = {
     fileName: 'vue',
     formats: ['es', 'cjs'],
     external: ['vue', 'nexus-dialogs', 'nexus-dialogs/toast'],
+  },
+  react: {
+    entry: 'src/react.ts',
+    name: 'NexusDialogsReact',
+    fileName: 'react',
+    formats: ['es', 'cjs'],
+    external: ['react', 'nexus-dialogs', 'nexus-dialogs/toast', 'nexus-dialogs/forms'],
   },
   swal: {
     entry: 'src/swal.ts',

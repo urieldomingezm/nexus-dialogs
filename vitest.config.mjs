@@ -6,6 +6,7 @@ export default defineConfig({
   define: { __VERSION__: JSON.stringify('0.0.0-test') },
   resolve: {
     alias: {
+      'nexus-dialogs/forms': fileURLToPath(new URL('./src/forms.ts', import.meta.url)),
       'nexus-dialogs/toast': fileURLToPath(new URL('./src/toast.ts', import.meta.url)),
       'nexus-dialogs': fileURLToPath(new URL('./src/index.ts', import.meta.url)),
     },
