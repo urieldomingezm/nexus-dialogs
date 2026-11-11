@@ -4,9 +4,13 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ## [Sin publicar]
 
+### Cambios que rompen
+
+- **`strictHtml` es `true` por omisión.** El `html` en cadena (`html` de `dialog.*` y, en `nexus-dialogs/swal`, `html`, `iconHtml`, `closeButtonHtml` y `loaderHtml`) ya no se interpreta: se muestra como texto, salvo que configures un `sanitize`. Para volver al comportamiento anterior con contenido propio: `configure({ strictHtml: false })`. Con contenido de fuera: `configure({ sanitize: (h) => DOMPurify.sanitize(h) })`. Los `Node` y los textos no cambian. Esto es lo que más afecta a quien migra de SweetAlert2.
+
 ### Agregado
 
-- `configure({ strictHtml: true })`: el `html` en cadena que no pase por un `sanitize` se muestra como texto. Será el comportamiento por omisión en la 1.0. `sanitize: null` quita el filtro y `sanitize` puede devolver un `TrustedHTML`.
+- `configure({ strictHtml })`: con `true` (por omisión, ver «Cambios que rompen») el `html` en cadena que no pase por un `sanitize` se muestra como texto. `sanitize: null` quita el filtro y `sanitize` puede devolver un `TrustedHTML`.
 - `configure({ nonce })`: nonce de CSP para el `<style>` alternativo de navegadores sin hojas de estilo construibles.
 - Pruebas: CSP y Trusted Types en Chromium, inyección de fórmulas con LibreOffice, fugas de memoria (300 diálogos, formularios y toasts) y *tree-shaking* del núcleo en `check:paquete`. `npm audit` de producción en el CI.
 - `SECURITY.md`: canal privado, tiempos de respuesta, versiones con correcciones y cómo se publica una versión.

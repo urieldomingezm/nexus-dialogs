@@ -56,7 +56,10 @@ export interface DialogOptions<T = unknown> {
   title?: string
   /** Texto plano (seguro). */
   text?: string
-  /** HTML o un nodo. Si es texto, se inserta tal cual: úsalo solo con contenido tuyo, nunca con datos del usuario. */
+  /**
+   * Un nodo (se inserta tal cual: ármalo tú con `textContent`) o HTML en cadena. La cadena se muestra como texto salvo que configures
+   * `sanitize` o `strictHtml: false` (solo con contenido tuyo, nunca con datos del usuario).
+   */
   html?: string | Node
   icon?: IconName
   /** center (por omisión), right o left (panel lateral), bottom (hoja inferior). En celular, center se vuelve hoja inferior. */

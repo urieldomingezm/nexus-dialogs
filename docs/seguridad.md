@@ -3,23 +3,29 @@ Qué hace la librería con el contenido que le pasas y qué le toca a quien la u
 ## La regla corta
 
 - **Textos: seguros siempre.** `title`, `text`, etiquetas, ayudas, mensajes de error, nombres de botones, mensajes de toast y el `footer` del adaptador de SweetAlert2 se insertan **como texto**. Si llega `<img src=x onerror=…>` desde un usuario o un servidor, se ve tal cual y no se ejecuta.
-- **`html` en cadena: responsabilidad tuya.** Es la única puerta por donde entra HTML interpretado (`html`, y en el adaptador swal también `iconHtml`, `closeButtonHtml` y `loaderHtml`). Sin filtro, se inserta tal cual. **No le pases datos de usuarios ni de un servidor sin limpiarlos.**
+- **`html` en cadena: solo con `sanitize` o con `strictHtml: false`.** Es la única puerta por donde entra HTML interpretado (`html`, y en el adaptador swal también `iconHtml`, `closeButtonHtml` y `loaderHtml`). Por omisión se muestra como texto. Si lo desactivas, el HTML se inserta tal cual y **no debes pasarle datos de usuarios ni de un servidor sin limpiarlos.**
 - **`html` como `Node`: tampoco es automáticamente seguro.** La librería lo inserta sin tocarlo y sin pasarlo por `sanitize`. Si el `Node` lo armaste con `createElement` y `textContent`, está bien; si lo creaste con `innerHTML`, `DOMParser` o un fragmento que vino de fuera, puede traer elementos y atributos peligrosos (`onerror`, `javascript:`…). Limpia antes de construirlo.
 
-### Modo estricto (recomendado)
+### Modo estricto (por omisión desde la 0.5.0)
+
+Cualquier `html` en cadena que **no** pase por un `sanitize` configurado se muestra como **texto** en vez de interpretarse. Si alguien olvida configurar el filtro, el resultado es un texto feo y no un XSS.
 
 ```ts
-configure({ strictHtml: true })
+// Con tu propio contenido (constantes de tu código): desactívalo a propósito.
+configure({ strictHtml: false })
+
+// Con contenido que no es tuyo: dale un filtro y el HTML se interpreta ya limpio.
+configure({ sanitize: (html) => DOMPurify.sanitize(html) })
 ```
 
-Con `strictHtml`, cualquier `html` en cadena que **no** pase por un `sanitize` configurado se muestra como texto en vez de interpretarse. Así, si alguien olvida configurar el filtro, el resultado es un texto feo y no un XSS. Hoy es opcional para no romper código que ya existe; **en la 1.0 será el comportamiento por omisión**.
+Antes de la 0.5.0 el HTML se insertaba tal cual por omisión. Si actualizas y ves etiquetas como `<b>` en pantalla, es esto.
 
 ## Cuándo usar cada cosa
 
 | Quiero mostrar… | Usa |
 |---|---|
 | Un mensaje con datos del usuario (nombre, comentario, error del servidor) | `text` (o `title`). Nunca `html`. |
-| Contenido propio con negritas, listas o enlaces fijos | `html` en cadena escrito por ti (constante en tu código). |
+| Contenido propio con negritas, listas o enlaces fijos | `html` en cadena escrito por ti (constante en tu código) con `strictHtml: false`, o un `sanitize`. |
 | Contenido que viene de fuera y debe verse con formato | `html` + el filtro `sanitize` (abajo), o construye un `Node` con `textContent`/`createElement`. |
 
 ## El filtro `sanitize`

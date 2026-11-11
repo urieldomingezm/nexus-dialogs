@@ -9,7 +9,7 @@ import { $, boton, esperar, raiz } from './utilidades'
 const ATAQUE = '<img src=x onerror="window.__xss=1"><script>window.__xss=1</script><b>negrita</b>'
 
 afterEach(() => {
-  configure({ sanitize: null, strictHtml: false })
+  configure({ sanitize: null, strictHtml: true })
   delete (window as any).__xss
 })
 
@@ -53,7 +53,8 @@ describe('textos: siempre texto, nunca HTML', () => {
 })
 
 describe('html en cadena: responsabilidad de quien lo pasa, con gancho sanitize', () => {
-  it('sin sanitize se inserta tal cual (documentado)', async () => {
+  it('con strictHtml: false y sin sanitize se inserta tal cual (documentado)', async () => {
+    configure({ strictHtml: false })
     const p = dialog.alert({ html: '<b>hola</b>' })
     expect($('.html b').textContent).toBe('hola')
     boton('confirm').click()
@@ -97,8 +98,7 @@ describe('html en cadena: responsabilidad de quien lo pasa, con gancho sanitize'
     await p
   })
 
-  it('strictHtml: sin sanitize el html se muestra como texto', async () => {
-    configure({ strictHtml: true })
+  it('por omisión el html en cadena se muestra como texto', async () => {
     const p = dialog.alert({ html: ATAQUE })
     expect(raiz().querySelector('img, script, b')).toBeNull()
     expect($('.html').textContent).toBe(ATAQUE)
@@ -115,8 +115,7 @@ describe('html en cadena: responsabilidad de quien lo pasa, con gancho sanitize'
     await p
   })
 
-  it('strictHtml en swal: html y footer no interpretan etiquetas', async () => {
-    configure({ strictHtml: true })
+  it('por omisión en swal: html y footer no interpretan etiquetas', async () => {
     const p = Swal.fire({ html: ATAQUE, footer: '<b>pie</b>' })
     await esperar()
     expect(raiz().querySelector('img, script, b')).toBeNull()

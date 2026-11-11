@@ -19,7 +19,7 @@ Las librerías de alertas resuelven el «¿Seguro?» y poco más. En un sistema 
 - **Promesas**: `const r = await dialog.confirm(…)`; nunca rechaza, siempre resuelve con `{ confirmed, denied, value, reason }`.
 - **Accesible**: foco inicial correcto (Cancelar en acciones destructivas), Esc, regreso del foco, errores ligados a cada campo, toasts anunciados en regiones vivas. Probado con axe en claro, oscuro, Bootstrap, Tailwind y Material, con teclado, movimiento reducido y reflow a 320 px. Qué se prueba y qué falta (lectores de pantalla): [`docs/accesibilidad.md`](docs/accesibilidad.md).
 - **Estándar de botones**: un color por intención, igual en toda la app, y sin iconos en los botones.
-- **Seguro por omisión**: los textos siempre se insertan como texto; solo el `html` en cadena se interpreta y se puede filtrar con `configure({ sanitize })`; con `configure({ strictHtml: true })` (recomendado) se muestra como texto si no hay filtro. Funciona con CSP estricta y Trusted Types, y el CSV exportado no permite inyección de fórmulas. Detalle en [`docs/seguridad.md`](docs/seguridad.md).
+- **Seguro por omisión**: los textos siempre se insertan como texto; solo el `html` en cadena se interpreta y se puede filtrar con `configure({ sanitize })`; por omisión (`strictHtml`) se muestra como texto si no hay filtro. Funciona con CSP estricta y Trusted Types, y el CSV exportado no permite inyección de fórmulas. Detalle en [`docs/seguridad.md`](docs/seguridad.md).
 - **Por niveles**: núcleo de ~10 KB, UI avanzada, empresa e integraciones, cada uno en su subruta; lo que no importas no se descarga. Qué pesa cada parte y qué está validado todavía: [`docs/arquitectura.md`](docs/arquitectura.md).
 
 > **Estado**: probada en Chromium, Firefox y WebKit con pruebas unitarias, de casos extremos y de accesibilidad (axe). Falta validarla con lectores de pantalla y en aplicaciones en producción; ver [`docs/arquitectura.md`](docs/arquitectura.md#qué-está-validado-y-qué-no).
@@ -342,7 +342,7 @@ export class Empleados {
 
 ### ¿Vienes de SweetAlert2?
 
-Cambia el import y tu código sigue funcionando:
+Cambia el import y tu código sigue funcionando (si usas `html`, agrega una vez `configure({ strictHtml: false })`, ver abajo):
 
 ```ts
 // antes: import Swal from 'sweetalert2'
@@ -372,7 +372,7 @@ Sin bundler, cambia el `<script>` de SweetAlert2 por este (define `window.Swal`)
 - El orden de los botones es siempre Cancelar, Denegar, Confirmar (la acción principal a la derecha).
 - Los textos por omisión salen en el idioma configurado («Aceptar», «Cancelar»).
 - Los toasts usan la cola de `nexus-dialogs/toast`; la posición es una sola para todos.
-- `footer` se muestra como texto plano (sin etiquetas); el `html` sí se interpreta y puede pasar por `configure({ sanitize })`.
+- `footer` se muestra como texto plano (sin etiquetas). `html` también sale como texto por omisión (`strictHtml`, desde la 0.5.0): con contenido tuyo usa `configure({ strictHtml: false })`; con contenido de fuera, `configure({ sanitize })`.
 - El contenido vive dentro del Shadow DOM: en vez de `document.getElementById('x')` usa `Swal.getHtmlContainer().querySelector('#x')`. El «popup» que reciben los ganchos y devuelve `getPopup()` es el panel, así que `popup.querySelector(…)` funciona.
 - `theme` entiende `light`, `dark` y `auto`; `target` monta el diálogo en ese elemento pero sigue siendo modal; `reverseButtons: true` pone Confirmar primero; `template` no acepta `<swal-function-param>`.
 - Sin equivalente: `Swal.version`, `topLayer`, `showClass`/`hideClass` y `animation` (el movimiento sale del tema y respeta «reducir movimiento»).
@@ -461,7 +461,7 @@ const r = await dialog.open({
 if (r.denied) descartar()
 ```
 
-Contenido propio con `render(ctx)` (devuelve un nodo) o `html` (solo con HTML tuyo; **nunca con datos del usuario**: `title` y `text` siempre son texto plano y seguros).
+Contenido propio con `render(ctx)` (devuelve un nodo) o `html` (una cadena sale como texto salvo que configures `sanitize` o `strictHtml: false`, y entonces solo con HTML tuyo; **nunca con datos del usuario**: `title` y `text` siempre son texto plano y seguros).
 
 ### Paneles laterales y hoja inferior
 

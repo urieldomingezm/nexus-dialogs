@@ -24,8 +24,8 @@ export interface GlobalConfig {
    */
   sanitize?: ((html: string) => string | { toString(): string }) | null
   /**
-   * Con `true`, el `html` en cadena que no pase por un `sanitize` configurado se muestra como texto en vez de interpretarse.
-   * Es la opción recomendada si no controlas todo el contenido; en la 1.0 será el comportamiento por omisión.
+   * Por omisión `true`: el `html` en cadena que no pase por un `sanitize` configurado se muestra como texto en vez de interpretarse.
+   * Es el comportamiento por omisión desde la 0.5.0; pon `false` solo si todo tu `html` es contenido tuyo.
    */
   strictHtml?: boolean
   /** Nonce de tu Content-Security-Policy para el `<style>` alternativo de navegadores sin hojas construibles. */
@@ -41,7 +41,7 @@ const estado: Required<Omit<GlobalConfig, 'labels' | 'sanitize'>> & { labels: La
   defaults: {},
   sheetOnMobile: true,
   sanitize: null,
-  strictHtml: false,
+  strictHtml: true,
   nonce: '',
 }
 

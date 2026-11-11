@@ -1,10 +1,13 @@
 // Guía de migración: cada ejemplo corre el código de SweetAlert2 con el adaptador y la versión con la API propia.
 import './comun'
 import Swal from 'nexus-dialogs/swal'
-import { dialog } from 'nexus-dialogs'
+import { configure, dialog } from 'nexus-dialogs'
 import { toast } from 'nexus-dialogs/toast'
 import { form, wizard } from 'nexus-dialogs/forms'
 import { confirmDelete } from 'nexus-dialogs/patterns'
+
+// Los ejemplos de SweetAlert2 traen `html` propio: este es el único cambio que necesita el código migrado (ver «Qué cambia»).
+configure({ strictHtml: false })
 
 const espera = (ms: number) => new Promise((ok) => setTimeout(ok, ms))
 const timbrar = async () => {

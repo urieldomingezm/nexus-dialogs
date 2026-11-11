@@ -213,6 +213,7 @@ const r = await dialog.confirm({
           <li><strong>Botones</strong>: Cancelar, Denegar, Confirmar, en ese orden; una confirmación que dice «eliminar» o «borrar» pasa sola a peligro, con el foco en Cancelar.</li>
           <li><strong>Colores y clases</strong>: <code>confirmButtonColor</code> y <code>customClass</code> se ignoran; los colores vienen del tema.</li>
           <li><strong>El contenido vive en un Shadow DOM</strong>: en lugar de <code>document.getElementById('x')</code> usa <code>Swal.getHtmlContainer().querySelector('#x')</code>. Tu CSS ya no lo rompe.</li>
+          <li><strong><code>html</code> se muestra como texto</strong> (desde la 0.5.0): SweetAlert2 lo interpreta; aquí hace falta <code>configure({ strictHtml: false })</code> si es contenido tuyo, o <code>configure({ sanitize })</code> si no lo es. Es la única línea que suele hacer falta al migrar.</li>
           <li><strong>Idioma</strong>: los textos por omisión salen en el idioma configurado («Aceptar», «Cancelar»).</li>
           <li><strong>Sin equivalente</strong>: <code>Swal.version</code>, <code>topLayer</code>, <code>showClass</code> / <code>hideClass</code> y <code>animation</code>.</li>
         </ul>
@@ -223,7 +224,7 @@ const r = await dialog.confirm({
             <thead><tr><th scope="col">Con SweetAlert2</th><th scope="col">Con <code>nexus-dialogs/swal</code></th><th scope="col">Qué hacer</th></tr></thead>
             <tbody>
               <tr><td><code>footer</code> acepta HTML</td><td>El pie se muestra como <strong>texto plano</strong> (las etiquetas se quitan).</td><td>Pon el enlace o formato dentro de <code>html</code>.</td></tr>
-              <tr><td><code>html</code> en cadena se inserta tal cual</td><td>Igual, pero puedes filtrarlo con <code>configure({ sanitize })</code>. Ver <a href="seguridad.html">Seguridad</a>.</td><td>Configura <code>sanitize</code> si el HTML no es tuyo.</td></tr>
+              <tr><td><code>html</code> en cadena se interpreta</td><td>Se muestra como <strong>texto</strong> por omisión (<code>strictHtml</code>). Ver <a href="seguridad.html">Seguridad</a>.</td><td><code>configure({ strictHtml: false })</code> con contenido tuyo, o <code>configure({ sanitize })</code> si no lo es.</td></tr>
               <tr><td>El contenido está en el <code>document</code></td><td>Está dentro de un Shadow DOM: <code>document.getElementById</code> no lo encuentra.</td><td>Usa <code>Swal.getHtmlContainer().querySelector(…)</code>.</td></tr>
               <tr><td>CSS de la página (Bootstrap, <code>.swal2-*</code>) cambia su aspecto</td><td>El CSS de la página ya no entra; el aspecto sale del tema.</td><td>Usa <code>configure({ theme })</code> o un tema listo.</td></tr>
               <tr><td><code>confirmButtonColor</code>, <code>customClass</code>, <code>background</code>, <code>backdrop</code>…</td><td>Se aceptan y se ignoran.</td><td>Quita esas opciones; un color por intención.</td></tr>
@@ -238,6 +239,7 @@ const r = await dialog.confirm({
         <h2 id="lista">Lista de verificación</h2>
         <ol>
           <li>Instala <code>nexus-dialogs</code> y cambia el import (o el <code>&lt;script&gt;</code>).</li>
+          <li>Si usas <code>html</code>, agrega una vez <code>configure({ strictHtml: false })</code> (contenido tuyo) o <code>configure({ sanitize })</code> (contenido de fuera).</li>
           <li>Busca en tu código <code>document.getElementById</code> o <code>querySelector</code> dentro de <code>html:</code> y <code>didOpen</code>; cámbialos por <code>Swal.getHtmlContainer()</code>.</li>
           <li>Quita <code>customClass</code> y <code>confirmButtonColor</code>; configura un tema una sola vez con <code>configure</code>.</li>
           <li>Revisa los diálogos de borrado: ahora el foco empieza en «Cancelar».</li>

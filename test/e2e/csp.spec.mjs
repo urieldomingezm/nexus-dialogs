@@ -95,7 +95,16 @@ test.describe('Trusted Types', () => {
 
   test('html en cadena sin TrustedHTML se bloquea; con un sanitize que devuelve TrustedHTML se inserta', async ({ page, conCsp }) => {
     await conCsp("require-trusted-types-for 'script'")
-    // Sin política: la cadena no se puede insertar. Ni pasa ni rompe la página.
+    // Con strictHtml (el valor por omisión de la librería; la página de pruebas lo apaga) la cadena sale como texto:
+    // no toca innerHTML y no viola Trusted Types.
+    await page.evaluate(() => window.nd.configure({ strictHtml: true }))
+    await marcar(page)
+    await page.evaluate(() => void window.nd.dialog.alert({ html: '<b id="x">hola</b>' }))
+    await expect(enDialogo(page, '.html')).toHaveText('<b id="x">hola</b>')
+    await expect(enDialogo(page, '.html b')).toHaveCount(0)
+    await page.keyboard.press('Escape')
+    // Con strictHtml: false y sin política, la cadena no se puede insertar. Ni pasa ni rompe la página.
+    await page.evaluate(() => window.nd.configure({ strictHtml: false }))
     const sin = await page.evaluate(async () => {
       try {
         window.nd.dialog.alert({ html: '<b id="x">hola</b>' })

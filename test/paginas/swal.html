@@ -18,6 +18,8 @@
 <pre id="out"></pre>
 <script type="module">
   import Swal from '../../src/swal.ts'
+  import { configure } from '../../src/index.ts'
+  configure({ strictHtml: false }) // como SweetAlert2: el html de esta página es propio
   window.Swal = Swal
   const on = (id, fn) => document.getElementById(id).addEventListener('click', async () => {
     const r = await fn()
