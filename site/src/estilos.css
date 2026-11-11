@@ -20,15 +20,15 @@ html {
   }
 }
 a {
-  color: var(--color-accent);
+  color: var(--color-accent-text);
   text-decoration-line: underline;
   text-decoration-color: color-mix(in oklab, var(--color-accent) 45%, transparent);
 }
 a:active {
-  color: var(--color-accent-deep);
+  color: var(--color-accent-text-hover);
 }
 a:hover {
-  color: var(--color-accent-deep);
+  color: var(--color-accent-text-hover);
   text-decoration-color: currentColor;
 }
 .saltar {
@@ -351,6 +351,7 @@ main {
 }
 .hero.chico {
   display: block;
+  min-height: 0;
   padding: var(--space-2xl) 0 var(--space-lg);
 }
 .hero.chico h1 {
@@ -457,7 +458,7 @@ main {
   color: var(--color-ink);
 }
 .datos-fila > div:first-child strong {
-  color: var(--color-accent);
+  color: var(--color-accent-text);
 }
 .datos span {
   color: var(--color-muted);
@@ -638,14 +639,14 @@ pre:hover .copiar,
   color: var(--color-success);
 }
 .tk-k {
-  color: var(--color-accent);
+  color: var(--color-accent-text);
   font-weight: 700;
 }
 .tk-n {
   color: var(--color-warn);
 }
 .tk-t {
-  color: var(--color-accent-deep);
+  color: var(--color-accent-text-hover);
 }
 
 /* ── Texto largo (guía, API, documentos) ────────────────────────────────── */
@@ -899,7 +900,7 @@ tbody tr:hover td {
 }
 .ejemplo details summary {
   margin: var(--space-xs) 0;
-  color: var(--color-accent);
+  color: var(--color-accent-text);
   font-size: var(--text-sm);
   cursor: pointer;
 }
@@ -1047,4 +1048,10 @@ tbody tr:hover td {
   color: var(--color-ink);
   font-family: var(--font-outlier);
   font-size: var(--text-sm);  overflow-wrap: anywhere;
+}
+input[type='checkbox'] {
+  accent-color: var(--color-accent);
+}
+.hero.chico .acciones {
+  justify-content: flex-start;
 }

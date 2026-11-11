@@ -15,6 +15,7 @@
   --color-rule: oklch(84% 0.04 300); --color-rule-2: oklch(70% 0.08 295);
   --color-accent: oklch(50% 0.25 290); --color-accent-deep: oklch(43% 0.22 290); --color-accent-soft: oklch(86% 0.08 295);
   --color-accent-ink: oklch(97% 0.01 300); --color-focus: oklch(50% 0.25 290);
+  --color-accent-text: oklch(50% 0.25 290); --color-accent-text-hover: oklch(43% 0.22 290);
   --font-display: "Outfit Variable", "Outfit", ui-sans-serif, system-ui, sans-serif; --font-body: "Onest Variable", "Onest", ui-sans-serif, sans-serif;
   --font-outlier: "JetBrains Mono", ui-monospace, monospace;
   --radius-card: 16px; --radius-pill: 999px; --rule-hair: 1px;
@@ -31,6 +32,7 @@
   --color-rule: oklch(28% 0.04 290); --color-rule-2: oklch(44% 0.07 292);
   --color-accent: oklch(55% 0.25 290); --color-accent-deep: oklch(48% 0.24 290); --color-accent-soft: oklch(36% 0.09 293);
   --color-accent-ink: oklch(97% 0.01 300); --color-focus: oklch(62% 0.22 290);
+  --color-accent-text: oklch(78% 0.14 295); --color-accent-text-hover: oklch(87% 0.09 295);
   --color-error: oklch(72% 0.15 27); --color-success: oklch(76% 0.13 150); --color-warn: oklch(78% 0.12 75);
   --shadow-card: none;
   }
@@ -42,6 +44,7 @@
   --color-rule: oklch(28% 0.04 290); --color-rule-2: oklch(44% 0.07 292);
   --color-accent: oklch(55% 0.25 290); --color-accent-deep: oklch(48% 0.24 290); --color-accent-soft: oklch(36% 0.09 293);
   --color-accent-ink: oklch(97% 0.01 300); --color-focus: oklch(62% 0.22 290);
+  --color-accent-text: oklch(78% 0.14 295); --color-accent-text-hover: oklch(87% 0.09 295);
   --color-error: oklch(72% 0.15 27); --color-success: oklch(76% 0.13 150); --color-warn: oklch(78% 0.12 75);
   --shadow-card: none;
 }
