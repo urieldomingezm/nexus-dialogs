@@ -210,6 +210,8 @@ test.describe('Sitio de documentación', () => {
   })
 
   test('accesibilidad: las páginas no tienen violaciones de axe (WCAG 2.2 AA)', async ({ page, browserName }) => {
+    // La entrada de la portada anima la opacidad: sin movimiento el contraste se mide en el estado final.
+    await page.emulateMedia({ reducedMotion: 'reduce' })
     test.skip(browserName === 'firefox', 'axe se omite en Firefox (ver utilidades.mjs)')
     for (const p of [
       'index.html',
