@@ -1,3 +1,4 @@
+import { setNonce } from './core/sheet'
 import { en, es } from './i18n'
 import type { DialogOptions, Labels, Scheme } from './types'
 
@@ -19,12 +20,19 @@ export interface GlobalConfig {
   /**
    * Filtro para todo `html` en cadena (`html`, `iconHtml`, `closeButtonHtml`, `loaderHtml` de swal). Recibe la cadena y devuelve la
    * versión segura; con DOMPurify: `sanitize: (s) => DOMPurify.sanitize(s)`. Los textos (`title`, `text`, etiquetas) nunca pasan
-   * por aquí porque siempre se insertan como texto. Sin filtro, el HTML se inserta tal cual: solo pásale contenido tuyo.
+   * por aquí porque siempre se insertan como texto. Sin filtro, el HTML se inserta tal cual: solo pásale contenido tuyo. `null` quita el filtro.
    */
-  sanitize?: (html: string) => string
+  sanitize?: ((html: string) => string | { toString(): string }) | null
+  /**
+   * Por omisión `true`: el `html` en cadena que no pase por un `sanitize` configurado se muestra como texto en vez de interpretarse.
+   * Es el comportamiento por omisión desde la 0.5.0; pon `false` solo si todo tu `html` es contenido tuyo.
+   */
+  strictHtml?: boolean
+  /** Nonce de tu Content-Security-Policy para el `<style>` alternativo de navegadores sin hojas construibles. */
+  nonce?: string
 }
 
-const estado: Required<Omit<GlobalConfig, 'labels'>> & { labels: Labels } = {
+const estado: Required<Omit<GlobalConfig, 'labels' | 'sanitize'>> & { labels: Labels; sanitize: GlobalConfig['sanitize'] | null } = {
   lang: 'es',
   labels: { ...es },
   theme: {},
@@ -32,7 +40,9 @@ const estado: Required<Omit<GlobalConfig, 'labels'>> & { labels: Labels } = {
   dir: 'auto',
   defaults: {},
   sheetOnMobile: true,
-  sanitize: (h) => h,
+  sanitize: null,
+  strictHtml: true,
+  nonce: '',
 }
 
 /** Configuración global. Se puede llamar varias veces; cada llamada mezcla con lo anterior. */
@@ -47,12 +57,19 @@ export function configure(c: GlobalConfig): void {
   if (c.dir) estado.dir = c.dir
   if (c.defaults) estado.defaults = { ...estado.defaults, ...c.defaults }
   if (c.sheetOnMobile !== undefined) estado.sheetOnMobile = c.sheetOnMobile
-  if (c.sanitize) estado.sanitize = c.sanitize
+  if (c.sanitize !== undefined) estado.sanitize = c.sanitize
+  if (c.strictHtml !== undefined) estado.strictHtml = c.strictHtml
+  if (c.nonce !== undefined) setNonce((estado.nonce = c.nonce))
 }
 
-/** Único punto por donde entra HTML en cadena: aplica `sanitize` si se configuró. */
+/**
+ * Único punto por donde entra HTML en cadena. Con `sanitize` se inserta lo que devuelva (puede ser un `TrustedHTML`); sin él, tal cual,
+ * salvo con `strictHtml`, que lo muestra como texto.
+ */
 export const setHtml = (el: Element, html: string): void => {
-  el.innerHTML = estado.sanitize(html)
+  if (estado.sanitize) el.innerHTML = estado.sanitize(html) as string
+  else if (estado.strictHtml) el.textContent = html
+  else el.innerHTML = html
 }
 
 export const config = (): Readonly<typeof estado> => estado

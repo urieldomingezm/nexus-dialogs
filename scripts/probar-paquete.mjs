@@ -3,7 +3,7 @@
 //   un build con Vite y otro con webpack.
 // Requiere `npm run build`. Uso: npm run check:paquete
 import { execSync } from 'node:child_process'
-import { mkdtempSync, writeFileSync, existsSync, readdirSync, rmSync, mkdirSync } from 'node:fs'
+import { mkdtempSync, writeFileSync, readFileSync, existsSync, readdirSync, rmSync, mkdirSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 
@@ -165,6 +165,22 @@ window.avisar = () => toast.success('Hola')
   paso('build con webpack 5', () => {
     sh('npx webpack --mode production --entry ./src/main.js --output-path ./dist-webpack --no-stats', dir)
     if (!existsSync(join(dir, 'dist-webpack/main.js'))) throw new Error('webpack no generó main.js')
+  })
+
+  // Tree-shaking: quien solo importa el núcleo no debe recibir formularios, toasts, swal ni importación.
+  paso('tree-shaking: solo el núcleo (webpack)', () => {
+    writeFileSync(
+      join(dir, 'src/solo-nucleo.js'),
+      "import { dialog } from 'nexus-dialogs'\nwindow.abrir = () => dialog.confirm('¿Seguro?')\n",
+    )
+    sh('npx webpack --mode production --entry ./src/solo-nucleo.js --output-path ./dist-nucleo --no-stats', dir)
+    const js = readFileSync(join(dir, 'dist-nucleo/main.js'), 'utf8')
+    const AJENOS = { forms: '.stepper', toast: 'data-nexus-toast', swal: 'swal-', importacion: 'imp-steps', rrhh: 'rrhh-alta' }
+    for (const [modulo, marca] of Object.entries(AJENOS))
+      if (js.includes(marca)) throw new Error(`solo-núcleo trae código de «${modulo}» (${marca}): el tree-shaking falló`)
+    const kb = Buffer.byteLength(js) / 1024
+    if (kb > 45) throw new Error(`solo-núcleo pesa ${kb.toFixed(1)} KB sin comprimir (máximo 45 KB)`)
+    console.log(`   núcleo solo: ${kb.toFixed(1)} KB sin comprimir`)
   })
 
   console.log('\n✓ El paquete funciona en Node (ESM y CJS), TypeScript (bundler y node16) y con Vite y webpack.')

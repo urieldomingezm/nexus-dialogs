@@ -46,6 +46,9 @@ jobs:
       - name: La API pública coincide con api/nexus-dialogs.api.md
         run: npm run api:check
 
+      - name: Auditoría de lo que se publica (sin dependencias vulnerables en producción)
+        run: npm audit --omit=dev --audit-level=low
+
       - name: Subir cobertura
         if: always()
         uses: actions/upload-artifact@v4

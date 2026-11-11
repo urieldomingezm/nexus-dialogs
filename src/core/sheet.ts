@@ -1,6 +1,12 @@
 // Hojas de estilo construibles (adoptedStyleSheets): no dependen de <style> en línea, así funcionan con una
 // Content-Security-Policy estricta. Si el navegador no las soporta, se usa un <style> normal.
 
+/** Nonce de CSP para el <style> alternativo (solo se usa si el navegador no tiene hojas construibles). */
+let nonce = ''
+export const setNonce = (n: string): void => {
+  nonce = n
+}
+
 const cache = new Map<string, CSSStyleSheet | null>()
 
 function construible(css: string): CSSStyleSheet | null {
@@ -26,6 +32,7 @@ export function adopt(root: ShadowRoot | Document, css: string): void {
     } catch {}
   }
   const el = document.createElement('style')
+  if (nonce) el.nonce = nonce
   el.textContent = css
   ;(root.nodeType === Node.DOCUMENT_NODE ? (root as Document).head : root).appendChild(el)
 }

@@ -104,6 +104,7 @@
   import { pickRows } from '../../src/table.ts'
   import { sepomexLookup } from '../../src/sepomex.ts'
   const { dialog, configure } = nd
+  configure({ strictHtml: false }) // esta página de pruebas solo usa html propio
   window.nd = { ...nd, ...patterns, form, wizard, toast, themes }
   const { confirmDelete, unsavedChanges, sessionTimeout, approval, bulkAction, choose, loading } = patterns
   const out = document.getElementById('out')

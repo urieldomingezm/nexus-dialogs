@@ -25,11 +25,25 @@ let n = 0
 /** Id único dentro de la página (las raíces de shadow tienen su propio espacio de ids, pero así se evita cualquier choque). */
 export const uid = (p = 'nd'): string => `${p}-${(++n).toString(36)}`
 
-/** SVG desde una cadena controlada por la librería (iconos), nunca desde datos del usuario. */
+/**
+ * SVG desde una cadena controlada por la librería (iconos), nunca desde datos del usuario. Se arma con `createElementNS` en vez de
+ * `innerHTML`, así funciona con Trusted Types sin tener que crear ninguna política. Solo entiende etiquetas con atributos entre comillas dobles.
+ */
 export function svg(markup: string): SVGElement {
-  const t = document.createElement('template')
-  t.innerHTML = markup.trim()
-  return t.content.firstChild as SVGElement
+  let raiz!: SVGElement
+  const pila: SVGElement[] = []
+  for (const m of markup.matchAll(/<(\/?)([a-z]+)((?:\s+[\w:-]+="[^"]*")*)\s*(\/?)>/g)) {
+    if (m[1]) {
+      pila.pop()
+      continue
+    }
+    const el = document.createElementNS('http://www.w3.org/2000/svg', m[2]) as SVGElement
+    for (const a of m[3].matchAll(/([\w:-]+)="([^"]*)"/g)) el.setAttribute(a[1], a[2])
+    if (pila.length) pila[pila.length - 1].appendChild(el)
+    else raiz = el
+    if (!m[4]) pila.push(el)
+  }
+  return raiz
 }
 
 /** Elemento con foco real, atravesando shadow roots. */

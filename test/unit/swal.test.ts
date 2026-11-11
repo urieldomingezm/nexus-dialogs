@@ -1,8 +1,22 @@
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { configure } from 'nexus-dialogs'
 import Swal from '../../src/swal'
 import { $, $$, abiertos, boton, escribir, esperar, raiz } from './utilidades'
 
+// SweetAlert2 interpreta `html`; estas pruebas son de contenido propio, así que lo activan a propósito (lo normal desde la 0.5.0 es `strictHtml`).
+beforeEach(() => configure({ strictHtml: false }))
+
 describe('adaptador de SweetAlert2', () => {
+  it('por omisión (strictHtml) el html no se interpreta: sale como texto', async () => {
+    configure({ strictHtml: true })
+    const p = Swal.fire('Guardado', 'Todo <b>bien</b>', 'success')
+    await esperar()
+    expect(raiz().querySelector('.html b')).toBeNull()
+    expect($('.html').textContent).toBe('Todo <b>bien</b>')
+    boton('confirm').click()
+    await p
+  })
+
   it('Swal.fire(título, html, icono)', async () => {
     const p = Swal.fire('Guardado', 'Todo <b>bien</b>', 'success')
     await esperar()

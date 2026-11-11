@@ -128,7 +128,11 @@ interface GlobalConfig {
     dir?: 'ltr' | 'rtl' | 'auto';
     defaults?: Partial<DialogOptions<any>>;
     sheetOnMobile?: boolean;
-    sanitize?: (html: string) => string;
+    sanitize?: ((html: string) => string | {
+        toString(): string;
+    }) | null;
+    strictHtml?: boolean;
+    nonce?: string;
 }
 
 type IconName = 'success' | 'error' | 'warning' | 'info' | 'question' | 'delete' | 'clock';
@@ -1401,7 +1405,11 @@ interface GlobalConfig {
     dir?: 'ltr' | 'rtl' | 'auto';
     defaults?: Partial<DialogOptions<any>>;
     sheetOnMobile?: boolean;
-    sanitize?: (html: string) => string;
+    sanitize?: ((html: string) => string | {
+        toString(): string;
+    }) | null;
+    strictHtml?: boolean;
+    nonce?: string;
 }
 
 type IconName = 'success' | 'error' | 'warning' | 'info' | 'question' | 'delete' | 'clock';

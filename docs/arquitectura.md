@@ -33,7 +33,10 @@ Cada nivel solo puede importar del mismo nivel o de uno inferior. Una prueba aut
 | Pruebas unitarias, de casos extremos y de SSR | Automatizadas en cada cambio |
 | E2E en Chromium, Firefox y WebKit con axe | Automatizadas en cada cambio |
 | Contraste y teclado por tema | Automatizadas (6 combinaciones de tema y esquema) |
-| Instalación del paquete publicado (Node ESM/CJS, TypeScript, Vite, webpack) | Automatizada |
+| Instalación del paquete publicado (Node ESM/CJS, TypeScript, Vite, webpack) y *tree-shaking* del núcleo | Automatizada |
+| CSP (estilos con y sin nonce) y Trusted Types | Automatizadas en Chromium |
+| Fugas de memoria (300 diálogos, formularios y toasts) | Automatizada en Chromium |
+| Exportación sin inyección de fórmulas | Automatizada, con LibreOffice local; **Excel: sin probar** |
 | Lectores de pantalla (NVDA, JAWS, VoiceOver, TalkBack) | **Pendiente**: ver [Accesibilidad](https://urieldomingezm.github.io/nexus-dialogs/accesibilidad.html) |
 | Uso en aplicaciones de producción | **Por validar**: la librería se está probando dentro de Nexus; todavía no hay un caso público de uso real |
 
