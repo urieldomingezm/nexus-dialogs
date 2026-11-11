@@ -99,7 +99,8 @@ function cabecera(activa) {
   ).join('')
   return `<header class="cabecera">
   <a class="marca" href="index.html"><span class="logo" aria-hidden="true"></span>nexus-dialogs</a>
-  <nav aria-label="Principal">${enlaces}</nav>
+  <button type="button" class="menu-btn" aria-expanded="false" aria-controls="menu-principal" aria-label="Menú"><span aria-hidden="true"></span></button>
+  <nav id="menu-principal" aria-label="Principal">${enlaces}<a class="solo-movil" href="${REPO}" rel="noopener">GitHub</a><a class="solo-movil" href="${NPM}" rel="noopener">npm</a></nav>
   <div class="herr">
     <a class="ico-enlace" href="${REPO}" rel="noopener">GitHub</a>
     <a class="ico-enlace" href="${NPM}" rel="noopener">npm</a>

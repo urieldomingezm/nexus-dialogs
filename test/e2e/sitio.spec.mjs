@@ -33,6 +33,24 @@ test.describe('Sitio de documentación', () => {
     })
   }
 
+  test('celular: el menú se abre y se cierra con Esc', async ({ pagina: page }) => {
+    await page.setViewportSize({ width: 390, height: 800 })
+    await page.goto(SITIO + 'index.html')
+    const boton = page.locator('.menu-btn')
+    await expect(page.locator('#menu-principal')).toBeHidden()
+    await boton.click()
+    await expect(boton).toHaveAttribute('aria-expanded', 'true')
+    await expect(page.locator('#menu-principal a', { hasText: 'Ejemplos' })).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(page.locator('#menu-principal')).toBeHidden()
+  })
+
+  test('portada: el botón Ejecutar abre la receta de borrar', async ({ pagina: page }) => {
+    await page.goto(SITIO + 'index.html')
+    await page.locator('#b-hero').click()
+    await expect(page.locator('dialog[data-nexus-dialog]')).toHaveCount(1)
+  })
+
   test('guía: README con anclajes, menú lateral y código resaltado', async ({ pagina: page }) => {
     await page.goto(SITIO + 'guia.html')
     await expect(page.locator('#vienes-de-sweetalert2')).toBeAttached()
