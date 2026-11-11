@@ -343,8 +343,216 @@ export const gastos: FormSchema = {
   ],
 }
 
+/** Evaluación de desempeño: datos, competencias calificadas de 1 a 5, resultados y compromisos. */
+export const evaluacion: FormSchema = {
+  title: 'Evaluación de desempeño',
+  submitText: 'Guardar evaluación',
+  draftKey: 'rrhh-evaluacion',
+  review: true,
+  steps: [
+    {
+      title: 'Datos',
+      columns: 2,
+      fields: [
+        { name: 'empleado', label: 'Empleado evaluado', required: true },
+        { name: 'puesto', label: 'Puesto', required: true },
+        { name: 'evaluador', label: 'Evaluador', required: true },
+        {
+          name: 'periodo',
+          label: 'Periodo evaluado',
+          type: 'select',
+          required: true,
+          options: ['Primer trimestre', 'Segundo trimestre', 'Tercer trimestre', 'Cuarto trimestre', 'Anual'],
+        },
+        { name: 'fecha', label: 'Fecha de la evaluación', type: 'date', calendar: true, required: true },
+      ],
+    },
+    {
+      title: 'Competencias',
+      fields: [
+        {
+          name: 'competencias',
+          label: 'Califica de 1 (necesita mejorar) a 5 (sobresaliente)',
+          type: 'items',
+          minRows: 1,
+          addText: 'Agregar competencia',
+          fields: [
+            {
+              name: 'competencia',
+              label: 'Competencia',
+              type: 'select',
+              required: true,
+              options: [
+                'Calidad del trabajo',
+                'Productividad',
+                'Trabajo en equipo',
+                'Comunicación',
+                'Iniciativa',
+                'Puntualidad y asistencia',
+                'Liderazgo',
+              ],
+            },
+            { name: 'calificacion', label: 'Calificación', type: 'segmented', required: true, options: ['1', '2', '3', '4', '5'] },
+            { name: 'comentario', label: 'Comentario' },
+          ],
+        },
+      ],
+    },
+    {
+      title: 'Resultado y compromisos',
+      fields: [
+        { name: 'fortalezas', label: 'Fortalezas', type: 'textarea', required: true, maxLength: 600 },
+        { name: 'mejoras', label: 'Áreas de mejora', type: 'textarea', required: true, maxLength: 600 },
+        {
+          name: 'resultado',
+          label: 'Resultado general',
+          type: 'radio',
+          required: true,
+          options: [
+            { value: 'supera', label: 'Supera lo esperado' },
+            { value: 'cumple', label: 'Cumple lo esperado' },
+            { value: 'parcial', label: 'Cumple parcialmente' },
+            { value: 'no', label: 'No cumple' },
+          ],
+        },
+        {
+          name: 'compromisos',
+          label: 'Compromisos para el siguiente periodo',
+          type: 'items',
+          maxRows: 5,
+          addText: 'Agregar compromiso',
+          fields: [
+            { name: 'accion', label: 'Acción', required: true },
+            { name: 'fecha', label: 'Fecha límite', type: 'date' },
+          ],
+        },
+        { name: 'firmaEmpleado', label: 'Firma del empleado (de enterado)', type: 'signature' },
+      ],
+    },
+  ],
+}
+
+/** Registro de capacitación: curso, fechas, asistentes y constancia (DC-3 de la STPS cuando aplica). */
+export const capacitacion: FormSchema = {
+  title: 'Registro de capacitación',
+  submitText: 'Registrar capacitación',
+  draftKey: 'rrhh-capacitacion',
+  columns: 2,
+  fields: [
+    { name: 'curso', label: 'Nombre del curso', required: true, span: 2 },
+    {
+      name: 'tema',
+      label: 'Tema',
+      type: 'select',
+      required: true,
+      options: ['Seguridad e higiene', 'Habilidades técnicas', 'Habilidades blandas', 'Normatividad', 'Inducción', 'Otro'],
+    },
+    { name: 'modalidad', label: 'Modalidad', type: 'segmented', options: ['Presencial', 'En línea', 'Mixta'], value: 'Presencial' },
+    { name: 'instructor', label: 'Instructor o proveedor', required: true },
+    { name: 'agente', label: 'Agente capacitador (registro STPS)', help: 'Solo si la constancia DC-3 la expide un agente externo.' },
+    { name: 'fechas', label: 'Fechas', type: 'daterange', calendar: true, required: true, span: 2 },
+    { name: 'horas', label: 'Duración en horas', type: 'number', min: 1, required: true },
+    { name: 'costo', label: 'Costo total', type: 'money', min: 0 },
+    {
+      name: 'asistentes',
+      label: 'Asistentes',
+      type: 'items',
+      minRows: 1,
+      span: 2,
+      addText: 'Agregar asistente',
+      fields: [
+        { name: 'nombre', label: 'Nombre', required: true },
+        { name: 'puesto', label: 'Puesto' },
+        { name: 'resultado', label: 'Resultado', type: 'select', options: ['Acreditó', 'No acreditó', 'Asistió'], value: 'Acreditó' },
+      ],
+    },
+    { name: 'dc3', label: 'Se entregó constancia DC-3', type: 'switch', span: 2 },
+    {
+      name: 'evidencias',
+      label: 'Evidencias (lista de asistencia, fotos, constancias)',
+      type: 'file',
+      multiple: true,
+      accept: '.pdf,.jpg,.jpeg,.png',
+      maxSize: 8_000_000,
+      span: 2,
+    },
+    { name: 'observaciones', label: 'Observaciones', type: 'textarea', span: 2, maxLength: 500 },
+  ],
+}
+
+/** Cambio de puesto: ascenso, transferencia o cambio de sueldo, con aprobación. */
+export const cambioPuesto: FormSchema = {
+  title: 'Cambio de puesto',
+  submitText: 'Enviar a aprobación',
+  draftKey: 'rrhh-cambio-puesto',
+  review: true,
+  steps: [
+    {
+      title: 'Movimiento',
+      fields: [
+        { name: 'empleado', label: 'Empleado', required: true },
+        {
+          name: 'tipo',
+          label: 'Tipo de movimiento',
+          type: 'radio',
+          required: true,
+          options: [
+            { value: 'ascenso', label: 'Ascenso' },
+            { value: 'transferencia', label: 'Transferencia de área' },
+            { value: 'sueldo', label: 'Solo cambio de sueldo' },
+            { value: 'descenso', label: 'Cambio a un puesto de menor nivel' },
+          ],
+        },
+        { name: 'fecha', label: 'Fecha efectiva', type: 'date', calendar: true, required: true },
+        {
+          name: 'aceptacion',
+          label: 'El empleado aceptó el cambio por escrito',
+          type: 'checkbox',
+          visibleIf: { field: 'tipo', in: ['descenso', 'transferencia'] },
+          required: true,
+          help: 'Un cambio de condiciones de trabajo requiere su consentimiento.',
+        },
+      ],
+    },
+    {
+      title: 'Antes y después',
+      columns: 2,
+      fields: [
+        { name: 'puestoActual', label: 'Puesto actual', required: true },
+        {
+          name: 'puestoNuevo',
+          label: 'Puesto nuevo',
+          required: true,
+          visibleIf: { field: 'tipo', in: ['ascenso', 'transferencia', 'descenso'] },
+        },
+        { name: 'areaActual', label: 'Área actual' },
+        { name: 'areaNueva', label: 'Área nueva', visibleIf: { field: 'tipo', in: ['ascenso', 'transferencia', 'descenso'] } },
+        { name: 'sueldoActual', label: 'Salario diario actual', type: 'money', min: 0, required: true },
+        { name: 'sueldoNuevo', label: 'Salario diario nuevo', type: 'money', min: 0, required: true },
+        { name: 'jefeNuevo', label: 'Jefe directo nuevo' },
+      ],
+    },
+    {
+      title: 'Justificación',
+      fields: [
+        { name: 'motivo', label: 'Motivo del cambio', type: 'textarea', required: true, maxLength: 600 },
+        { name: 'solicita', label: 'Solicita', required: true },
+        {
+          name: 'documentos',
+          label: 'Documentos de apoyo',
+          type: 'file',
+          multiple: true,
+          accept: '.pdf,.jpg,.jpeg,.png',
+          maxSize: 8_000_000,
+        },
+        { name: 'firma', label: 'Firma de quien autoriza', type: 'signature' },
+      ],
+    },
+  ],
+}
+
 /** Todas las plantillas por nombre. */
-export const plantillas = { altaEmpleado, vacaciones, permiso, incapacidad, baja, gastos } as const
+export const plantillas = { altaEmpleado, vacaciones, permiso, incapacidad, baja, gastos, evaluacion, capacitacion, cambioPuesto } as const
 export type PlantillaRRHH = keyof typeof plantillas
 
 /** Copia de la plantilla sin las funciones por nombre (`validate`, `lookupPostalCode`…), para abrirla sin resolvers. */

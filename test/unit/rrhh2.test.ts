@@ -161,7 +161,7 @@ describe('pickRows con exportar', () => {
 })
 
 describe('plantillas de RR. HH.', () => {
-  it('las seis abren con formFromJSON (sin resolvers) y tienen los campos clave', async () => {
+  it('las nueve abren con formFromJSON (sin resolvers) y tienen los campos clave', async () => {
     for (const [nombre, plantilla] of Object.entries(plantillas)) {
       localStorage.clear()
       const p = formFromJSON(sinResolvers(plantilla))
@@ -172,6 +172,10 @@ describe('plantillas de RR. HH.', () => {
       expect((await p).confirmed).toBe(false)
     }
     expect(plantillas.vacaciones.fields!.find((f) => f.name === 'fechas')).toMatchObject({ type: 'daterange', businessDays: true })
+    expect(Object.keys(plantillas)).toHaveLength(9)
+    expect(plantillas.evaluacion.steps!.map((p) => p.title)).toEqual(['Datos', 'Competencias', 'Resultado y compromisos'])
+    expect(plantillas.capacitacion.fields!.find((f) => f.name === 'fechas')).toMatchObject({ type: 'daterange' })
+    expect(plantillas.cambioPuesto.steps!.map((p) => p.title)).toEqual(['Movimiento', 'Antes y después', 'Justificación'])
     expect(plantillas.altaEmpleado.steps!.map((s) => s.title)).toEqual([
       'Datos personales',
       'Contacto y domicilio',

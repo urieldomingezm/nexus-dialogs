@@ -703,7 +703,7 @@ Sin dependencias: el .xlsx se arma aquí mismo, con encabezados en negrita, fila
 
 ### Plantillas de RR. HH.
 
-Seis formularios listos, en JSON puro (se guardan en tu base de datos y se ajustan por empresa): `altaEmpleado` (asistente de 4 pasos con revisión), `vacaciones` (calendario con días hábiles), `permiso`, `incapacidad` (IMSS), `baja` (motivo, finiquito, entrega y firma) y `gastos` (partidas y comprobantes).
+Nueve formularios listos, en JSON puro (se guardan en tu base de datos y se ajustan por empresa): `altaEmpleado` (asistente de 4 pasos con revisión), `vacaciones` (calendario con días hábiles), `permiso`, `incapacidad` (IMSS), `baja` (motivo, finiquito, entrega y firma) `gastos` (partidas y comprobantes), `evaluacion` (competencias de 1 a 5, resultado y compromisos), `capacitacion` (curso, asistentes y constancia DC-3) y `cambioPuesto` (ascenso, transferencia o cambio de sueldo con aprobación).
 
 ```ts
 import { formFromJSON } from 'nexus-dialogs/forms'
