@@ -290,7 +290,7 @@ function Empleados() {
 - Funciona con `StrictMode`. Los toasts no se cierran al desmontar: «Guardado» sigue visible en la siguiente pantalla.
 - `NexusDialogsProvider` no pinta nada propio y configura antes de que corran los efectos de los hijos. Si no necesitas configurar nada, no hace falta.
 - Con Next.js, úsalos en componentes de cliente (`'use client'`). Importar el paquete no toca el DOM, así que el render en servidor no falla.
-- Si dos componentes tienen diálogos abiertos a la vez, el que abrió primero también registra los del otro: al desmontarlo se cerrarían los dos. Es lo mismo en Vue.
+- Cada diálogo queda a nombre del componente que lo pidió (también los anidados), aunque dos componentes tengan diálogos abiertos a la vez: al desmontar uno se cierran solo los suyos. Un diálogo abierto desde fuera de los hooks no es de nadie.
 - `react` (18 o superior) es dependencia opcional: solo se necesita si importas `nexus-dialogs/react`.
 
 ### ¿Vienes de SweetAlert2?

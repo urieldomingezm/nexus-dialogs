@@ -4,7 +4,7 @@ import { createRoot } from 'react-dom/client'
 import { NexusDialogsProvider, useDialog, useForm, useToast } from '../../src/react'
 import { confirmDelete } from '../../src/patterns'
 import { toast } from '../../src/toast'
-import { configure, language } from '../../src/index'
+import { configure, dialog, language } from '../../src/index'
 import { $, abiertos, boton, escribir, esperar } from './utilidades'
 
 ;(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
@@ -168,5 +168,48 @@ describe('React', () => {
     await act(async () => root.unmount())
     configure({ lang: 'es' })
     toast.configure({ lang: 'es', position: 'bottom-right' })
+  })
+
+  it('dos componentes con diálogos a la vez: cada uno cierra solo lo suyo, abra quien abra primero', async () => {
+    const a = await montar(() => useDialog())
+    const b = await montar(() => useDialog())
+    let pa!: Promise<unknown>
+    let pb!: Promise<unknown>
+    await act(async () => {
+      pa = a.api.actual.confirm({ title: 'A' })
+      pb = b.api.actual.confirm({ title: 'B' })
+    })
+    await esperar()
+    expect(abiertos()).toBe(2)
+    // Se desmonta A, que abrió primero: B conserva el suyo.
+    await a.desmontar()
+    expect(await pa).toMatchObject({ reason: 'program' })
+    await esperar(300)
+    expect(abiertos()).toBe(1)
+    expect(b.api.actual.isOpen).toBe(true)
+    await b.desmontar()
+    await pb
+    expect(abiertos()).toBe(0)
+  })
+
+  it('un diálogo anidado queda a nombre del mismo componente', async () => {
+    const a = await montar(() => useDialog())
+    const b = await montar(() => useDialog())
+    let pa!: Promise<unknown>
+    await act(async () => {
+      pa = a.api.actual.scoped(async () => {
+        const r = await dialog.confirm({ title: 'Uno' })
+        return r.confirmed ? undefined : dialog.alert({ title: 'Dos, dentro de lo mismo' })
+      })()
+    })
+    await esperar()
+    boton('cancel').click()
+    await esperar(300)
+    expect($('.title').textContent).toBe('Dos, dentro de lo mismo')
+    await b.desmontar()
+    expect(abiertos()).toBe(1)
+    await a.desmontar()
+    await pa
+    expect(abiertos()).toBe(0)
   })
 })
