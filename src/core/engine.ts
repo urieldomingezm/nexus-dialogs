@@ -25,6 +25,8 @@ export interface EngineOptions<T> extends DialogOptions<T> {
   target?: Element
   /** `false`: Enter dentro de un campo ya no confirma. */
   allowEnter?: boolean
+  /** Cada vez que el diálogo entra o sale del estado «procesando». */
+  onLoading?: (loading: boolean, ctx: DialogContext) => void
   /** Justo al empezar a cerrar, antes de la animación y de quitarlo del DOM. */
   onClosing?: (ctx: DialogContext) => void
 }
@@ -164,6 +166,7 @@ export function openDialog<T = unknown>(opciones: EngineOptions<T>): Promise<Dia
     setLoading(si, txt) {
       cargando = si
       panel.setAttribute('aria-busy', String(si))
+      o.onLoading?.(si, ctx)
       for (const b of foot.querySelectorAll('button')) {
         if (si) {
           textos.set(b, b.textContent ?? '')
