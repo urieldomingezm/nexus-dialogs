@@ -165,7 +165,7 @@ const CSS = `
 .card input:checked+span{border-color:var(--_accent);box-shadow:inset 0 0 0 1px var(--_accent);background:color-mix(in srgb,var(--_accent) 4%,var(--_bg))}
 .card input:focus-visible+span{box-shadow:inset 0 0 0 1px var(--_accent),0 0 0 4px var(--_focus)}
 .card input:disabled+span{opacity:.5;cursor:not-allowed}
-.spin{width:40px;height:40px;border-radius:50%;border:4px solid var(--_line);border-top-color:var(--_accent);animation:spin .8s linear infinite;margin:4px auto 0}
+.spin{width:40px;height:40px;border-radius:50%;border:4px solid var(--_line);border-top-color:var(--_accent);animation:spin .8s linear infinite;margin:0 auto}
 @keyframes spin{to{transform:rotate(1turn)}}
 @media (prefers-reduced-motion:reduce){.spin{animation:none}.bar div{transition:none}}
 `
@@ -799,7 +799,7 @@ function abrirCarga(texto: string): LoadingHandle {
     role: 'dialog',
     title: texto,
     size: 'sm',
-    moduleCss: CSS + '.head{justify-content:center;text-align:center}.head>div{width:100%}',
+    moduleCss: CSS + '.head{justify-content:center;text-align:center}.head>div{width:100%}.body{overflow:visible;padding:16px 24px 32px}',
     dismissible: false,
     buttons: [],
     render: () => h('div', { class: 'spin', role: 'progressbar', 'aria-label': texto }),

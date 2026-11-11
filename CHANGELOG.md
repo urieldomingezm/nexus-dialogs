@@ -4,6 +4,10 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ## [Sin publicar]
 
+### Corregido
+
+- `loading` (pantalla de espera): el indicador al girar creaba una barra de desplazamiento y quedaba pegado y cortado abajo. Ahora tiene espacio por debajo y el cuerpo no se desplaza.
+
 ### Cambios que rompen
 
 - **`strictHtml` es `true` por omisión.** El `html` en cadena (`html` de `dialog.*` y, en `nexus-dialogs/swal`, `html`, `iconHtml`, `closeButtonHtml` y `loaderHtml`) ya no se interpreta: se muestra como texto, salvo que configures un `sanitize`. Para volver al comportamiento anterior con contenido propio: `configure({ strictHtml: false })`. Con contenido de fuera: `configure({ sanitize: (h) => DOMPurify.sanitize(h) })`. Los `Node` y los textos no cambian. Esto es lo que más afecta a quien migra de SweetAlert2.
