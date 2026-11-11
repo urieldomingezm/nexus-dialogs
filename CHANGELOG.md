@@ -10,13 +10,13 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ### Agregado
 
-- **`columns: 'auto'`** en `form`, `wizard` y `formFromJSON`: columnas responsive (2 en un teléfono, 3 en escritorio) con los campos largos a fila completa. `columns: 2` ahora se queda en dos columnas en un teléfono mientras quepan campos de ~9 rem. Variables `--nd-col-min` y `--nd-col-min-narrow`.
+- **`columns: 'auto'`** en `form`, `wizard` y `formFromJSON`: columnas responsive (2 en un teléfono, 3 en escritorio) con los campos largos a fila completa. `columns: 2` ahora se queda en dos columnas en un teléfono mientras quepan campos de ~9 rem. Variable `--nd-col-min`.
 
 ### Cambiado
 
 - En teléfono, los botones del pie van en una sola fila (hasta 3 columnas) en lugar de apilados.
 - Con icono, el contenido `html` ocupa todo el ancho del encabezado, sin hueco bajo el icono.
-- Límite de tamaño de `nexus-dialogs.all.js`: 41.5 KB (antes 41).
+- Empaquetado: el CSS que vive en plantillas de texto se encoge al compilar (`scripts/css-en-plantillas.mjs`: sin comentarios ni saltos de línea). Los comentarios del CSS ya no cuestan bytes al usuario. `nexus-dialogs.all.js` queda en 40.9 KB, dentro de su límite de 41 KB, que no se tocó.
 
 ### Corregido
 

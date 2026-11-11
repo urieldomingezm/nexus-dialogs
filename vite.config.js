@@ -1,3 +1,4 @@
+import { cssEnPlantillas } from './scripts/css-en-plantillas.mjs'
 import { defineConfig } from 'vite'
 import { fileURLToPath } from 'node:url'
 import { readFileSync } from 'node:fs'
@@ -72,6 +73,7 @@ export default defineConfig(({ mode, command }) => {
   if (command === 'build' && lib) {
     return {
       define,
+      plugins: [cssEnPlantillas()],
       resolve: mode === 'all' || mode === 'swalglobal' ? { alias: ALIAS } : undefined,
       build: {
         lib: { entry: lib.entry, name: lib.name, fileName: lib.fileName, formats: lib.formats },
@@ -114,5 +116,5 @@ export default defineConfig(({ mode, command }) => {
     }
   }
   // Servidor de desarrollo y pruebas: todo desde el código fuente (el plugin solo actúa en las páginas del sitio).
-  return { define, plugins: [docsPlugin()], resolve: { alias: ALIAS_TODAS } }
+  return { define, plugins: [docsPlugin(), cssEnPlantillas()], resolve: { alias: ALIAS_TODAS } }
 })

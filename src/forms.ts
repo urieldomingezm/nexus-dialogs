@@ -386,7 +386,7 @@ class FieldSet {
           : input
       c.wrap = h('div', { class: 'field' }, etiqueta(id), control, ayuda, msg)
     }
-    if (this.columns !== 1 && (f.span === 2 || (this.columns === 'auto' && f.span !== 1 && FILA_COMPLETA.has(tipo)))) {
+    if (this.columns !== 1 && (f.span === 2 || (this.columns === 'auto' && f.span !== 1 && FILA_COMPLETA.test(tipo)))) {
       c.wrap.classList.add('span-2')
     }
 
@@ -1098,16 +1098,14 @@ export function formFromJSON<T extends Record<string, unknown> = Record<string, 
 }
 
 /** En columns: 'auto', estos tipos ocupan toda la fila (salvo `span: 1`): son largos por naturaleza. */
-const FILA_COMPLETA = new Set<FieldType>(['textarea', 'radio', 'segmented', 'items', 'address', 'signature', 'file', 'daterange', 'otp'])
+const FILA_COMPLETA = /^(textarea|radio|segmented|items|address|signature|file|daterange|otp)$/
 
 const FORM_CSS = `
 .grid{display:grid;gap:16px}
 .cols-2{grid-template-columns:1fr 1fr}
 .cols-auto{grid-template-columns:repeat(auto-fill,minmax(var(--nd-col-min,11rem),1fr))}
 .span-2{grid-column:1/-1}
-/* Teléfono: dos columnas mientras quepan campos de ~9 rem; si no, una. El motor pone .narrow con matchMedia. */
-.narrow .cols-2,.narrow .cols-auto{grid-template-columns:repeat(auto-fill,minmax(max(var(--nd-col-min-narrow,8.75rem),calc((100% - 12px)/2)),1fr));gap:14px 12px}
-.narrow .cols-auto{grid-template-columns:repeat(auto-fill,minmax(var(--nd-col-min-narrow,8.75rem),1fr))}
+.narrow .cols-2,.narrow .cols-auto{grid-template-columns:repeat(auto-fill,minmax(max(8.75rem,calc((100% - 12px)/2)),1fr));gap:14px 12px}
 .field[hidden],[hidden]{display:none!important}
 fieldset.field{border:0;margin:0;padding:0;min-width:0}
 legend{font-size:14px;font-weight:500;color:var(--_label);padding:0;margin-bottom:6px}
