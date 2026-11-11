@@ -65,6 +65,12 @@ export const CORE_CSS =
 .head>div{min-width:0;flex:1}
 .head.centered{flex-direction:column;align-items:center;text-align:center;padding-top:28px;gap:12px}
 .panel.has-x .head>div{padding-inline-end:28px}
+.hi{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:16px;align-items:start}
+.hi>div{display:contents}
+.hi>.icon{grid-row:1/3}
+.hi .title,.hi .text{grid-column:2}
+.hi .html{grid-column:1/-1;margin-top:12px}
+.has-x .hi .title{padding-inline-end:28px}
 .title{margin:0;font:600 18px/28px var(--_title-font);letter-spacing:-.01em;overflow-wrap:anywhere}
 .text{margin:4px 0 0;font-size:14px;line-height:20px;color:var(--_muted)}
 .text b,.text strong{color:var(--_fg)}
@@ -123,9 +129,8 @@ textarea.input{height:auto;min-height:96px;padding:10px 14px;resize:vertical;lin
 .narrow.p-center.sheet .wrap{padding:0;align-items:flex-end}
 .narrow.p-center.sheet .panel{width:100%}
 .narrow .head{padding:16px 20px 0}.narrow .head.centered{padding-top:20px}.narrow .body{padding:16px 20px 0}
-/* Celular: botones táctiles grandes (52 px), a todo lo ancho; el principal arriba. */
-.narrow .foot{flex-direction:column-reverse;align-items:stretch;gap:12px;padding:16px 20px 20px;border-top:0;margin-top:20px}
-.narrow .foot>.btn{height:52px;border-radius:12px;font-size:16px;width:100%;margin:0}
+.narrow .foot{display:grid;grid-template-columns:repeat(auto-fit,minmax(6.5rem,1fr));align-items:stretch;gap:10px;padding:16px 20px 20px;border-top:0;margin-top:20px}
+.narrow .foot>.btn{min-height:48px;height:auto;padding:8px 10px;border-radius:12px;font-size:15px;line-height:1.2;margin:0!important}
 .narrow .err{margin:16px 20px 0}
 @media (prefers-reduced-motion:reduce){.panel,.overlay{transition:none}.icon path{animation:none;stroke-dashoffset:0}}
 `

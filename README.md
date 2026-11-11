@@ -504,6 +504,10 @@ const r = await form({
 })
 ```
 
+**Columnas responsive.** `columns: 2` reparte los campos en dos columnas y, en un teléfono, **se queda en dos** mientras quepan campos de unos 9 rem (si no, baja a una). `columns: 'auto'` usa tantas columnas como quepan (3 en escritorio, 2 en un teléfono) y los campos largos (`textarea`, `radio`, `segmented`, `items`, `address`, `signature`, `file`, `daterange`, `otp`) ocupan toda la fila; con `span: 2` fuerzas cualquier otro campo a fila completa, y con `span: 1` lo contrario. El ancho mínimo por columna en escritorio se ajusta con `--nd-col-min` (11 rem); en un teléfono nunca baja de 8.75 rem y no pasa de dos columnas.
+
+**Botones y encabezado en teléfono.** Los botones del pie van en una sola fila (hasta 3 por fila, en columnas iguales; si no caben, bajan). Cuando el diálogo lleva icono, el contenido `html` usa todo el ancho en lugar de quedar sangrado bajo el título.
+
 **Tipos de campo**: `text`, `email`, `tel`, `url`, `password`, `number`, `date`, `time`, `textarea`, `select`, `radio`, `segmented`, `checkbox`, `switch`, los [avanzados](#campos-avanzados) `combobox`, `file`, `daterange`, `otp` e `items`, y para México:
 
 - `money`: muestra `$ 12,500.50 MXN` al salir del campo, teclado numérico en celular, devuelve `number`. Cambia `currency` y `locale` si hace falta.

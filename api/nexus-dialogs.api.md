@@ -329,12 +329,14 @@ function form<T extends Record<string, unknown> = Record<string, unknown>>(o: Fo
 
 function formatPhone(digitos: string, dial?: string): string;
 
+type FormColumns = 1 | 2 | 'auto';
+
 function formFromJSON<T extends Record<string, unknown> = Record<string, unknown>>(schema: FormSchema | string, opts?: FromJSONOptions<T>): Promise<DialogResult<T>>;
 
 interface FormOptions<T> extends ConBorrador, Omit<DialogOptions<T>, 'requireText'> {
     fields: Field[];
     values?: Partial<T>;
-    columns?: 1 | 2;
+    columns?: FormColumns;
     validate?: (values: T) => Record<string, string> | void | Promise<Record<string, string> | void>;
     submitText?: string;
     confirmDiscard?: boolean;
@@ -343,7 +345,7 @@ interface FormOptions<T> extends ConBorrador, Omit<DialogOptions<T>, 'requireTex
 interface FormSchema {
     title: string;
     text?: string;
-    columns?: 1 | 2;
+    columns?: FormColumns;
     size?: 'sm' | 'md' | 'lg' | 'xl';
     submitText?: string;
     cancelText?: string;
@@ -419,7 +421,7 @@ interface WizardStep {
     title: string;
     description?: string;
     fields: Field[];
-    columns?: 1 | 2;
+    columns?: FormColumns;
     validate?: (values: Record<string, unknown>) => Record<string, string> | void | Promise<Record<string, string> | void>;
     when?: ((values: Record<string, unknown>) => boolean) | Condition;
 }
