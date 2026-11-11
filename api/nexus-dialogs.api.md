@@ -128,6 +128,7 @@ interface GlobalConfig {
     dir?: 'ltr' | 'rtl' | 'auto';
     defaults?: Partial<DialogOptions<any>>;
     sheetOnMobile?: boolean;
+    sanitize?: (html: string) => string;
 }
 
 type IconName = 'success' | 'error' | 'warning' | 'info' | 'question' | 'delete' | 'clock';
@@ -209,6 +210,8 @@ interface PromptOptions extends DialogOptions<string> {
 }
 
 type Scheme = 'light' | 'dark' | 'auto';
+
+const setHtml: (el: Element, html: string) => void;
 
 type Size = 'sm' | 'md' | 'lg' | 'xl' | number;
 
@@ -1398,6 +1401,7 @@ interface GlobalConfig {
     dir?: 'ltr' | 'rtl' | 'auto';
     defaults?: Partial<DialogOptions<any>>;
     sheetOnMobile?: boolean;
+    sanitize?: (html: string) => string;
 }
 
 type IconName = 'success' | 'error' | 'warning' | 'info' | 'question' | 'delete' | 'clock';
@@ -1512,6 +1516,8 @@ interface SessionTimeoutOptions {
     seconds?: number;
     text?: string;
 }
+
+const setHtml: (el: Element, html: string) => void;
 
 type Size = 'sm' | 'md' | 'lg' | 'xl' | number;
 
