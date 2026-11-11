@@ -41,6 +41,11 @@ const ES = {
   min: 'Elige al menos {0}.',
   max: 'Puedes elegir hasta {0}.',
   cancel: 'Cancelar',
+  export: 'Exportar',
+  exportSel: 'Exportar seleccionados',
+  exportAll: 'Exportar todo',
+  exportCsv: 'CSV',
+  exportXlsx: 'Excel',
 }
 type Textos = typeof ES
 const EN: Textos = {
@@ -62,6 +67,11 @@ const EN: Textos = {
   min: 'Choose at least {0}.',
   max: 'You can choose up to {0}.',
   cancel: 'Cancel',
+  export: 'Export',
+  exportSel: 'Export selected',
+  exportAll: 'Export all',
+  exportCsv: 'CSV',
+  exportXlsx: 'Excel',
 }
 const T = (): Textos => (language() === 'en' ? EN : ES)
 const f = (s: string, ...v: (string | number)[]) => s.replace(/\{(\d)\}/g, (_, i) => String(v[+i] ?? ''))
@@ -99,6 +109,11 @@ export interface PickRowsOptions<R> extends Omit<DialogOptions<R[]>, 'render' | 
   min?: number
   max?: number
   searchPlaceholder?: string
+  /**
+   * Botón «Exportar»: recibe las filas (las seleccionadas, o todas las que coinciden con la búsqueda si no hay selección) y el formato.
+   * Normalmente `exportData` de nexus-dialogs/import: `onExport: (rows, format) => exportData(rows, { columns, format, filename: 'empleados' })`.
+   */
+  onExport?: (rows: R[], format: 'xlsx' | 'csv') => unknown | Promise<unknown>
 }
 
 const ESTILOS = `
@@ -126,6 +141,10 @@ tbody tr.off td{color:var(--_subtle)}
 .pg:focus-visible,.link:focus-visible{outline:none;box-shadow:0 0 0 4px var(--_focus)}
 .link{border:0;background:transparent;color:var(--_accent);font:600 13px var(--_font);cursor:pointer;padding:6px 8px;border-radius:8px}
 .link[hidden]{display:none}
+.exp-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.exp{display:flex;align-items:center;gap:2px}
+.exp .link{padding:6px 6px}
+.exp span{color:var(--_subtle)}
 .narrow .pick-top{flex-direction:column;align-items:stretch}
 .narrow .tbl-wrap{max-height:none}
 .narrow .pick-top .input{flex:none}
@@ -163,6 +182,33 @@ export function pickRows<R = Record<string, unknown>>(o: PickRowsOptions<R>): Pr
   const anterior = h('button', { type: 'button', class: 'pg', 'aria-label': t.prev }, '‹')
   const siguiente = h('button', { type: 'button', class: 'pg', 'aria-label': t.next }, '›')
   const limpiar = h('button', { type: 'button', class: 'link', hidden: true }, t.clear)
+  const expTexto = h('span')
+  const exportar = o.onExport
+    ? h(
+        'div',
+        { class: 'exp' },
+        expTexto,
+        h('button', { type: 'button', class: 'link', onclick: () => void exporta('xlsx') }, t.exportXlsx),
+        h('span', { 'aria-hidden': 'true' }, '·'),
+        h('button', { type: 'button', class: 'link', onclick: () => void exporta('csv') }, t.exportCsv),
+      )
+    : null
+  /** Seleccionadas, o todas las que coinciden con la búsqueda (locales) / la página actual (remotas). */
+  const filasExportar = async (): Promise<R[]> => {
+    if (elegidas.size) return [...elegidas.values()]
+    if (o.load) {
+      const p = await o.load({ search: busqueda, page: 0, pageSize: Math.max(total, tam) })
+      return p.rows
+    }
+    return filtrar()
+  }
+  const exporta = async (formato: 'xlsx' | 'csv') => {
+    try {
+      await o.onExport!(await filasExportar(), formato)
+    } catch (e) {
+      ctxRef.setError(e instanceof Error ? e.message : String(e))
+    }
+  }
   const nombreFila = (r: R) => String((r as any)[o.columns[0]?.key] ?? clave(r))
   const apagada = (r: R) => !!o.isDisabled?.(r)
 
@@ -184,6 +230,7 @@ export function pickRows<R = Record<string, unknown>>(o: PickRowsOptions<R>): Pr
     todas.checked = !!libres.length && marcadas === libres.length
     todas.indeterminate = marcadas > 0 && marcadas < libres.length
     todas.disabled = !libres.length
+    expTexto.textContent = (n ? t.exportSel : t.exportAll) + ':'
     const b = ctxRef?.button('confirm')
     if (b) b.textContent = multiple && n ? f(t.chooseN, n.toLocaleString()) : (o.confirmText ?? t.choose)
   }
@@ -239,6 +286,18 @@ export function pickRows<R = Record<string, unknown>>(o: PickRowsOptions<R>): Pr
     actualizarCuenta()
   }
 
+  const filtrar = (): R[] => {
+    const q = plano(busqueda.trim())
+    const todasFilas = o.rows ?? []
+    return q
+      ? todasFilas.filter((r) =>
+          o.columns.some((c) => {
+            const v = (r as any)[c.key]
+            return plano(c.format ? c.format(v, r) : String(v ?? '')).includes(q)
+          }),
+        )
+      : todasFilas
+  }
   const cargar = async () => {
     const n = ++pedido
     if (o.load) {
@@ -256,16 +315,7 @@ export function pickRows<R = Record<string, unknown>>(o: PickRowsOptions<R>): Pr
       }
       cuerpo.removeAttribute('aria-busy')
     } else {
-      const q = plano(busqueda.trim())
-      const todasFilas = o.rows ?? []
-      const halladas = q
-        ? todasFilas.filter((r) =>
-            o.columns.some((c) => {
-              const v = (r as any)[c.key]
-              return plano(c.format ? c.format(v, r) : String(v ?? '')).includes(q)
-            }),
-          )
-        : todasFilas
+      const halladas = filtrar()
       total = halladas.length
       visibles = halladas.slice(pagina * tam, pagina * tam + tam)
     }
@@ -343,7 +393,12 @@ export function pickRows<R = Record<string, unknown>>(o: PickRowsOptions<R>): Pr
             cuerpo,
           ),
         ),
-        h('div', { class: 'pick-foot' }, h('div', null, limpiar), h('div', { class: 'pager' }, rango, anterior, siguiente)),
+        h(
+          'div',
+          { class: 'pick-foot' },
+          h('div', { class: 'exp-row' }, limpiar, exportar),
+          h('div', { class: 'pager' }, rango, anterior, siguiente),
+        ),
       )
     },
     onOpen: (ctx) => {

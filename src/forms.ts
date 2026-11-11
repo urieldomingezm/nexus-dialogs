@@ -146,8 +146,15 @@ export interface Field {
   presets?: false | DatePreset[]
   /** Máximo de días del rango. */
   maxDays?: number
-  /** daterange: calendario en la pantalla y fechas escritas como dd/mm/aaaa (sin el selector del navegador). */
+  /** date y daterange: calendario en la pantalla y fechas escritas como dd/mm/aaaa (sin el selector del navegador). */
   calendar?: boolean
+  /**
+   * daterange: cuenta y muestra los días hábiles («8 días hábiles»); `maxDays` pasa a contar solo hábiles y el calendario marca
+   * fines de semana y festivos. true = sin sábados, domingos ni los festivos de ley de México; 'custom' = solo los de `holidays`.
+   */
+  businessDays?: boolean | 'custom'
+  /** Festivos propios de la empresa, como AAAA-MM-DD (se suman a los de ley). */
+  holidays?: string[]
 
   // ── otp ──
   /** Dígitos del código. Por omisión 6. */
@@ -243,7 +250,7 @@ class FieldSet {
     const etiqueta = (forId: string | null) =>
       h('label', { for: forId }, f.label, f.required ? h('span', { class: 'req', 'aria-hidden': 'true' }, ' *') : null)
 
-    const fabrica = CAMPOS[tipo]
+    const fabrica = tipo === 'date' && f.calendar ? CAMPOS.datecal : CAMPOS[tipo]
     if (fabrica) {
       const custom = fabrica(
         {

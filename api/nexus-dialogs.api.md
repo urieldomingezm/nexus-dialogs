@@ -285,6 +285,8 @@ interface Field {
     presets?: false | DatePreset[];
     maxDays?: number;
     calendar?: boolean;
+    businessDays?: boolean | 'custom';
+    holidays?: string[];
     length?: number;
     autoSubmit?: boolean;
     fields?: Field[];
@@ -611,6 +613,18 @@ interface WatchIdleOptions {
 ## `nexus-dialogs/mx`
 
 ```ts
+function addBusinessDays(date: string, n: number, o?: BusinessDaysOptions): string;
+
+function businessDays(from: string, to: string, o?: BusinessDaysOptions): number;
+
+interface BusinessDaysOptions {
+    holidays?: string[];
+    mexican?: boolean;
+    weekend?: number[];
+}
+
+function isBusinessDay(date: string, o?: BusinessDaysOptions): boolean;
+
 function isCLABE(valor: string): boolean;
 
 function isCURP(valor: string): boolean;
@@ -620,6 +634,8 @@ function isNSS(valor: string): boolean;
 const isPostalCode: (valor: string) => boolean;
 
 function isRFC(valor: string): boolean;
+
+function mexicanHolidays(year: number): string[];
 
 const normalize: (v: string) => string;
 ```
@@ -799,6 +815,23 @@ function downloadTemplate(columnas: ImportColumn[], nombre?: string): void;
 
 function excelDate(serie: number): string;
 
+interface ExportColumn<R = Record<string, unknown>> {
+    key: string;
+    label: string;
+    type?: 'text' | 'number' | 'date' | 'boolean';
+    format?: (value: any, row: R) => string | number | boolean | null | undefined;
+}
+
+function exportData<R>(rows: R[], o: ExportOptions<R> & {
+    format?: 'xlsx' | 'csv';
+}): Promise<void>;
+
+interface ExportOptions<R = Record<string, unknown>> {
+    columns: ExportColumn<R>[];
+    filename?: string;
+    sheet?: string;
+}
+
 function guessMapping(encabezados: string[], columnas: ImportColumn[]): Record<string, number>;
 
 interface ImportColumn {
@@ -840,6 +873,10 @@ function processRows<T = Record<string, unknown>>(datos: string[][], columnas: I
 function readSpreadsheet(file: File | Blob): Promise<string[][]>;
 
 function readXLSX(file: Blob): Promise<string[][]>;
+
+function toCSV<R>(rows: R[], columns: ExportColumn<R>[], separador?: string): string;
+
+function toXLSX<R>(rows: R[], o: ExportOptions<R>): Promise<Blob>;
 ```
 
 ## `nexus-dialogs/table`
@@ -863,6 +900,7 @@ interface PickRowsOptions<R> extends Omit<DialogOptions<R[]>, 'render' | 'button
     min?: number;
     max?: number;
     searchPlaceholder?: string;
+    onExport?: (rows: R[], format: 'xlsx' | 'csv') => unknown | Promise<unknown>;
 }
 
 interface TableColumn<R> {
@@ -908,9 +946,40 @@ type SepomexShard = Record<string, [
 ]>;
 ```
 
+## `nexus-dialogs/rrhh`
+
+```ts
+const altaEmpleado: FormSchema;
+
+const baja: FormSchema;
+
+const gastos: FormSchema;
+
+const incapacidad: FormSchema;
+
+const permiso: FormSchema;
+
+type PlantillaRRHH = keyof typeof plantillas;
+
+const plantillas: {
+    readonly altaEmpleado: FormSchema;
+    readonly vacaciones: FormSchema;
+    readonly permiso: FormSchema;
+    readonly incapacidad: FormSchema;
+    readonly baja: FormSchema;
+    readonly gastos: FormSchema;
+};
+
+function sinResolvers(schema: FormSchema): FormSchema;
+
+const vacaciones: FormSchema;
+```
+
 ## `nexus-dialogs/all`
 
 ```ts
+function addBusinessDays(date: string, n: number, o?: BusinessDaysOptions): string;
+
 function alert(opciones: DialogInput<true>, text?: string): Promise<DialogResult<true>>;
 
 function applyTheme(theme: Theme, el?: HTMLElement): void;
@@ -965,6 +1034,14 @@ interface BulkActionResult<T> {
         item: T;
         reason: string;
     }[];
+}
+
+function businessDays(from: string, to: string, o?: BusinessDaysOptions): number;
+
+interface BusinessDaysOptions {
+    holidays?: string[];
+    mexican?: boolean;
+    weekend?: number[];
 }
 
 type ButtonRole = 'confirm' | 'cancel' | 'deny' | 'custom';
@@ -1131,6 +1208,8 @@ type IconName = 'success' | 'error' | 'warning' | 'info' | 'question' | 'delete'
 
 const INVALID: unique symbol;
 
+function isBusinessDay(date: string, o?: BusinessDaysOptions): boolean;
+
 function isCLABE(valor: string): boolean;
 
 function isCURP(valor: string): boolean;
@@ -1197,6 +1276,8 @@ interface LoadingHandle {
     update(text: string): void;
     close(): void;
 }
+
+function mexicanHolidays(year: number): string[];
 
 const normalize: (v: string) => string;
 

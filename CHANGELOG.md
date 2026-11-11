@@ -11,6 +11,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 - `nexus-dialogs/import`: `importData()` para CSV y Excel (.xlsx) sin dependencias, con relación automática de columnas, tipos, `unique` y revisión de errores por fila. También `readSpreadsheet`, `parseCSV`, `guessMapping`, `processRows`, `convert`, `downloadTemplate`.
 - `nexus-dialogs/table`: `pickRows()` para elegir filas de una lista grande, con búsqueda, páginas, selección conservada y carga desde tu API.
 - `nexus-dialogs/sepomex`: `sepomexLookup()` y el comando `nexus-dialogs-sepomex` para servir el catálogo oficial de códigos postales desde tu sitio.
+- Días hábiles en `daterange` (`businessDays`, `holidays`): conteo visible, festivos marcados y `maxDays` en hábiles. En `nexus-dialogs/mx`: `mexicanHolidays()`, `businessDays()`, `isBusinessDay()`, `addBusinessDays()`.
+- Fecha sola con calendario desplegable: `{ type: 'date', calendar: true }`.
+- Exportar a Excel o CSV sin dependencias: `exportData()`, `toXLSX()`, `toCSV()` en `nexus-dialogs/import`; botón «Exportar» en `pickRows()` con `onExport`.
+- `nexus-dialogs/rrhh`: plantillas en JSON (alta de empleado, vacaciones, permiso, incapacidad, baja, gastos) y `sinResolvers()`.
+
+### Corregido
+
+- La lista del buscador y el calendario desplegable ya no se recortan en el borde del diálogo: se abren en la capa superior (Popover API) y hacia arriba cuando abajo no caben.
 
 ## [0.3.0] - 2026-11-10
 

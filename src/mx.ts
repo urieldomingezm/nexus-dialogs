@@ -70,3 +70,75 @@ export function isCLABE(valor: string): boolean {
 
 /** Código postal: 5 dígitos, de 01000 a 99999. */
 export const isPostalCode = (valor: string): boolean => /^(0[1-9]|[1-9]\d)\d{3}$/.test(normalize(valor))
+
+// ── Días festivos y días hábiles ─────────────────────────────────────────────
+
+const isoUTC = (y: number, m: number, d: number) => new Date(Date.UTC(y, m, d)).toISOString().slice(0, 10)
+/** N-ésimo lunes (1 = primero) del mes (0 = enero). */
+const lunes = (y: number, m: number, n: number) => {
+  const primero = new Date(Date.UTC(y, m, 1)).getUTCDay()
+  return isoUTC(y, m, 1 + ((8 - primero) % 7) + (n - 1) * 7)
+}
+
+/**
+ * Días de descanso obligatorio del artículo 74 de la Ley Federal del Trabajo, como AAAA-MM-DD:
+ * 1 de enero, primer lunes de febrero, tercer lunes de marzo, 1 de mayo, 16 de septiembre,
+ * tercer lunes de noviembre, 25 de diciembre y, cada seis años (2024, 2030…), el 1 de octubre por la transmisión del Poder Ejecutivo.
+ * No incluye los que no son de ley (Semana Santa, 2 de noviembre, 12 de diciembre): agrégalos con `holidays`.
+ */
+export function mexicanHolidays(year: number): string[] {
+  const dias = [
+    isoUTC(year, 0, 1),
+    lunes(year, 1, 1),
+    lunes(year, 2, 3),
+    isoUTC(year, 4, 1),
+    isoUTC(year, 8, 16),
+    lunes(year, 10, 3),
+    isoUTC(year, 11, 25),
+  ]
+  if (year >= 2024 && (year - 2024) % 6 === 0) dias.push(isoUTC(year, 9, 1))
+  return dias.sort()
+}
+
+export interface BusinessDaysOptions {
+  /** Festivos como AAAA-MM-DD (además de los de ley, si `mexican` no es false). */
+  holidays?: string[]
+  /** Contar los de ley de México. Por omisión true. */
+  mexican?: boolean
+  /** Días de descanso de la semana (0 = domingo … 6 = sábado). Por omisión sábado y domingo. */
+  weekend?: number[]
+}
+
+/** ¿Es un día hábil? (AAAA-MM-DD). */
+export function isBusinessDay(date: string, o: BusinessDaysOptions = {}): boolean {
+  const fin = o.weekend ?? [0, 6]
+  const d = new Date(date + 'T00:00:00Z')
+  if (fin.includes(d.getUTCDay())) return false
+  if (o.holidays?.includes(date)) return false
+  return o.mexican === false || !mexicanHolidays(d.getUTCFullYear()).includes(date)
+}
+
+/** Días hábiles entre dos fechas, ambas incluidas (AAAA-MM-DD). 0 si `to` es anterior a `from`. */
+export function businessDays(from: string, to: string, o: BusinessDaysOptions = {}): number {
+  if (!from || !to || to < from) return 0
+  const d = new Date(from + 'T00:00:00Z')
+  const fin = new Date(to + 'T00:00:00Z')
+  let n = 0
+  while (d <= fin) {
+    if (isBusinessDay(d.toISOString().slice(0, 10), o)) n++
+    d.setUTCDate(d.getUTCDate() + 1)
+  }
+  return n
+}
+
+/** Suma `n` días hábiles a una fecha (n puede ser negativo). Útil para fechas límite. */
+export function addBusinessDays(date: string, n: number, o: BusinessDaysOptions = {}): string {
+  const d = new Date(date + 'T00:00:00Z')
+  const paso = n < 0 ? -1 : 1
+  let faltan = Math.abs(n)
+  while (faltan > 0) {
+    d.setUTCDate(d.getUTCDate() + paso)
+    if (isBusinessDay(d.toISOString().slice(0, 10), o)) faltan--
+  }
+  return d.toISOString().slice(0, 10)
+}

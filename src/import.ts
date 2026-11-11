@@ -744,3 +744,176 @@ export function importData<T = Record<string, unknown>>(o: ImportOptions<T>): Pr
     },
   })
 }
+
+// ── Exportar ────────────────────────────────────────────────────────────────
+
+export interface ExportColumn<R = Record<string, unknown>> {
+  key: string
+  label: string
+  /** 'date' escribe fechas de verdad en Excel (AAAA-MM-DD o Date); 'number' números; el resto, texto. */
+  type?: 'text' | 'number' | 'date' | 'boolean'
+  /** Texto propio para la celda (solo CSV y texto en Excel). */
+  format?: (value: any, row: R) => string | number | boolean | null | undefined
+}
+export interface ExportOptions<R = Record<string, unknown>> {
+  columns: ExportColumn<R>[]
+  /** Nombre del archivo, sin extensión. Por omisión 'datos'. */
+  filename?: string
+  /** Nombre de la hoja de Excel. Por omisión 'Datos'. */
+  sheet?: string
+}
+
+const xmlEsc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+const ref = (col: number, fila: number) => {
+  let c = ''
+  for (let n = col + 1; n > 0; n = Math.floor((n - 1) / 26)) c = String.fromCharCode(64 + ((n - 1) % 26) + 1) + c
+  return c + fila
+}
+/** Días desde 1899-12-30 (serie de Excel). */
+const serieExcel = (v: unknown): number | null => {
+  const d = v instanceof Date ? v : typeof v === 'string' && /^\d{4}-\d{2}-\d{2}/.test(v) ? new Date(v.slice(0, 10) + 'T00:00:00Z') : null
+  if (!d || isNaN(d.getTime())) return null
+  return Math.round((Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) - Date.UTC(1899, 11, 30)) / 86_400_000)
+}
+
+/** Texto CSV (con BOM, para que Excel respete los acentos). */
+export function toCSV<R>(rows: R[], columns: ExportColumn<R>[], separador = ','): string {
+  const celda = (v: unknown) => {
+    const s = v === null || v === undefined ? '' : v instanceof Date ? v.toISOString().slice(0, 10) : String(v)
+    return /[",;\n\r\t]/.test(s) || s.includes(separador) ? `"${s.replace(/"/g, '""')}"` : s
+  }
+  const lineas = [columns.map((c) => celda(c.label)).join(separador)]
+  for (const r of rows)
+    lineas.push(columns.map((c) => celda(c.format ? c.format((r as any)[c.key], r) : (r as any)[c.key])).join(separador))
+  return '﻿' + lineas.join('\r\n') + '\r\n'
+}
+
+// CRC-32 para el zip.
+const CRC = (() => {
+  const t = new Uint32Array(256)
+  for (let n = 0; n < 256; n++) {
+    let c = n
+    for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1
+    t[n] = c >>> 0
+  }
+  return t
+})()
+const crc32 = (d: Uint8Array) => {
+  let c = 0xffffffff
+  for (let i = 0; i < d.length; i++) c = CRC[(c ^ d[i]) & 0xff] ^ (c >>> 8)
+  return (c ^ 0xffffffff) >>> 0
+}
+async function comprimir(d: Uint8Array): Promise<{ datos: Uint8Array; metodo: number }> {
+  if (typeof CompressionStream === 'undefined') return { datos: d, metodo: 0 }
+  const flujo = new Blob([d as BlobPart]).stream().pipeThrough(new CompressionStream('deflate-raw'))
+  return { datos: new Uint8Array(await new Response(flujo).arrayBuffer()), metodo: 8 }
+}
+/** Zip mínimo (sin fechas) con los archivos dados. */
+async function zip(archivos: Record<string, string>): Promise<Blob> {
+  const enc = new TextEncoder()
+  const partes: Uint8Array[] = []
+  const centrales: Uint8Array[] = []
+  let off = 0
+  for (const [nombre, contenido] of Object.entries(archivos)) {
+    const n = enc.encode(nombre)
+    const crudo = enc.encode(contenido)
+    const { datos, metodo } = await comprimir(crudo)
+    const crc = crc32(crudo)
+    const local = new Uint8Array(30 + n.length)
+    const lv = new DataView(local.buffer)
+    lv.setUint32(0, 0x04034b50, true)
+    lv.setUint16(4, 20, true)
+    lv.setUint16(8, metodo, true)
+    lv.setUint32(14, crc, true)
+    lv.setUint32(18, datos.length, true)
+    lv.setUint32(22, crudo.length, true)
+    lv.setUint16(26, n.length, true)
+    local.set(n, 30)
+    const central = new Uint8Array(46 + n.length)
+    const cv = new DataView(central.buffer)
+    cv.setUint32(0, 0x02014b50, true)
+    cv.setUint16(4, 20, true)
+    cv.setUint16(6, 20, true)
+    cv.setUint16(10, metodo, true)
+    cv.setUint32(16, crc, true)
+    cv.setUint32(20, datos.length, true)
+    cv.setUint32(24, crudo.length, true)
+    cv.setUint16(28, n.length, true)
+    cv.setUint32(42, off, true)
+    central.set(n, 46)
+    partes.push(local, datos)
+    centrales.push(central)
+    off += local.length + datos.length
+  }
+  const tam = centrales.reduce((s, c) => s + c.length, 0)
+  const fin = new Uint8Array(22)
+  const fv = new DataView(fin.buffer)
+  fv.setUint32(0, 0x06054b50, true)
+  fv.setUint16(8, centrales.length, true)
+  fv.setUint16(10, centrales.length, true)
+  fv.setUint32(12, tam, true)
+  fv.setUint32(16, off, true)
+  return new Blob([...partes, ...centrales, fin] as BlobPart[], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  })
+}
+
+/** Libro .xlsx con una hoja: encabezados en negrita, fechas y números de verdad, anchos de columna según el contenido. */
+export async function toXLSX<R>(rows: R[], o: ExportOptions<R>): Promise<Blob> {
+  const cols = o.columns
+  const anchos = cols.map((c) => Math.min(60, Math.max(8, c.label.length + 2)))
+  const celdas: string[] = []
+  const filaXml = (vals: string[], r: number) => `<row r="${r}">${vals.join('')}</row>`
+  celdas.push(
+    filaXml(
+      cols.map((c, i) => `<c r="${ref(i, 1)}" t="inlineStr" s="1"><is><t>${xmlEsc(c.label)}</t></is></c>`),
+      1,
+    ),
+  )
+  rows.forEach((row, k) => {
+    const r = k + 2
+    const vals = cols.map((c, i) => {
+      const crudo = c.format ? c.format((row as any)[c.key], row) : (row as any)[c.key]
+      if (crudo === null || crudo === undefined || crudo === '') return ''
+      const tipo =
+        c.type ?? (typeof crudo === 'number' ? 'number' : typeof crudo === 'boolean' ? 'boolean' : crudo instanceof Date ? 'date' : 'text')
+      const texto = crudo instanceof Date ? crudo.toISOString().slice(0, 10) : String(crudo)
+      anchos[i] = Math.min(60, Math.max(anchos[i], texto.length + 2))
+      if (tipo === 'number' && typeof crudo === 'number' && Number.isFinite(crudo)) return `<c r="${ref(i, r)}"><v>${crudo}</v></c>`
+      if (tipo === 'boolean') return `<c r="${ref(i, r)}" t="b"><v>${crudo ? 1 : 0}</v></c>`
+      if (tipo === 'date') {
+        const n = serieExcel(crudo)
+        if (n !== null) return `<c r="${ref(i, r)}" s="2"><v>${n}</v></c>`
+      }
+      return `<c r="${ref(i, r)}" t="inlineStr"><is><t xml:space="preserve">${xmlEsc(texto)}</t></is></c>`
+    })
+    celdas.push(filaXml(vals.filter(Boolean), r))
+  })
+  const hoja = xmlEsc((o.sheet ?? 'Datos').slice(0, 31))
+  const colsXml = anchos.map((w, i) => `<col min="${i + 1}" max="${i + 1}" width="${w}" customWidth="1"/>`).join('')
+  const X = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+  return zip({
+    '[Content_Types].xml': `${X}<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>`,
+    '_rels/.rels': `${X}<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`,
+    'xl/workbook.xml': `${X}<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="${hoja}" sheetId="1" r:id="rId1"/></sheets></workbook>`,
+    'xl/_rels/workbook.xml.rels': `${X}<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`,
+    'xl/styles.xml': `${X}<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border/></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="3"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" applyFont="1"/><xf numFmtId="14" fontId="0" fillId="0" borderId="0" applyNumberFormat="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`,
+    'xl/worksheets/sheet1.xml': `${X}<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols>${colsXml}</cols><sheetData>${celdas.join('')}</sheetData><autoFilter ref="A1:${ref(cols.length - 1, Math.max(1, rows.length + 1))}"/></worksheet>`,
+  })
+}
+
+function descargar(blob: Blob, nombre: string): void {
+  const url = URL.createObjectURL(blob)
+  const a = h('a', { href: url, download: nombre })
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
+
+/** Descarga las filas como .xlsx (por omisión) o .csv. Sin dependencias. */
+export async function exportData<R>(rows: R[], o: ExportOptions<R> & { format?: 'xlsx' | 'csv' }): Promise<void> {
+  const nombre = o.filename ?? 'datos'
+  if (o.format === 'csv') descargar(new Blob([toCSV(rows, o.columns)], { type: 'text/csv;charset=utf-8' }), `${nombre}.csv`)
+  else descargar(await toXLSX(rows, o), `${nombre}.xlsx`)
+}

@@ -513,6 +513,16 @@ Al escribir los 5 dígitos llena estado y municipio; con varias colonias ofrece 
 
 Con `calendar: true` el rango se elige en un calendario en la pantalla (dos clics, en cualquier orden) y las fechas se escriben como `dd/mm/aaaa`, sin el selector del navegador. Teclado completo: flechas (día y semana), Re Pág / Av Pág (mes), Inicio / Fin (semana), Enter para elegir. Respeta `min`, `max` y los atajos. Semana de lunes a domingo.
 
+**Días hábiles.** Con `businessDays: true` muestra «8 días hábiles» bajo las fechas, el calendario raya los fines de semana y marca en naranja los festivos, y `maxDays` pasa a contar solo hábiles (los festivos no gastan vacaciones). Los festivos de ley salen del artículo 74 de la LFT (`mexicanHolidays(año)` en `nexus-dialogs/mx`); los de la empresa van en `holidays: ['2026-12-24']`. Con `businessDays: 'custom'` solo cuentan los tuyos.
+
+```ts
+{ name: 'vacaciones', label: 'Días', type: 'daterange', calendar: true, businessDays: true, holidays: ['2026-12-24', '2026-12-31'], maxDays: 12 }
+```
+
+En `nexus-dialogs/mx` también están `businessDays(desde, hasta)`, `isBusinessDay(fecha)` y `addBusinessDays(fecha, n)` (fechas límite), sin DOM: sirven en el servidor.
+
+**Fecha sola.** `{ type: 'date', calendar: true }` escribe `dd/mm/aaaa` y abre el calendario con el botón, con ↓ o con Alt+Enter. Se despliega en la capa superior del navegador, así que no lo recorta el diálogo.
+
 #### `signature`: firma en pantalla
 
 ```ts
@@ -621,6 +631,40 @@ if (r.confirmed) agregar(r.value)
 ```
 
 Búsqueda sin acentos, páginas, «seleccionar todos los de esta página», clic en cualquier parte de la fila y la selección se conserva al buscar o cambiar de página. `multiple: false` para elegir una sola. En celular la tabla se desplaza a lo ancho.
+
+Con `onExport` aparece «Exportar seleccionados: Excel · CSV» (o «Exportar todo» si no hay selección): `onExport: (rows, format) => exportData(rows, { columns, format, filename: 'empleados' })`.
+
+### Exportar a Excel o CSV
+
+```ts
+import { exportData } from 'nexus-dialogs/import'
+
+await exportData(empleados, {
+  filename: 'empleados',
+  sheet: 'Empleados',
+  columns: [
+    { key: 'numero', label: 'Número' },
+    { key: 'nombre', label: 'Nombre completo' },
+    { key: 'ingreso', label: 'Fecha de ingreso', type: 'date' }, // fecha de verdad en Excel
+    { key: 'salario', label: 'Salario diario', type: 'number' },
+  ],
+}) // descarga empleados.xlsx; con format: 'csv', empleados.csv
+```
+
+Sin dependencias: el .xlsx se arma aquí mismo, con encabezados en negrita, fila fija, filtros, anchos según el contenido y fechas y números reales. `toXLSX()` y `toCSV()` devuelven el archivo sin descargarlo (para subirlo o mandarlo por correo).
+
+### Plantillas de RR. HH.
+
+Seis formularios listos, en JSON puro (se guardan en tu base de datos y se ajustan por empresa): `altaEmpleado` (asistente de 4 pasos con revisión), `vacaciones` (calendario con días hábiles), `permiso`, `incapacidad` (IMSS), `baja` (motivo, finiquito, entrega y firma) y `gastos` (partidas y comprobantes).
+
+```ts
+import { formFromJSON } from 'nexus-dialogs/forms'
+import { plantillas, sinResolvers } from 'nexus-dialogs/rrhh'
+
+await formFromJSON(plantillas.vacaciones, { values: { empleado: 'Ana Torres' } })
+// Alta usa funciones por nombre (rfcLibre, curpLibre, buscarCP): pásalas en resolvers, o quítalas:
+await formFromJSON(sinResolvers(plantillas.altaEmpleado))
+```
 
 ### Catálogo SEPOMEX sin API
 

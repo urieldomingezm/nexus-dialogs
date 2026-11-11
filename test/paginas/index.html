@@ -52,6 +52,15 @@
   <button id="h-importar">Importar empleados</button>
   <button id="h-elegir">Elegir empleados</button>
   <button id="h-sepomex">Domicilio con SEPOMEX</button>
+  <button id="h-fecha">Fecha con calendario</button>
+  <button id="h-exportar">Exportar a Excel</button>
+  <button id="h-alta">Plantilla: alta de empleado</button>
+  <button id="h-permiso">Plantilla: permiso</button>
+  <button id="h-baja">Plantilla: baja</button>
+  <button id="h-gastos">Plantilla: gastos</button>
+  <button id="h-incapacidad">Plantilla: incapacidad</button>
+  <button id="th-en">Inglés</button>
+  <button id="th-es">Español</button>
 </div></section>
 
 <section><h2>Recetas (nexus-dialogs/patterns)</h2><div class="fila">
@@ -90,7 +99,8 @@
   import { toast } from '../../src/toast.ts'
   import { themes } from '../../src/themes.ts'
   import * as patterns from '../../src/patterns.ts'
-  import { importData } from '../../src/import.ts'
+  import { importData, exportData } from '../../src/import.ts'
+  import { plantillas, sinResolvers } from '../../src/rrhh.ts'
   import { pickRows } from '../../src/table.ts'
   import { sepomexLookup } from '../../src/sepomex.ts'
   const { dialog, configure } = nd
@@ -205,7 +215,7 @@
     { name: 'codigo', label: 'Código de verificación', type: 'otp', required: true, validate: (v) => (v === '123456' ? null : 'El código no coincide.') },
   ] }))
   on('h-vacaciones', () => form({ title: 'Solicitar vacaciones', submitText: 'Enviar solicitud', fields: [
-    { name: 'dias', label: 'Fechas', type: 'daterange', calendar: true, required: true, maxDays: 20, presets: false },
+    { name: 'dias', label: 'Fechas', type: 'daterange', calendar: true, businessDays: true, holidays: ['2026-12-24', '2026-12-31'], required: true, maxDays: 12, presets: false, help: 'Máximo 12 días hábiles. Los festivos de ley y los de la empresa no cuentan.' },
     { name: 'nota', label: 'Comentario', type: 'textarea' },
   ] }))
   on('h-firma', () => form({ title: 'Recibo de nómina · Quincena 21', text: 'Al firmar aceptas haber recibido $ 8,450.00 MXN.', submitText: 'Firmar recibo', fields: [
@@ -221,7 +231,28 @@
   const AREAS = ['Almacén', 'Nómina', 'Ventas', 'Sistemas', 'Producción']
   const NOMBRES = ['Ana Torres', 'Luis Herrera', 'Marta Gil', 'Óscar Núñez', 'Sofía Ruiz', 'Jorge Peña', 'Elena Ríos', 'Raúl Vega']
   const EMPLEADOS = Array.from({ length: 480 }, (_, i) => ({ id: String(1001 + i), nombre: `${NOMBRES[i % 8]} ${i + 1}`, area: AREAS[i % 5], salario: 300 + (i % 9) * 55 }))
+  const COLS = [
+      { key: 'id', label: 'Núm.' },
+      { key: 'nombre', label: 'Nombre' },
+      { key: 'area', label: 'Área' },
+      { key: 'salario', label: 'Salario diario', type: 'number' },
+  ]
+  on('h-fecha', () => form({ title: 'Cambio de puesto', columns: 2, fields: [
+    { name: 'puesto', label: 'Nuevo puesto', required: true, span: 2 },
+    { name: 'desde', label: 'A partir del', type: 'date', calendar: true, required: true, min: '2026-01-01' },
+    { name: 'nacimiento', label: 'Fecha de nacimiento', type: 'date', calendar: true },
+  ] }))
+  on('h-exportar', () => pickRows({ title: 'Reporte de empleados', rows: EMPLEADOS, min: 0, confirmText: 'Cerrar',
+    columns: COLS, onExport: (rows, format) => exportData(rows, { columns: COLS, format, filename: 'empleados', sheet: 'Empleados' }) }))
+  on('h-alta', () => formFromJSON(plantillas.altaEmpleado, { resolvers: { rfcLibre: () => null, curpLibre: () => null, buscarCP } }))
+  on('h-permiso', () => formFromJSON(plantillas.permiso))
+  on('h-baja', () => formFromJSON(plantillas.baja))
+  on('h-gastos', () => formFromJSON(plantillas.gastos))
+  on('h-incapacidad', () => formFromJSON(plantillas.incapacidad))
+  on('th-en', () => { configure({ lang: 'en' }); toast.configure?.({ lang: 'en' }) })
+  on('th-es', () => { configure({ lang: 'es' }); toast.configure?.({ lang: 'es' }) })
   on('h-elegir', () => pickRows({ title: 'Agregar participantes al curso', rows: EMPLEADOS, max: 30, isDisabled: (e) => e.id === '1003',
+    onExport: (rows, format) => exportData(rows, { columns: COLS, format, filename: 'participantes' }),
     columns: [
       { key: 'id', label: 'Núm.' },
       { key: 'nombre', label: 'Nombre' },

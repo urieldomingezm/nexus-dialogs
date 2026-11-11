@@ -42,6 +42,7 @@ const LIBS = {
   import: { entry: 'src/import.ts', name: 'NexusDialogsImport', fileName: 'import', formats: ['es', 'cjs'], external: ['nexus-dialogs'] },
   table: { entry: 'src/table.ts', name: 'NexusDialogsTable', fileName: 'table', formats: ['es', 'cjs'], external: ['nexus-dialogs'] },
   sepomex: { entry: 'src/sepomex.ts', name: 'NexusDialogsSepomex', fileName: 'sepomex', formats: ['es', 'cjs'], external: [] },
+  rrhh: { entry: 'src/rrhh.ts', name: 'NexusDialogsRRHH', fileName: 'rrhh', formats: ['es', 'cjs'], external: [] },
   swalglobal: { entry: 'src/swal-global.ts', name: 'Swal', fileName: 'nexus-dialogs.swal', formats: ['iife'], external: [] },
 }
 
