@@ -11,7 +11,7 @@
  * Cubre lo que más se usa: fire, mixin, toasts, inputs, preConfirm, timer y los métodos estáticos comunes.
  * Los colores (`confirmButtonColor`…) y `customClass` se ignoran a propósito: se aplica el estándar de botones.
  */
-import { dialog, INVALID, labels, openDialog } from 'nexus-dialogs'
+import { dialog, INVALID, labels, openDialog, setHtml } from 'nexus-dialogs'
 import type { ButtonSpec, CloseReason, DialogContext, IconName } from 'nexus-dialogs'
 import { toast, type ToastPosition } from 'nexus-dialogs/toast'
 import { css, focusables, h, uid } from './core/dom'
@@ -445,12 +445,12 @@ function pintarCabecera(e: Entrada): void {
   if (o.text) cuerpo.appendChild(h('p', { class: 'text' }, o.text))
   if (o.html !== undefined) {
     const caja = h('div', { class: 'text html' })
-    if (typeof o.html === 'string') caja.innerHTML = o.html
+    if (typeof o.html === 'string') setHtml(caja, o.html)
     else caja.appendChild(o.html)
     cuerpo.appendChild(caja)
   }
   const iconoEl = ic ? crearIcono(ic) : null
-  if (iconoEl && o.iconHtml) iconoEl.innerHTML = o.iconHtml
+  if (iconoEl && o.iconHtml) setHtml(iconoEl, o.iconHtml)
   const previa = panel.querySelector('.head')
   const nueva = h('header', { class: `${centrado ? 'head centered' : 'head'}${o.draggable ? ' drag' : ''}` }, iconoEl, cuerpo)
   if (!iconoEl && !cuerpo.childNodes.length) {
@@ -481,7 +481,7 @@ function pintarCerrar(e: Entrada): void {
       panel.classList.add('has-x')
     }
     x.setAttribute('aria-label', o.closeButtonAriaLabel ?? labels().close)
-    if (o.closeButtonHtml) x.innerHTML = o.closeButtonHtml
+    if (o.closeButtonHtml) setHtml(x, o.closeButtonHtml)
   } else if (x) {
     x.remove()
     panel.classList.remove('has-x')
@@ -537,7 +537,7 @@ function pintarLoader(e: Entrada): void {
     panel.insertBefore(l, panel.querySelector('.foot'))
   }
   l.setAttribute('aria-label', labels().loading)
-  if (e.o.loaderHtml) l.innerHTML = e.o.loaderHtml
+  if (e.o.loaderHtml) setHtml(l, e.o.loaderHtml)
   else if (!l.firstChild) l.appendChild(h('span', { class: 'swal-spin', 'aria-hidden': 'true' }))
   l.hidden = panel.getAttribute('aria-busy') !== 'true'
 }

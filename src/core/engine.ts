@@ -1,6 +1,6 @@
 // Motor de diálogos: un <dialog> nativo (capa superior del navegador, fondo inerte, Esc) con un host dentro cuyo
 // Shadow DOM tiene el contenido. Todos los diálogos públicos (alert, confirm, prompt, form, wizard) pasan por aquí.
-import { config, labels } from '../config'
+import { config, labels, setHtml } from '../config'
 import { CORE_CSS } from '../styles'
 import type { ButtonSpec, CloseReason, DialogContext, DialogOptions, DialogResult, Dismissible, TimerControl } from '../types'
 import { activeDeep, angosto, direccion, focusables, h, reducedMotion, uid } from './dom'
@@ -110,7 +110,7 @@ export function openDialog<T = unknown>(opciones: EngineOptions<T>): Promise<Dia
   let html: HTMLElement | null = null
   if (o.html !== undefined) {
     html = h('div', { class: 'text html' })
-    if (typeof o.html === 'string') html.innerHTML = o.html
+    if (typeof o.html === 'string') setHtml(html, o.html)
     else html.appendChild(o.html)
   }
   // Las confirmaciones de peligro llevan la papelera; el icono va junto al título y solo se centra en avisos de un botón.

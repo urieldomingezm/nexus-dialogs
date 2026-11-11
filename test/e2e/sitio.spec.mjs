@@ -25,12 +25,16 @@ test.describe('Sitio de documentación', () => {
     ['erp.html', /Mini ERP/],
     ['migracion.html', /Migrar/],
     ['accesibilidad.html', /Accesibilidad/],
+    ['seguridad.html', /Seguridad/],
+    ['arquitectura.html', /Arquitectura/],
     ['api.html', /API/],
   ]) {
     test(`${pagina}: carga, sin marcadores sin resolver ni errores`, async ({ pagina: page }) => {
       await page.goto(SITIO + pagina)
       await expect(page).toHaveTitle(titulo)
-      await expect(page.locator('header.cabecera nav a[aria-current="page"]')).toHaveCount(pagina === 'accesibilidad.html' ? 0 : 1)
+      await expect(page.locator('header.cabecera nav a[aria-current="page"]')).toHaveCount(
+        ['accesibilidad.html', 'seguridad.html', 'arquitectura.html'].includes(pagina) ? 0 : 1,
+      )
       expect(await page.content()).not.toContain('<!--@')
       await expect(page.locator('footer.pie')).toContainText('MIT')
     })
@@ -200,7 +204,16 @@ test.describe('Sitio de documentación', () => {
 
   test('accesibilidad: las páginas no tienen violaciones de axe (WCAG 2.2 AA)', async ({ page, browserName }) => {
     test.skip(browserName === 'firefox', 'axe se omite en Firefox (ver utilidades.mjs)')
-    for (const p of ['index.html', 'ejemplos.html', 'guia.html', 'erp.html', 'migracion.html', 'accesibilidad.html']) {
+    for (const p of [
+      'index.html',
+      'ejemplos.html',
+      'guia.html',
+      'erp.html',
+      'migracion.html',
+      'accesibilidad.html',
+      'seguridad.html',
+      'arquitectura.html',
+    ]) {
       await page.goto(SITIO + p)
       const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze()
       expect(

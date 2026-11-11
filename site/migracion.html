@@ -217,6 +217,24 @@ const r = await dialog.confirm({
           <li><strong>Sin equivalente</strong>: <code>Swal.version</code>, <code>topLayer</code>, <code>showClass</code> / <code>hideClass</code> y <code>animation</code>.</li>
         </ul>
 
+        <h2 id="diferencias">Diferencias de comportamiento que conviene revisar</h2>
+        <p>Una API compatible no quiere decir que todo sea intercambiable. Estas son las diferencias que afectan a código que ya funciona.</p>
+        <div class="tabla"><table>
+            <thead><tr><th scope="col">Con SweetAlert2</th><th scope="col">Con <code>nexus-dialogs/swal</code></th><th scope="col">Qué hacer</th></tr></thead>
+            <tbody>
+              <tr><td><code>footer</code> acepta HTML</td><td>El pie se muestra como <strong>texto plano</strong> (las etiquetas se quitan).</td><td>Pon el enlace o formato dentro de <code>html</code>.</td></tr>
+              <tr><td><code>html</code> en cadena se inserta tal cual</td><td>Igual, pero puedes filtrarlo con <code>configure({ sanitize })</code>. Ver <a href="seguridad.html">Seguridad</a>.</td><td>Configura <code>sanitize</code> si el HTML no es tuyo.</td></tr>
+              <tr><td>El contenido está en el <code>document</code></td><td>Está dentro de un Shadow DOM: <code>document.getElementById</code> no lo encuentra.</td><td>Usa <code>Swal.getHtmlContainer().querySelector(…)</code>.</td></tr>
+              <tr><td>CSS de la página (Bootstrap, <code>.swal2-*</code>) cambia su aspecto</td><td>El CSS de la página ya no entra; el aspecto sale del tema.</td><td>Usa <code>configure({ theme })</code> o un tema listo.</td></tr>
+              <tr><td><code>confirmButtonColor</code>, <code>customClass</code>, <code>background</code>, <code>backdrop</code>…</td><td>Se aceptan y se ignoran.</td><td>Quita esas opciones; un color por intención.</td></tr>
+              <tr><td>Orden y foco de los botones libres</td><td>Siempre Cancelar, Denegar, Confirmar; un botón «eliminar» pasa solo a peligro y el foco empieza en Cancelar.</td><td>Revisa los borrados; fuerza con <code>danger: true</code> o <code>reverseButtons</code>.</td></tr>
+              <tr><td>Textos por omisión en inglés</td><td>Salen en el idioma configurado.</td><td><code>configure({ lang })</code> o <code>labels</code>.</td></tr>
+              <tr><td>Toasts con posiciones y apilado propios</td><td>Usan la cola de <code>nexus-dialogs/toast</code>, una sola posición para todos.</td><td>Revisa dónde esperabas verlos.</td></tr>
+              <tr><td><code>showClass</code>, <code>hideClass</code>, <code>animation</code>, <code>topLayer</code>, <code>Swal.version</code></td><td>No existen.</td><td>El movimiento sale del tema y respeta «reducir movimiento».</td></tr>
+              <tr><td><code>template</code> con <code>&lt;swal-function-param&gt;</code></td><td>No se acepta.</td><td>Pasa la función por opciones.</td></tr>
+            </tbody>
+        </table></div>
+
         <h2 id="lista">Lista de verificación</h2>
         <ol>
           <li>Instala <code>nexus-dialogs</code> y cambia el import (o el <code>&lt;script&gt;</code>).</li>

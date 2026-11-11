@@ -6,6 +6,9 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ### Agregado
 
+- `configure({ sanitize })`: filtro para todo el `html` en cadena (`html`, y en swal `iconHtml`, `closeButtonHtml` y `loaderHtml`); también se exporta `setHtml`. Los textos siguen insertándose siempre como texto y un `Node` no pasa por el filtro. Documentado en `docs/seguridad.md` y `SECURITY.md`.
+- Documentación de niveles (`docs/arquitectura.md`: núcleo, UI avanzada, empresa, integraciones, pesos y qué está validado) y una prueba que impide que un nivel importe de uno superior.
+- Sitio: páginas **Seguridad** y **Arquitectura**, y tabla de diferencias de comportamiento con SweetAlert2 en la guía de migración.
 - `nexus-dialogs/angular`: `provideNexusDialogs()`, `injectDialog()`, `injectForm()` e `injectToast()` para Angular 16+. `isOpen` es una señal, los diálogos se cierran al destruir el componente y no usa decoradores. Solo ESM, como `@angular/core`, que es dependencia opcional.
 - Soporte RTL (derecha a izquierda): los diálogos y toasts siguen `<html dir="rtl">` o `configure({ dir })` / `dir` por diálogo. CSS con propiedades lógicas, calendario y temporizador espejados y teclado invertido en el calendario.
 - Plantillas de RR. HH.: `evaluacion`, `capacitacion` y `cambioPuesto` (ya son nueve).

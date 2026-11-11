@@ -3,6 +3,7 @@
 # nexus-dialogs
 
 **Diálogos, formularios, asistentes y toasts para sistemas de empresa.**
+Una infraestructura de interacción para aplicaciones empresariales, con lo que un sistema administrativo mexicano necesita.
 Sin dependencias · TypeScript · `<dialog>` nativo + Shadow DOM · accesible (WCAG 2.2 AA) · basado en promesas
 
 Hecho por [**DevMedina**](https://devmedina.is-a.dev/) (Angel Uriel Domínguez Medina) · rama de librerías de **Nexus** · Licencia MIT
@@ -18,6 +19,10 @@ Las librerías de alertas resuelven el «¿Seguro?» y poco más. En un sistema 
 - **Promesas**: `const r = await dialog.confirm(…)`; nunca rechaza, siempre resuelve con `{ confirmed, denied, value, reason }`.
 - **Accesible**: foco inicial correcto (Cancelar en acciones destructivas), Esc, regreso del foco, errores ligados a cada campo, toasts anunciados en regiones vivas. Probado con axe en claro, oscuro, Bootstrap, Tailwind y Material, con teclado, movimiento reducido y reflow a 320 px. Qué se prueba y qué falta (lectores de pantalla): [`docs/accesibilidad.md`](docs/accesibilidad.md).
 - **Estándar de botones**: un color por intención, igual en toda la app, y sin iconos en los botones.
+- **Seguro por omisión**: los textos siempre se insertan como texto; solo el `html` en cadena se interpreta y se puede filtrar con `configure({ sanitize })`. Detalle en [`docs/seguridad.md`](docs/seguridad.md).
+- **Por niveles**: núcleo de ~10 KB, UI avanzada, empresa e integraciones, cada uno en su subruta; lo que no importas no se descarga. Qué pesa cada parte y qué está validado todavía: [`docs/arquitectura.md`](docs/arquitectura.md).
+
+> **Estado**: probada en Chromium, Firefox y WebKit con pruebas unitarias, de casos extremos y de accesibilidad (axe). Falta validarla con lectores de pantalla y en aplicaciones en producción; ver [`docs/arquitectura.md`](docs/arquitectura.md#qué-está-validado-y-qué-no).
 
 ## Índice
 
@@ -48,7 +53,7 @@ npm i nexus-dialogs
 
 | Importa | Para |
 |---|---|
-| `nexus-dialogs` | `dialog.alert / confirm / prompt / open`, `configure` |
+| `nexus-dialogs` | **Núcleo**: `dialog.alert / confirm / prompt / open`, `configure` |
 | `nexus-dialogs/forms` | `form()` y `wizard()` |
 | `nexus-dialogs/toast` | `toast()` con cola |
 | `nexus-dialogs/themes` | Temas listos (Bootstrap, Tailwind, Material, oscuro) |
@@ -367,6 +372,7 @@ Sin bundler, cambia el `<script>` de SweetAlert2 por este (define `window.Swal`)
 - El orden de los botones es siempre Cancelar, Denegar, Confirmar (la acción principal a la derecha).
 - Los textos por omisión salen en el idioma configurado («Aceptar», «Cancelar»).
 - Los toasts usan la cola de `nexus-dialogs/toast`; la posición es una sola para todos.
+- `footer` se muestra como texto plano (sin etiquetas); el `html` sí se interpreta y puede pasar por `configure({ sanitize })`.
 - El contenido vive dentro del Shadow DOM: en vez de `document.getElementById('x')` usa `Swal.getHtmlContainer().querySelector('#x')`. El «popup» que reciben los ganchos y devuelve `getPopup()` es el panel, así que `popup.querySelector(…)` funciona.
 - `theme` entiende `light`, `dark` y `auto`; `target` monta el diálogo en ese elemento pero sigue siendo modal; `reverseButtons: true` pone Confirmar primero; `template` no acepta `<swal-function-param>`.
 - Sin equivalente: `Swal.version`, `topLayer`, `showClass`/`hideClass` y `animation` (el movimiento sale del tema y respeta «reducir movimiento»).
@@ -916,6 +922,7 @@ La API pública completa, generada de los tipos, está en [`api/nexus-dialogs.ap
 - Navegadores actuales: Chrome/Edge 111+, Firefox 113+, Safari 16.4+ (usa `<dialog>` modal y `color-mix()`). Probado en Chromium, Firefox y WebKit.
 - **nexus-tours**: los diálogos son `<dialog open>` de verdad, así que los tours los detectan y pueden explicar lo que hay dentro.
 - Bootstrap, Tailwind, SweetAlert2: sin choques de `z-index` ni de CSS. Para migrar de SweetAlert2, ver [¿Vienes de SweetAlert2?](#vienes-de-sweetalert2).
+- Seguridad: [`docs/seguridad.md`](docs/seguridad.md). Para reportar una vulnerabilidad, [`SECURITY.md`](SECURITY.md).
 - Vue 3.3+ con `nexus-dialogs/vue`. React 18+ con `nexus-dialogs/react` (probado con 18 y 19). Angular 16+ con `nexus-dialogs/angular`.
 - Node/SSR: importar no toca el DOM; los diálogos se abren solo en el navegador.
 
