@@ -20,15 +20,15 @@ html {
   }
 }
 a {
-  color: var(--color-accent);
+  color: var(--color-accent-text);
   text-decoration-line: underline;
   text-decoration-color: color-mix(in oklab, var(--color-accent) 45%, transparent);
 }
 a:active {
-  color: var(--color-accent-deep);
+  color: var(--color-accent-text-hover);
 }
 a:hover {
-  color: var(--color-accent-deep);
+  color: var(--color-accent-text-hover);
   text-decoration-color: currentColor;
 }
 .saltar {
@@ -351,6 +351,7 @@ main {
 }
 .hero.chico {
   display: block;
+  min-height: 0;
   padding: var(--space-2xl) 0 var(--space-lg);
 }
 .hero.chico h1 {
@@ -457,7 +458,7 @@ main {
   color: var(--color-ink);
 }
 .datos-fila > div:first-child strong {
-  color: var(--color-accent);
+  color: var(--color-accent-text);
 }
 .datos span {
   color: var(--color-muted);
@@ -638,14 +639,14 @@ pre:hover .copiar,
   color: var(--color-success);
 }
 .tk-k {
-  color: var(--color-accent);
+  color: var(--color-accent-text);
   font-weight: 700;
 }
 .tk-n {
   color: var(--color-warn);
 }
 .tk-t {
-  color: var(--color-accent-deep);
+  color: var(--color-accent-text-hover);
 }
 
 /* ── Texto largo (guía, API, documentos) ────────────────────────────────── */
@@ -699,6 +700,19 @@ pre:hover .copiar,
 .contenido h1 {
   max-width: 18ch;
   font-size: var(--text-display-s);
+}
+.contenido p {
+  margin: 0 0 var(--space-md);
+}
+.contenido :is(ul, ol) {
+  margin: 0 0 var(--space-md);
+  padding-left: 1.25em;
+}
+.contenido li + li {
+  margin-top: var(--space-2xs);
+}
+.contenido > .nota {
+  font-size: var(--text-md);
 }
 .contenido p,
 .contenido li {
@@ -787,7 +801,7 @@ tbody tr:hover td {
   }
   .toc-movil {
     display: block;
-    margin: 0 0 var(--space-lg);
+    margin: var(--space-md) 0 var(--space-lg);
     border-radius: var(--radius-card);
     background: var(--color-paper-2);
   }
@@ -899,7 +913,7 @@ tbody tr:hover td {
 }
 .ejemplo details summary {
   margin: var(--space-xs) 0;
-  color: var(--color-accent);
+  color: var(--color-accent-text);
   font-size: var(--text-sm);
   cursor: pointer;
 }
@@ -1047,4 +1061,70 @@ tbody tr:hover td {
   color: var(--color-ink);
   font-family: var(--font-outlier);
   font-size: var(--text-sm);  overflow-wrap: anywhere;
+}
+input[type='checkbox'] {
+  accent-color: var(--color-accent);
+}
+.hero.chico .acciones {
+  justify-content: flex-start;
+}
+
+/* ── Pulido en pantallas pequeñas ───────────────────────────────────────── */
+@media (max-width: 640px) {
+  .cabecera {
+    padding-block: var(--space-xs);
+  }
+  .menu-btn {
+    width: 40px;
+    height: 40px;
+    box-shadow: none;
+    background: var(--color-paper-2);
+  }
+  .tema {
+    min-width: 0;
+    padding: var(--space-xs) var(--space-sm);
+    box-shadow: none;
+    background: var(--color-paper-2);
+  }
+  .hero {
+    padding-top: var(--space-xl);
+  }
+  .hero h1 {
+    font-size: clamp(2.5rem, 12vw, 3.25rem);
+  }
+  .hero.chico {
+    padding: var(--space-xl) 0 var(--space-md);
+  }
+  .hero.chico h1,
+  .contenido h1 {
+    font-size: clamp(2rem, 9vw, 2.5rem);
+  }
+  .contenido h2 {
+    margin: var(--space-xl) 0 var(--space-sm);
+    padding-top: var(--space-md);
+    font-size: var(--text-xl);
+  }
+  .contenido h3 {
+    margin: var(--space-lg) 0 var(--space-xs);
+    font-size: var(--text-lg);
+  }
+  .contenido .ancla {
+    display: none;
+  }
+  .instalar {
+    display: flex;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .ventana pre,
+  .ventana pre code {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    overflow-x: visible;
+  }
+  .hero.chico {
+    padding-bottom: 0;
+  }
 }

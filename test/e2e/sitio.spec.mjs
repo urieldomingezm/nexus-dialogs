@@ -224,17 +224,20 @@ test.describe('Sitio de documentación', () => {
       'swal-compat.html',
       'contratos.html',
     ]) {
-      await page.goto(SITIO + p)
-      const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze()
-      expect(
-        r.violations.map(
-          (v) =>
-            `${p} → ${v.id}: ${v.nodes
-              .map((n) => n.target.join(' '))
-              .slice(0, 3)
-              .join(', ')}`,
-        ),
-      ).toEqual([])
+      for (const tema of ['claro', 'oscuro']) {
+        await page.goto(SITIO + p)
+        await page.evaluate((t) => (document.documentElement.dataset.tema = t), tema)
+        const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze()
+        expect(
+          r.violations.map(
+            (v) =>
+              `${p} (${tema}) → ${v.id}: ${v.nodes
+                .map((n) => n.target.join(' '))
+                .slice(0, 3)
+                .join(', ')}`,
+          ),
+        ).toEqual([])
+      }
     }
   })
 })
