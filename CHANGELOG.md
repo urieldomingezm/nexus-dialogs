@@ -6,6 +6,8 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ### Agregado
 
+- `nexus-dialogs/swal`, paridad con SweetAlert2: accesores (`getContainer`, `getTitle`, `getHtmlContainer`, `getIcon`, `getImage`, `getActions`, `getFooter`, `getCloseButton`, `getTimerProgressBar`, `getProgressSteps`, `getValidationMessage`, `getInputLabel`, `getFocusableElements`); `Swal.update()` completo (título, texto, html, icono, imagen, pasos, pie y botones) y `Swal.close(resultado)`; `inputAutoTrim`, `inputAutoFocus` y `returnInputValueOnDeny`; temporizador (`stopTimer`, `resumeTimer`, `toggleTimer`, `increaseTimer`, `getTimerLeft`, `isTimerRunning`); campos `file`, `range` y `week`; `imageUrl` (+ancho, alto, alt), `iconHtml`, `progressSteps`; `enableButtons`, `disableButtons`, `enableInput`, `disableInput`; `reverseButtons`, `allowEnterKey`, `theme`, `target`, `draggable`, `template`, `didDestroy`, `closeButtonHtml` y los `aria-label` de los botones.
+- Motor: `ctx.timer` (`TimerControl`: `left`, `running`, `stop`, `resume`, `increase`) en `DialogContext`.
 - Sitio de documentación (`site/`, `npm run build:site`): guía, galería de unos 35 ejemplos que se ejecutan en la página con su código, referencia de la API y una página «Frente a SweetAlert2» con escenarios lado a lado (SweetAlert2 real, el adaptador `nexus-dialogs/swal` y la API nativa), tabla de cobertura verificada por pruebas contra el paquete `sweetalert2` y lista priorizada de lo que todavía falta. Se publica en GitHub Pages con el flujo `docs.yml`.
 - `nexus-dialogs/react`: hooks `useDialog()`, `useForm()` y `useToast()`, y `NexusDialogsProvider` para configurar. Los diálogos del componente se cierran al desmontarlo, `isOpen` vuelve a renderizar, las funciones son estables entre renders y funciona con `StrictMode`. Probado con React 18 y 19. `react` es dependencia opcional.
 - Calendario en `daterange` con `calendar: true`: rango en dos clics, fechas escritas como `dd/mm/aaaa`, teclado completo.
@@ -17,6 +19,10 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 - Fecha sola con calendario desplegable: `{ type: 'date', calendar: true }`.
 - Exportar a Excel o CSV sin dependencias: `exportData()`, `toXLSX()`, `toCSV()` en `nexus-dialogs/import`; botón «Exportar» en `pickRows()` con `onExport`.
 - `nexus-dialogs/rrhh`: plantillas en JSON (alta de empleado, vacaciones, permiso, incapacidad, baja, gastos) y `sinResolvers()`.
+
+### Cambiado
+
+- `nexus-dialogs/swal`: `getPopup()` y el popup que reciben los ganchos son ahora el panel (dentro del Shadow DOM) y no el `<dialog>`, para que `querySelector` sobre él encuentre el contenido. `willClose` se llama al empezar a cerrar y recibe el panel. El adaptador pesa unos 3.6 KB gzip más (límite 7 KB).
 
 ### Corregido
 

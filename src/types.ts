@@ -115,6 +115,20 @@ export interface DialogContext {
   setTitle(title: string): void
   setButtons(buttons: ButtonSpec[]): void
   button(id: string): HTMLButtonElement | null
+  /** Control del temporizador (`timer`). `undefined` si el diálogo no tiene uno. */
+  readonly timer?: TimerControl
+}
+
+/** Detener, reanudar o alargar el temporizador de un diálogo. Los tiempos van en milisegundos. */
+export interface TimerControl {
+  /** Lo que falta para que se cierre. */
+  left(): number
+  running(): boolean
+  /** Lo detiene hasta que se llame a `resume` (el mouse o el foco encima ya no lo reanudan). Devuelve lo que faltaba. */
+  stop(): number
+  resume(): number
+  /** Suma (o resta, con negativo) tiempo. Devuelve lo que falta ahora. */
+  increase(ms: number): number
 }
 
 export interface Labels {

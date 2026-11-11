@@ -8,7 +8,10 @@ export const PARAMS_SOPORTADAS = [
   'confirmButtonText', 'denyButtonText', 'cancelButtonText', 'focusCancel', 'focusDeny',
   'allowOutsideClick', 'allowEscapeKey', 'input', 'inputLabel', 'inputPlaceholder', 'inputValue', 'inputOptions',
   'inputAttributes', 'inputValidator', 'validationMessage', 'preConfirm', 'preDeny',
-  'willOpen', 'didOpen', 'didRender', 'willClose', 'didClose',
+  'willOpen', 'didOpen', 'didRender', 'willClose', 'didClose', 'didDestroy',
+  'iconHtml', 'imageUrl', 'imageWidth', 'imageHeight', 'imageAlt', 'progressSteps', 'currentProgressStep', 'progressStepsDistance',
+  'closeButtonHtml', 'closeButtonAriaLabel', 'confirmButtonAriaLabel', 'denyButtonAriaLabel', 'cancelButtonAriaLabel',
+  'reverseButtons', 'allowEnterKey', 'inputAutoFocus', 'inputAutoTrim', 'returnInputValueOnDeny', 'target', 'theme', 'template', 'draggable',
 ]
 
 /** Se aceptan y se ignoran, o ya lo hace el diseño propio. Va el motivo. */
@@ -39,35 +42,25 @@ export const PARAMS_DISTINTAS: Record<string, string> = {
 }
 
 /** Opciones que todavía no existen en el adaptador. */
-export const PARAMS_PENDIENTES = [
-  'imageUrl', 'imageWidth', 'imageHeight', 'imageAlt', 'progressSteps', 'currentProgressStep', 'progressStepsDistance',
-  'iconHtml', 'closeButtonHtml', 'closeButtonAriaLabel', 'confirmButtonAriaLabel', 'denyButtonAriaLabel', 'cancelButtonAriaLabel',
-  'reverseButtons', 'allowEnterKey', 'inputAutoFocus', 'inputAutoTrim', 'returnInputValueOnDeny', 'loaderHtml',
-  'target', 'theme', 'template', 'draggable', 'didDestroy',
-]
+export const PARAMS_PENDIENTES = ['loaderHtml']
 
 /** Métodos de `Swal` que funcionan. */
 export const METODOS_SOPORTADOS = [
   'fire', 'mixin', 'close', 'isVisible', 'isLoading', 'showLoading', 'hideLoading', 'showValidationMessage',
   'resetValidationMessage', 'update', 'getPopup', 'getInput', 'getConfirmButton', 'getCancelButton', 'getDenyButton',
   'clickConfirm', 'clickCancel', 'clickDeny', 'DismissReason',
+  'getContainer', 'getTitle', 'getHtmlContainer', 'getIcon', 'getIconContent', 'getImage', 'getCloseButton', 'getActions', 'getFooter', 'getTimerProgressBar', 'getProgressSteps', 'getFocusableElements', 'getValidationMessage', 'getInputLabel', 'enableButtons', 'disableButtons', 'enableInput', 'disableInput', 'getTimerLeft', 'stopTimer', 'resumeTimer', 'toggleTimer', 'isTimerRunning', 'increaseTimer',
 ]
 
 /** Métodos que todavía no existen en el adaptador. */
-export const METODOS_PENDIENTES = [
-  'getContainer', 'getTitle', 'getHtmlContainer', 'getIcon', 'getIconContent', 'getImage', 'getCloseButton', 'getActions',
-  'getFooter', 'getInputLabel', 'getLoader', 'getTimerProgressBar', 'getProgressSteps', 'getFocusableElements', 'getValidationMessage',
-  'enableButtons', 'disableButtons', 'enableInput', 'disableInput',
-  'getTimerLeft', 'stopTimer', 'resumeTimer', 'toggleTimer', 'isTimerRunning', 'increaseTimer',
-  'bindClickHandler', 'isValidParameter', 'isUpdatableParameter', 'argsToParams', 'version',
-]
+export const METODOS_PENDIENTES = ['getLoader', 'bindClickHandler', 'isValidParameter', 'isUpdatableParameter', 'argsToParams', 'version']
 
 /** Lo que funciona a medias: está, pero hace menos que en SweetAlert2. */
 export const A_MEDIAS: { nombre: string; detalle: string }[] = [
-  { nombre: 'Swal.update()', detalle: 'solo cambia el título; faltan text, html, icon y los botones' },
-  { nombre: 'Swal.close(resultado)', detalle: 'cierra, pero ignora el resultado que le pases' },
-  { nombre: 'input: tipos', detalle: 'falta range, file y week' },
-  { nombre: 'inputAutoTrim', detalle: 'SweetAlert2 recorta los espacios del texto por omisión; el adaptador devuelve el texto tal cual' },
   { nombre: 'position (no toast)', detalle: 'solo se usa en toasts; el modal siempre sale al centro (o como hoja inferior en celular)' },
-  { nombre: 'html con document.getElementById', detalle: 'el contenido vive dentro del Shadow DOM: el código que lo busca con document.* no lo encuentra' },
+  { nombre: 'html con document.getElementById', detalle: 'el contenido vive dentro del Shadow DOM: busca con Swal.getHtmlContainer().querySelector(…) o con el popup que reciben didOpen y getPopup()' },
+  { nombre: 'theme', detalle: 'se entienden light, dark y auto; los temas bootstrap, material-ui, bulma… se ignoran (los colores salen de --nd-*)' },
+  { nombre: 'target', detalle: 'monta el diálogo dentro de ese elemento, pero sigue siendo modal y en la capa superior; no sirve para mostrarlo incrustado' },
+  { nombre: 'reverseButtons', detalle: 'el orden propio es Cancelar, Denegar, Confirmar; con true pasa a Confirmar primero' },
+  { nombre: 'template', detalle: 'se leen swal-title, swal-html, swal-icon, swal-image, swal-input, swal-button, swal-footer y swal-param; swal-function-param no (evaluaría texto)' },
 ]

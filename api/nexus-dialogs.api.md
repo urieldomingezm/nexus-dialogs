@@ -57,6 +57,7 @@ interface DialogContext {
     setTitle(title: string): void;
     setButtons(buttons: ButtonSpec[]): void;
     button(id: string): HTMLButtonElement | null;
+    readonly timer?: TimerControl;
 }
 
 type DialogInput<T> = DialogOptions<T> | string;
@@ -110,6 +111,9 @@ interface EngineOptions<T> extends DialogOptions<T> {
     collect?: (ctx: DialogContext) => T | typeof INVALID | Promise<T | typeof INVALID>;
     onAction?: (button: ButtonSpec, ctx: DialogContext) => boolean | Promise<boolean>;
     moduleCss?: string;
+    target?: Element;
+    allowEnter?: boolean;
+    onClosing?: (ctx: DialogContext) => void;
 }
 
 const es: Labels;
@@ -204,6 +208,14 @@ interface PromptOptions extends DialogOptions<string> {
 type Scheme = 'light' | 'dark' | 'auto';
 
 type Size = 'sm' | 'md' | 'lg' | 'xl' | number;
+
+interface TimerControl {
+    left(): number;
+    running(): boolean;
+    stop(): number;
+    resume(): number;
+    increase(ms: number): number;
+}
 
 const version: string;
 ```
@@ -725,15 +737,29 @@ const Swal: {
         SweetAlertIcon?
     ]) => Promise<SweetAlertResult>;
     mixin: (mas: SweetAlertOptions) => any;
-    close: (_result?: Partial<SweetAlertResult>) => void;
+    close: (resultado?: Partial<SweetAlertResult>) => void;
     isVisible: () => boolean;
     isLoading: () => boolean;
     showLoading: () => void;
     hideLoading: () => void;
     showValidationMessage: (mensaje: string) => void;
     resetValidationMessage: () => void;
-    update: (o: Pick<SweetAlertOptions, "title" | "titleText">) => void;
-    getPopup: () => HTMLDialogElement;
+    update: typeof actualizar;
+    getContainer: () => HTMLDialogElement;
+    getPopup: () => HTMLElement | null;
+    getTitle: () => HTMLElement | null;
+    getHtmlContainer: () => HTMLElement | null;
+    getIcon: () => HTMLElement | null;
+    getIconContent: () => HTMLElement | null;
+    getImage: () => HTMLElement | null;
+    getCloseButton: () => HTMLElement | null;
+    getActions: () => HTMLElement | null;
+    getFooter: () => HTMLElement | null;
+    getTimerProgressBar: () => HTMLElement | null;
+    getProgressSteps: () => HTMLElement | null;
+    getValidationMessage: () => HTMLElement | null;
+    getInputLabel: () => HTMLElement | null;
+    getFocusableElements: () => HTMLElement[];
     getInput: () => HTMLElement | null;
     getConfirmButton: () => HTMLButtonElement | null;
     getCancelButton: () => HTMLButtonElement | null;
@@ -741,6 +767,16 @@ const Swal: {
     clickConfirm: () => void | undefined;
     clickCancel: () => void | undefined;
     clickDeny: () => void | undefined;
+    enableButtons: () => void;
+    disableButtons: () => void;
+    enableInput: () => void;
+    disableInput: () => void;
+    getTimerLeft: () => number | undefined;
+    isTimerRunning: () => boolean | undefined;
+    stopTimer: () => number | undefined;
+    resumeTimer: () => number | undefined;
+    toggleTimer: () => number | undefined;
+    increaseTimer: (ms: number) => number | undefined;
     DismissReason: {
         readonly cancel: "cancel";
         readonly backdrop: "backdrop";
@@ -768,15 +804,29 @@ const Swal: {
         SweetAlertIcon?
     ]) => Promise<SweetAlertResult>;
     mixin: (mas: SweetAlertOptions) => any;
-    close: (_result?: Partial<SweetAlertResult>) => void;
+    close: (resultado?: Partial<SweetAlertResult>) => void;
     isVisible: () => boolean;
     isLoading: () => boolean;
     showLoading: () => void;
     hideLoading: () => void;
     showValidationMessage: (mensaje: string) => void;
     resetValidationMessage: () => void;
-    update: (o: Pick<SweetAlertOptions, "title" | "titleText">) => void;
-    getPopup: () => HTMLDialogElement;
+    update: typeof actualizar;
+    getContainer: () => HTMLDialogElement;
+    getPopup: () => HTMLElement | null;
+    getTitle: () => HTMLElement | null;
+    getHtmlContainer: () => HTMLElement | null;
+    getIcon: () => HTMLElement | null;
+    getIconContent: () => HTMLElement | null;
+    getImage: () => HTMLElement | null;
+    getCloseButton: () => HTMLElement | null;
+    getActions: () => HTMLElement | null;
+    getFooter: () => HTMLElement | null;
+    getTimerProgressBar: () => HTMLElement | null;
+    getProgressSteps: () => HTMLElement | null;
+    getValidationMessage: () => HTMLElement | null;
+    getInputLabel: () => HTMLElement | null;
+    getFocusableElements: () => HTMLElement[];
     getInput: () => HTMLElement | null;
     getConfirmButton: () => HTMLButtonElement | null;
     getCancelButton: () => HTMLButtonElement | null;
@@ -784,6 +834,16 @@ const Swal: {
     clickConfirm: () => void | undefined;
     clickCancel: () => void | undefined;
     clickDeny: () => void | undefined;
+    enableButtons: () => void;
+    disableButtons: () => void;
+    enableInput: () => void;
+    disableInput: () => void;
+    getTimerLeft: () => number | undefined;
+    isTimerRunning: () => boolean | undefined;
+    stopTimer: () => number | undefined;
+    resumeTimer: () => number | undefined;
+    toggleTimer: () => number | undefined;
+    increaseTimer: (ms: number) => number | undefined;
     DismissReason: {
         readonly cancel: "cancel";
         readonly backdrop: "backdrop";
@@ -795,7 +855,7 @@ const Swal: {
 
 type SweetAlertIcon = 'success' | 'error' | 'warning' | 'info' | 'question';
 
-type SweetAlertInput = 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'search' | 'date' | 'datetime-local' | 'time' | 'month' | 'textarea' | 'select' | 'radio' | 'checkbox';
+type SweetAlertInput = 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'search' | 'date' | 'datetime-local' | 'time' | 'month' | 'week' | 'range' | 'file' | 'textarea' | 'select' | 'radio' | 'checkbox';
 
 interface SweetAlertOptions {
     title?: string;
@@ -836,6 +896,29 @@ interface SweetAlertOptions {
     didRender?: (popup: HTMLElement) => void;
     willClose?: (popup: HTMLElement) => void;
     didClose?: () => void;
+    iconHtml?: string;
+    imageUrl?: string;
+    imageWidth?: number | string;
+    imageHeight?: number | string;
+    imageAlt?: string;
+    progressSteps?: string[];
+    currentProgressStep?: number;
+    progressStepsDistance?: number | string;
+    inputAutoTrim?: boolean;
+    inputAutoFocus?: boolean;
+    returnInputValueOnDeny?: boolean;
+    reverseButtons?: boolean;
+    allowEnterKey?: boolean;
+    theme?: string;
+    target?: string | HTMLElement;
+    draggable?: boolean;
+    template?: string | HTMLTemplateElement;
+    closeButtonHtml?: string;
+    closeButtonAriaLabel?: string;
+    confirmButtonAriaLabel?: string;
+    denyButtonAriaLabel?: string;
+    cancelButtonAriaLabel?: string;
+    didDestroy?: () => void;
     danger?: boolean;
     [otra: string]: unknown;
 }
@@ -1173,6 +1256,7 @@ interface DialogContext {
     setTitle(title: string): void;
     setButtons(buttons: ButtonSpec[]): void;
     button(id: string): HTMLButtonElement | null;
+    readonly timer?: TimerControl;
 }
 
 type DialogInput<T> = DialogOptions<T> | string;
@@ -1226,6 +1310,9 @@ interface EngineOptions<T> extends DialogOptions<T> {
     collect?: (ctx: DialogContext) => T | typeof INVALID | Promise<T | typeof INVALID>;
     onAction?: (button: ButtonSpec, ctx: DialogContext) => boolean | Promise<boolean>;
     moduleCss?: string;
+    target?: Element;
+    allowEnter?: boolean;
+    onClosing?: (ctx: DialogContext) => void;
 }
 
 const es: Labels;
@@ -1369,6 +1456,14 @@ const themes: {
     tailwind: Theme;
     material: Theme;
 };
+
+interface TimerControl {
+    left(): number;
+    running(): boolean;
+    stop(): number;
+    resume(): number;
+    increase(ms: number): number;
+}
 
 function toast(message: string | ToastOptions, opciones?: ToastOptions): string;
 namespace toast {
