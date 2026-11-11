@@ -4,6 +4,8 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ## [Sin publicar]
 
+## [0.4.0] - 2026-11-11
+
 ### Agregado
 
 - `nexus-dialogs/swal`, paridad con SweetAlert2: accesores (`getContainer`, `getTitle`, `getHtmlContainer`, `getIcon`, `getImage`, `getActions`, `getFooter`, `getCloseButton`, `getTimerProgressBar`, `getProgressSteps`, `getValidationMessage`, `getInputLabel`, `getFocusableElements`); `Swal.update()` completo (título, texto, html, icono, imagen, pasos, pie y botones) y `Swal.close(resultado)`; `inputAutoTrim`, `inputAutoFocus` y `returnInputValueOnDeny`; temporizador (`stopTimer`, `resumeTimer`, `toggleTimer`, `increaseTimer`, `getTimerLeft`, `isTimerRunning`); campos `file`, `range` y `week`; `imageUrl` (+ancho, alto, alt), `iconHtml`, `progressSteps`; `enableButtons`, `disableButtons`, `enableInput`, `disableInput`; `reverseButtons`, `allowEnterKey`, `theme`, `target`, `draggable`, `template`, `didDestroy`, `closeButtonHtml` y los `aria-label` de los botones.
