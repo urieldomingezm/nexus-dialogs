@@ -5,7 +5,6 @@
 //   <!--@api-->             api/nexus-dialogs.api.md convertido a HTML
 //   <!--@version-->         versión de package.json
 //   <!--@tam:forms-->       tamaño min+gzip de dist/forms.js (necesita `npm run build` antes); `a+b` suma varios archivos
-//   <!--@tam-swal2-->       tamaño min+gzip de SweetAlert2 (JS con el CSS incluido) leído de node_modules
 import { readFileSync, existsSync } from 'node:fs'
 import { gzipSync } from 'node:zlib'
 import { transformSync } from 'esbuild'
@@ -21,7 +20,6 @@ const MENU = [
   ['guia', 'guia.html', 'Guía'],
   ['ejemplos', 'ejemplos.html', 'Ejemplos'],
   ['api', 'api.html', 'API'],
-  ['comparar', 'comparar.html', 'vs SweetAlert2'],
 ]
 
 const escapar = (t) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
@@ -133,7 +131,6 @@ export function docsPlugin() {
           .replace(/<!--@api-->/g, () => apiHtml())
           .replace(/<!--@version-->/g, pkg.version)
           .replace(/<!--@tam:([\w.+-]+)-->/g, (_, a) => kb(a.split('+').map((x) => tamano(`dist/${x}.js`)).reduce((s, n) => (s === null || n === null ? null : s + n), 0)))
-          .replace(/<!--@tam-swal2-->/g, () => kb(tamano('node_modules/sweetalert2/dist/sweetalert2.esm.all.js')))
       },
     },
   }

@@ -327,7 +327,7 @@ Sin bundler, cambia el `<script>` de SweetAlert2 por este (define `window.Swal`)
 - Los toasts usan la cola de `nexus-dialogs/toast`; la posición es una sola para todos.
 - El contenido vive dentro del Shadow DOM: en vez de `document.getElementById('x')` usa `Swal.getHtmlContainer().querySelector('#x')`. El «popup» que reciben los ganchos y devuelve `getPopup()` es el panel, así que `popup.querySelector(…)` funciona.
 - `theme` entiende `light`, `dark` y `auto`; `target` monta el diálogo en ese elemento pero sigue siendo modal; `reverseButtons: true` pone Confirmar primero; `template` no acepta `<swal-function-param>`.
-- Falta `loaderHtml`/`getLoader`, `bindClickHandler`, `isValidParameter`, `isUpdatableParameter` y `argsToParams`. La tabla completa está en la página «Frente a SweetAlert2» de la documentación.
+- Falta `loaderHtml`/`getLoader`, `bindClickHandler`, `isValidParameter`, `isUpdatableParameter` y `argsToParams`.
 
 Cuando tengas tiempo, pasa a la API propia (`dialog.confirm`, recetas): es más corta y tiene tipos más precisos.
 

@@ -23,7 +23,6 @@ test.describe('Sitio de documentación', () => {
     ['guia.html', /Guía/],
     ['ejemplos.html', /Ejemplos/],
     ['api.html', /API/],
-    ['comparar.html', /vs SweetAlert2/],
   ]) {
     test(`${pagina}: carga, sin marcadores sin resolver ni errores`, async ({ pagina: page }) => {
       await page.goto(SITIO + pagina)
@@ -130,37 +129,9 @@ test.describe('Sitio de documentación', () => {
     await expect(r).toContainText('"clabeMala": false')
   })
 
-  test('comparar: escenarios, cifras y SweetAlert2 real lado a lado', async ({ pagina: page }) => {
-    await page.goto(SITIO + 'comparar.html')
-    await expect(page.locator('article.escenario')).toHaveCount(6)
-    for (const id of ['n-params', 'n-params-ok', 'n-params-falta', 'n-metodos', 'n-metodos-ok', 'n-metodos-falta']) {
-      expect(Number(await page.locator('#' + id).textContent())).toBeGreaterThan(0)
-    }
-    // Las cifras de tamaño salen de dist/: no deben quedar vacías
-    await expect(page.locator('td.dato').first()).not.toContainText('—')
-    const primero = page.locator('article.escenario').first()
-    await primero.getByRole('button', { name: 'SweetAlert2' }).click()
-    await expect(page.locator('.swal2-popup')).toBeVisible()
-    await page.keyboard.press('Escape')
-    await expect(page.locator('.swal2-popup')).toBeHidden()
-    await primero.getByRole('button', { name: 'Adaptador (mismo código)' }).click()
-    await expect(page.locator('dialog[data-nexus-dialog]')).toHaveCount(1)
-    await page.keyboard.press('Escape')
-    await expect(page.locator('dialog[data-nexus-dialog]')).toHaveCount(0)
-    await primero.getByRole('button', { name: 'nexus-dialogs' }).click()
-    await expect(page.locator('dialog[data-nexus-dialog]')).toHaveCount(1)
-  })
-
-  test('comparar: el formulario de SweetAlert2 no funciona con el adaptador (documentado)', async ({ pagina: page }) => {
-    await page.goto(SITIO + 'comparar.html')
-    const form = page.locator('article.escenario', { hasText: 'Formulario de varios campos' })
-    await expect(form.getByRole('button', { name: 'Adaptador (mismo código)' })).toBeDisabled()
-    await expect(form).toContainText('Shadow DOM')
-  })
-
   test('accesibilidad: las páginas no tienen violaciones de axe (WCAG 2.2 AA)', async ({ page, browserName }) => {
     test.skip(browserName === 'firefox', 'axe se omite en Firefox (ver utilidades.mjs)')
-    for (const p of ['index.html', 'ejemplos.html', 'comparar.html', 'guia.html']) {
+    for (const p of ['index.html', 'ejemplos.html', 'guia.html']) {
       await page.goto(SITIO + p)
       const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze()
       expect(

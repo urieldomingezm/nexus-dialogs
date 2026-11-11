@@ -77,7 +77,7 @@ export default defineConfig(({ mode, command }) => {
   }
   // Sitio de documentación: `npm run build:site` → site-dist/ (rutas relativas: sirve en GitHub Pages bajo cualquier ruta).
   if (command === 'build' && mode === 'site') {
-    const paginas = ['index', 'guia', 'ejemplos', 'api', 'comparar']
+    const paginas = ['index', 'guia', 'ejemplos', 'api']
     return {
       root: 'site',
       base: './',
@@ -93,6 +93,5 @@ export default defineConfig(({ mode, command }) => {
     }
   }
   // Servidor de desarrollo y pruebas: todo desde el código fuente (el plugin solo actúa en las páginas del sitio).
-  // sweetalert2 solo lo usa la página de comparación: se pre-empaqueta al arrancar para que no recargue la página a mitad de una prueba.
-  return { define, plugins: [docsPlugin()], resolve: { alias: ALIAS_TODAS }, optimizeDeps: { include: ['sweetalert2'] } }
+  return { define, plugins: [docsPlugin()], resolve: { alias: ALIAS_TODAS } }
 })
