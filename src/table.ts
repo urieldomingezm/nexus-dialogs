@@ -168,7 +168,11 @@ export function pickRows<R = Record<string, unknown>>(o: PickRowsOptions<R>): Pr
 
   const celda = (c: TableColumn<R>, r: R) => {
     const v = (r as any)[c.key]
-    return h('td', { class: c.align && c.align !== 'left' ? `a-${c.align}` : null }, c.format ? c.format(v, r) : v === null || v === undefined ? '' : String(v))
+    return h(
+      'td',
+      { class: c.align && c.align !== 'left' ? `a-${c.align}` : null },
+      c.format ? c.format(v, r) : v === null || v === undefined ? '' : String(v),
+    )
   }
 
   const actualizarCuenta = () => {
