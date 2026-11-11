@@ -36,6 +36,23 @@ interface Abierto {
 }
 const pila: Abierto[] = []
 
+/**
+ * Si algo quita un diálogo del DOM sin cerrarlo (el router destruye la vista que lo contenía, `target.remove()`), el navegador no avisa:
+ * la promesa quedaría colgada y la página sin scroll. Mientras haya diálogos abiertos, este vigía los cierra con reason 'program'.
+ */
+let vigia: MutationObserver | null = null
+function vigilar(): void {
+  if (pila.length && !vigia && typeof MutationObserver === 'function') {
+    vigia = new MutationObserver(() => {
+      for (const a of [...pila]) if (!a.ctx.dialog.isConnected) a.ctx.close('program')
+    })
+    vigia.observe(document.documentElement, { childList: true, subtree: true })
+  } else if (!pila.length && vigia) {
+    vigia.disconnect()
+    vigia = null
+  }
+}
+
 const SIZES = { sm: 400, md: 480, lg: 640, xl: 860 } as const
 
 let bloqueos = 0
@@ -255,7 +272,7 @@ export function openDialog<T = unknown>(opciones: EngineOptions<T>): Promise<Dia
     let valor: T | typeof INVALID | undefined = true as unknown as T
     if (o.collect) {
       valor = await o.collect(ctx)
-      if (valor === INVALID) return
+      if (terminado || valor === INVALID) return // si cerraron mientras validaba, ya no se confirma nada
     }
     if (o.preConfirm) {
       ctx.setLoading(true)
@@ -274,15 +291,23 @@ export function openDialog<T = unknown>(opciones: EngineOptions<T>): Promise<Dia
     terminar('confirm', valor as T, true, false)
   }
 
+  // Una acción a la vez: un doble clic (o Enter repetido) mientras algo async sigue en curso no la repite. Cancelar siempre se puede.
+  let enCurso = false
   async function pulsar(b: ButtonSpec): Promise<void> {
     if (cargando || terminado) return
-    if (o.onAction && (await o.onAction(b, ctx))) return
     const role = b.role ?? 'custom'
-    if (role === 'confirm') return confirmar()
     if (role === 'cancel') return intentarCerrar('cancel')
-    if (role === 'deny') return terminar('deny', b.value as T, false, true)
-    const r = b.onClick ? await b.onClick(ctx) : b.value
-    if (r !== false && !terminado) terminar(b.id, (r === undefined ? b.value : r) as T, false, false)
+    if (enCurso) return
+    enCurso = true
+    try {
+      if (o.onAction && (await o.onAction(b, ctx))) return
+      if (role === 'confirm') return await confirmar()
+      if (role === 'deny') return terminar('deny', b.value as T, false, true)
+      const r = b.onClick ? await b.onClick(ctx) : b.value
+      if (r !== false && !terminado) terminar(b.id, (r === undefined ? b.value : r) as T, false, false)
+    } finally {
+      enCurso = false
+    }
   }
 
   async function intentarCerrar(reason: CloseReason): Promise<void> {
@@ -398,6 +423,7 @@ export function openDialog<T = unknown>(opciones: EngineOptions<T>): Promise<Dia
     soltarAngosto()
     const i = pila.findIndex((a) => a.ctx === ctx)
     if (i >= 0) pila.splice(i, 1)
+    vigilar()
     raiz.setAttribute('data-state', 'closing')
     const fin = (): void => {
       if (dialog.open) {
@@ -430,6 +456,7 @@ export function openDialog<T = unknown>(opciones: EngineOptions<T>): Promise<Dia
   }
   bloquear(true)
   pila.push({ ctx })
+  vigilar()
   emitir('open', dialog)
   requestAnimationFrame(() => raiz.setAttribute('data-state', 'open'))
 

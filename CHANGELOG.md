@@ -8,7 +8,19 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 - **`strictHtml` es `true` por omisión.** El `html` en cadena (`html` de `dialog.*` y, en `nexus-dialogs/swal`, `html`, `iconHtml`, `closeButtonHtml` y `loaderHtml`) ya no se interpreta: se muestra como texto, salvo que configures un `sanitize`. Para volver al comportamiento anterior con contenido propio: `configure({ strictHtml: false })`. Con contenido de fuera: `configure({ sanitize: (h) => DOMPurify.sanitize(h) })`. Los `Node` y los textos no cambian. Esto es lo que más afecta a quien migra de SweetAlert2.
 
+### Corregido
+
+- **Doble confirmación.** Pulsar «Confirmar» (o un botón con `onClick` asíncrono) dos veces mientras la primera acción sigue en curso ya no ejecuta `preConfirm`/`onClick` dos veces.
+- **Cancelar durante `collect`/`preConfirm` asíncrono** ya no deja el diálogo cerrado y luego ejecuta `preConfirm`; el resultado es `cancel`.
+- **Validación asíncrona obsoleta.** En formularios, una respuesta tardía de un campo ya no pisa el mensaje de una validación más reciente.
+- **Contenedor quitado del DOM.** Si la aplicación elimina el `target` con el diálogo abierto (por ejemplo, un cambio de ruta), la promesa se resuelve con `reason: 'program'` y se libera el bloqueo de scroll.
+- `nexus-dialogs/mx`: los validadores devuelven `false` (no lanzan) con `undefined`, `null` o números.
+
 ### Agregado
+
+- Documentación: [`docs/swal-compat.md`](docs/swal-compat.md) (los 84 parámetros de SweetAlert2 clasificados como compatible, parcial, ignorado o sin soporte, con una prueba que impide que la tabla se desactualice), [`docs/contratos.md`](docs/contratos.md) (tres familias de resultado, fijadas con el compilador en `test/tipos/`) y [`docs/limitaciones.md`](docs/limitaciones.md) (limitaciones conocidas, navegadores, política de versiones y cobertura). Páginas nuevas en el sitio. La librería se presenta como biblioteca de interfaces transaccionales para aplicaciones empresariales.
+- Pruebas de uso intensivo en navegador: zoom 200 %, diálogos anidados, 40 ciclos de abrir y cerrar, formulario con varios errores y contenedor quitado. Umbrales de cobertura y de fugas más estrictos.
+- El núcleo pasa a 10.8 KB gzip como máximo (antes 10.5).
 
 - `configure({ strictHtml })`: con `true` (por omisión, ver «Cambios que rompen») el `html` en cadena que no pase por un `sanitize` se muestra como texto. `sanitize: null` quita el filtro y `sanitize` puede devolver un `TrustedHTML`.
 - `configure({ nonce })`: nonce de CSP para el `<style>` alternativo de navegadores sin hojas de estilo construibles.

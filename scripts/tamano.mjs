@@ -7,7 +7,8 @@ import { readFileSync, existsSync, appendFileSync } from 'node:fs'
 import { transformSync } from 'esbuild'
 
 const LIMITES = {
-  'nexus-dialogs': 10.5,
+  // 10.8: el núcleo incluye la guarda de reentrada y el observador de contenedores quitados (0.5.0).
+  'nexus-dialogs': 10.8,
   'nexus-dialogs.all': 41,
   forms: 23.5,
   toast: 6.8,

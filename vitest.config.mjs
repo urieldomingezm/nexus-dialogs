@@ -18,7 +18,7 @@ export default defineConfig({
       provider: 'v8',
       include: ['src/**/*.ts'],
       exclude: ['src/global.ts', 'src/swal-global.ts', 'src/styles.ts'],
-      thresholds: { lines: 88, functions: 84, branches: 72, statements: 84 },
+      thresholds: { lines: 89, functions: 85, branches: 76, statements: 86 },
       reporter: ['text-summary', 'html', 'json-summary'],
       reportsDirectory: 'coverage',
     },

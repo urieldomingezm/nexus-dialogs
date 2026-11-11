@@ -122,7 +122,7 @@ const ICONO =
 
 const pie = () => `<footer class="pie">
   <p>nexus-dialogs <strong>v${pkg.version}</strong> · Licencia MIT · Hecho por <a href="https://devmedina.is-a.dev/" rel="noopener">DevMedina</a> · rama de librerías de Nexus</p>
-  <p><a href="${REPO}" rel="noopener">Código</a> · <a href="${NPM}" rel="noopener">npm</a> · <a href="${REPO}/blob/main/CHANGELOG.md" rel="noopener">Cambios</a> · <a href="arquitectura.html">Arquitectura</a> · <a href="seguridad.html">Seguridad</a> · <a href="accesibilidad.html">Accesibilidad</a> · <a href="migracion.html">Migrar de SweetAlert2</a> · <a href="${REPO}/issues" rel="noopener">Reportar un problema</a></p>
+  <p><a href="${REPO}" rel="noopener">Código</a> · <a href="${NPM}" rel="noopener">npm</a> · <a href="${REPO}/blob/main/CHANGELOG.md" rel="noopener">Cambios</a> · <a href="arquitectura.html">Arquitectura</a> · <a href="seguridad.html">Seguridad</a> · <a href="limitaciones.html">Limitaciones</a> · <a href="contratos.html">Contratos</a> · <a href="swal-compat.html">Compatibilidad SweetAlert2</a> · <a href="accesibilidad.html">Accesibilidad</a> · <a href="migracion.html">Migrar de SweetAlert2</a> · <a href="${REPO}/issues" rel="noopener">Reportar un problema</a></p>
 </footer>`
 
 export function docsPlugin() {
@@ -135,7 +135,7 @@ export function docsPlugin() {
         return html
           .replace(/<!--@md:([\w./-]+)-->/g, (_, ruta) => mdHtml(ruta))
           .replace('</head>', `    ${ICONO}\n  </head>`)
-          .replace(/<!--@cabecera:(\w+)-->/g, (_, id) => cabecera(id))
+          .replace(/<!--@cabecera:([\w-]+)-->/g, (_, id) => cabecera(id))
           .replace(/<!--@pie-->/g, pie())
           .replace(/<!--@readme-->/g, () => readmeHtml())
           .replace(/<!--@api-->/g, () => apiHtml())

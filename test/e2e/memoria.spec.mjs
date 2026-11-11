@@ -49,3 +49,16 @@ test('300 diálogos, formularios y toasts abiertos y cerrados no dejan nodos ni 
   expect(despues.escuchas - antes.escuchas, 'escuchas de eventos').toBeLessThan(40)
   expect(despues.documents - antes.documents, 'documentos').toBeLessThanOrEqual(1)
 })
+
+test('si algo quita el contenedor del diálogo (cambio de ruta), la promesa resuelve y se libera el scroll', async ({ pagina: p }) => {
+  const r = await p.evaluate(async () => {
+    const zona = document.createElement('div')
+    document.body.appendChild(zona)
+    const abierto = window.nd.dialog.open({ title: 'En una vista', target: zona })
+    const bloqueado = document.documentElement.hasAttribute('data-nexus-lock')
+    zona.remove() // el router destruye la vista
+    const res = await Promise.race([abierto, new Promise((ok) => setTimeout(() => ok('colgado'), 1000))])
+    return { bloqueado, res: res === 'colgado' ? res : res.reason, libre: !document.documentElement.hasAttribute('data-nexus-lock') }
+  })
+  expect(r).toEqual({ bloqueado: true, res: 'program', libre: true })
+})

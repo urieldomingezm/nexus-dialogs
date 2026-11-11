@@ -185,3 +185,79 @@ test.describe('movimiento reducido y reflow', () => {
     await p.keyboard.press('Escape')
   })
 })
+
+test.describe('uso intensivo y casos difíciles', () => {
+  test('zoom al 200 % (viewport de 640 px): el formulario cabe, se puede recorrer y pasa axe', async ({ pagina: p }) => {
+    await p.setViewportSize({ width: 640, height: 360 })
+    await abrirFormulario(p)
+    const r = await p.evaluate(() => {
+      const h = document.querySelector('dialog[data-nexus-dialog] [data-nexus-host]')
+      const panel = h.shadowRoot.querySelector('.panel')
+      const caja = panel.getBoundingClientRect()
+      return { izq: caja.left, der: caja.right, doc: document.documentElement.scrollWidth, alto: caja.height }
+    })
+    expect(r.izq).toBeGreaterThanOrEqual(0)
+    expect(r.der).toBeLessThanOrEqual(640)
+    expect(r.doc).toBeLessThanOrEqual(640)
+    // Con tan poca altura, los botones tienen que seguir al alcance (el panel se desplaza por dentro).
+    await boton(p, 'confirm').scrollIntoViewIfNeeded()
+    await expect(boton(p, 'confirm')).toBeVisible()
+    expect(await axe(p)).toEqual([])
+    await p.keyboard.press('Escape')
+  })
+
+  test('diálogos anidados: axe en cada nivel, Esc cierra solo el de arriba y el foco regresa donde estaba', async ({ pagina: p }) => {
+    await p.click('#b-nested')
+    await expect(enDialogo(p, '.title')).toHaveText('Primer diálogo')
+    await boton(p, 'otro').click()
+    await expect(p.locator('dialog[data-nexus-dialog]')).toHaveCount(2)
+    await expect(enDialogo(p, '.title')).toHaveText('Segundo diálogo')
+    expect(await axe(p, 'dialog[data-nexus-dialog]:last-of-type')).toEqual([])
+    // Tab no sale del diálogo de arriba.
+    for (let i = 0; i < 6; i++) await p.keyboard.press('Tab')
+    expect(
+      await p.evaluate(
+        () => document.activeElement?.closest('dialog[data-nexus-dialog]') === document.querySelectorAll('dialog[data-nexus-dialog]')[1],
+      ),
+    ).toBe(true)
+    await p.keyboard.press('Escape')
+    await expect(p.locator('dialog[data-nexus-dialog]')).toHaveCount(1)
+    await expect(enDialogo(p, '.title')).toHaveText('Primer diálogo')
+    // El foco volvió al primer diálogo (a su botón «Abrir otro»), no a la página.
+    await expect(boton(p, 'otro')).toBeFocused()
+    await p.keyboard.press('Escape')
+    await sinDialogos(p)
+    await expect(p.locator('#b-nested')).toBeFocused()
+  })
+
+  test('abrir y cerrar 40 veces: el foco vuelve siempre al botón y no queda el bloqueo de scroll', async ({ pagina: p }) => {
+    for (let i = 0; i < 40; i++) {
+      await p.click('#b-confirm')
+      await expect(enDialogo(p, '.panel')).toBeVisible()
+      await (i % 2 ? p.keyboard.press('Escape') : boton(p, 'cancel').click())
+      await sinDialogos(p)
+      await expect(p.locator('#b-confirm')).toBeFocused()
+    }
+    expect(await p.evaluate(() => document.documentElement.hasAttribute('data-nexus-lock'))).toBe(false)
+    expect(await p.evaluate(() => document.body.style.paddingRight)).toBe('')
+  })
+
+  test('formulario con muchos errores: el resumen cuenta bien y cada enlace enfoca su campo', async ({ pagina: p }) => {
+    await p.evaluate(() => {
+      window.nd.form({
+        title: 'Muchos errores',
+        fields: ['a', 'b', 'c', 'd', 'e'].map((n) => ({ name: n, label: `Campo ${n.toUpperCase()}`, required: true })),
+      })
+    })
+    await boton(p, 'confirm').click()
+    const resumen = enDialogo(p, '.summary')
+    await expect(resumen).toBeVisible()
+    await expect(resumen).toContainText('5')
+    const enlaces = resumen.locator('a')
+    await expect(enlaces).toHaveCount(5)
+    await enlaces.nth(3).click()
+    await expect(enDialogo(p, '[name=d]')).toBeFocused()
+    expect(await axe(p)).toEqual([])
+    await p.evaluate(() => window.nd.dialog.closeAll())
+  })
+})

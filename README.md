@@ -3,7 +3,7 @@
 # nexus-dialogs
 
 **Diálogos, formularios, asistentes y toasts para sistemas de empresa.**
-Una infraestructura de interacción para aplicaciones empresariales, con lo que un sistema administrativo mexicano necesita.
+Una biblioteca de interfaces transaccionales para aplicaciones empresariales, con lo que un sistema administrativo mexicano necesita.
 Sin dependencias · TypeScript · `<dialog>` nativo + Shadow DOM · accesible (WCAG 2.2 AA) · basado en promesas
 
 Hecho por [**DevMedina**](https://devmedina.is-a.dev/) (Angel Uriel Domínguez Medina) · rama de librerías de **Nexus** · Licencia MIT
@@ -22,7 +22,7 @@ Las librerías de alertas resuelven el «¿Seguro?» y poco más. En un sistema 
 - **Seguro por omisión**: los textos siempre se insertan como texto; solo el `html` en cadena se interpreta y se puede filtrar con `configure({ sanitize })`; por omisión (`strictHtml`) se muestra como texto si no hay filtro. Funciona con CSP estricta y Trusted Types, y el CSV exportado no permite inyección de fórmulas. Detalle en [`docs/seguridad.md`](docs/seguridad.md).
 - **Por niveles**: núcleo de ~10 KB, UI avanzada, empresa e integraciones, cada uno en su subruta; lo que no importas no se descarga. Qué pesa cada parte y qué está validado todavía: [`docs/arquitectura.md`](docs/arquitectura.md).
 
-> **Estado**: probada en Chromium, Firefox y WebKit con pruebas unitarias, de casos extremos y de accesibilidad (axe). Falta validarla con lectores de pantalla y en aplicaciones en producción; ver [`docs/arquitectura.md`](docs/arquitectura.md#qué-está-validado-y-qué-no).
+> **Estado**: probada en Chromium, Firefox y WebKit con pruebas unitarias, de casos extremos y de accesibilidad (axe). Falta validarla con lectores de pantalla y en aplicaciones en producción. Limitaciones, navegadores, versionado y cobertura: [`docs/limitaciones.md`](docs/limitaciones.md). Qué devuelve cada función: [`docs/contratos.md`](docs/contratos.md). Compatibilidad con SweetAlert2 parámetro por parámetro: [`docs/swal-compat.md`](docs/swal-compat.md).
 
 ## Índice
 
