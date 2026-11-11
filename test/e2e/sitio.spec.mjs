@@ -213,6 +213,7 @@ test.describe('Sitio de documentación', () => {
     // La entrada de la portada anima la opacidad: sin movimiento el contraste se mide en el estado final.
     await page.emulateMedia({ reducedMotion: 'reduce' })
     test.skip(browserName === 'firefox', 'axe se omite en Firefox (ver utilidades.mjs)')
+    test.setTimeout(90_000) // 11 páginas × 2 temas: ronda los 30 s por defecto
     for (const p of [
       'index.html',
       'ejemplos.html',
