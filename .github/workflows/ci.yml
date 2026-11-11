@@ -111,6 +111,9 @@ jobs:
       - name: Instalar ${{ matrix.navegador }}
         run: npx playwright install --with-deps ${{ matrix.navegador }}
 
+      - name: Build (el sitio de documentación mide los tamaños reales de dist/)
+        run: npm run build
+
       - name: Pruebas de punta a punta
         run: npx playwright test --project=${{ matrix.navegador }}
 
