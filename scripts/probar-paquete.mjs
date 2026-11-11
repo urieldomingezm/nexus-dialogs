@@ -30,6 +30,7 @@ const ENTRADAS = [
   'nexus-dialogs/import',
   'nexus-dialogs/table',
   'nexus-dialogs/sepomex',
+  'nexus-dialogs/rrhh',
 ]
 
 try {
@@ -67,16 +68,17 @@ try {
 
   const usoTs = `
 import { dialog, configure, type DialogResult, type ButtonSpec, type CloseReason } from 'nexus-dialogs'
-import { form, wizard, type Field } from 'nexus-dialogs/forms'
+import { form, wizard, formFromJSON, type Field } from 'nexus-dialogs/forms'
 import { toast, type ToastOptions } from 'nexus-dialogs/toast'
 import { themes, fromBootstrap } from 'nexus-dialogs/themes'
 import { confirmDelete, bulkAction, type ApprovalResult } from 'nexus-dialogs/patterns'
-import { isCLABE } from 'nexus-dialogs/mx'
+import { isCLABE, businessDays, mexicanHolidays } from 'nexus-dialogs/mx'
 import Swal, { type SweetAlertResult } from 'nexus-dialogs/swal'
 import { useDialog, NexusDialogs } from 'nexus-dialogs/vue'
-import { importData, parseCSV, type ImportColumn } from 'nexus-dialogs/import'
+import { importData, parseCSV, exportData, type ImportColumn } from 'nexus-dialogs/import'
 import { pickRows } from 'nexus-dialogs/table'
 import { sepomexLookup } from 'nexus-dialogs/sepomex'
+import { plantillas, sinResolvers } from 'nexus-dialogs/rrhh'
 configure({ lang: 'es', theme: themes.bootstrap, scheme: 'auto' })
 const botones: ButtonSpec[] = [{ id: 'ok', role: 'confirm', text: 'Guardar', variant: 'primary' }]
 const campos: Field[] = [{ name: 'rfc', label: 'RFC', type: 'rfc', required: true }]
@@ -101,6 +103,9 @@ async function uso() {
   parseCSV('a,b')
   const pk = await pickRows<{ id: string; nombre: string }>({ rows: [{ id: '1', nombre: 'Ana' }], columns: [{ key: 'nombre', label: 'Nombre' }] })
   pk.value?.map((x) => x.nombre)
+  await formFromJSON(sinResolvers(plantillas.vacaciones))
+  await exportData([{ a: 1 }], { columns: [{ key: 'a', label: 'A' }], format: 'csv' })
+  void businessDays('2026-01-01', '2026-01-31'); void mexicanHolidays(2026)
   const cp = await sepomexLookup({ baseUrl: '/cp/' })('64000'); void cp?.neighborhoods
   await form({ title: 'Firma', fields: [{ name: 'f', label: 'Firma', type: 'signature' }, { name: 'r', label: 'Fechas', type: 'daterange', calendar: true }] })
 }

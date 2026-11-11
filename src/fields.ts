@@ -3,6 +3,7 @@
 import { language } from 'nexus-dialogs'
 import type { DatePreset, Field, Option } from './forms'
 import { css, h, svg, uid } from './core/dom'
+import { businessDays, isBusinessDay, type BusinessDaysOptions } from './mx'
 
 /** Lo que FieldSet necesita de un control propio. */
 export interface CustomControl {
@@ -91,6 +92,11 @@ const ES = {
   drawSign: 'Dibujar la firma',
   yourName: 'Tu nombre completo',
   signed: 'Firmado',
+  businessN: '{0} días hábiles',
+  business1: '1 día hábil',
+  maxBusiness: 'Máximo {0} días hábiles.',
+  holiday: 'Festivo',
+  openCal: 'Abrir el calendario',
   dialCode: 'Lada',
   phoneDigits: 'Escribe los {0} dígitos del teléfono.',
   postalCode: 'Código postal',
@@ -151,6 +157,11 @@ const EN: Textos = {
   drawSign: 'Draw signature',
   yourName: 'Your full name',
   signed: 'Signed',
+  businessN: '{0} business days',
+  business1: '1 business day',
+  maxBusiness: 'At most {0} business days.',
+  holiday: 'Holiday',
+  openCal: 'Open the calendar',
   dialCode: 'Country code',
   phoneDigits: 'Enter all {0} digits of the phone number.',
   postalCode: 'ZIP code',
@@ -185,6 +196,58 @@ type Opt = { value: string; label: string; disabled: boolean; description?: stri
 const opt = (o: Option): Opt => (typeof o === 'string' ? { value: o, label: o, disabled: false } : { disabled: false, ...o })
 /** Sin acentos ni mayúsculas, para buscar «nomina» y encontrar «Nómina». */
 const plano = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+
+// ── Flotantes (listas y calendarios desplegables) ────────────────────────────
+
+/**
+ * Muestra `el` debajo de `ancla` sin que lo recorte el cuerpo del diálogo (overflow): usa el Popover API (capa superior)
+ * cuando existe y lo coloca con coordenadas fijas; si abajo no cabe, lo abre hacia arriba. Sin Popover API, cae a position:absolute.
+ */
+function flotante(ancla: HTMLElement, el: HTMLElement) {
+  const pop = el as HTMLElement & { showPopover?: () => void; hidePopover?: () => void }
+  const conPopover = typeof pop.showPopover === 'function'
+  if (conPopover) el.setAttribute('popover', 'manual')
+  let abierto = false
+  const colocar = () => {
+    if (!conPopover || !abierto) return
+    const r = ancla.getBoundingClientRect()
+    const caja = ancla.closest('.body')?.getBoundingClientRect()
+    const alto = el.offsetHeight
+    const abajo = (caja?.bottom ?? window.innerHeight) - r.bottom
+    const arriba = r.top - (caja?.top ?? 0)
+    const haciaArriba = abajo < alto + 8 && arriba > abajo
+    css(el, {
+      position: 'fixed',
+      margin: '0',
+      left: `${r.left}px`,
+      width: `${r.width}px`,
+      top: haciaArriba ? 'auto' : `${r.bottom + 6}px`,
+      bottom: haciaArriba ? `${window.innerHeight - r.top + 6}px` : 'auto',
+      'max-height': `${Math.max(120, (haciaArriba ? arriba : abajo) - 12)}px`,
+    })
+    el.classList.toggle('up', haciaArriba)
+  }
+  const ver = (si: boolean) => {
+    abierto = si
+    el.hidden = !si
+    if (conPopover) {
+      try {
+        if (si) pop.showPopover!()
+        else pop.hidePopover!()
+      } catch {}
+      colocar()
+      ;(si ? window.addEventListener : window.removeEventListener).call(window, 'scroll', colocar, true)
+      ;(si ? window.addEventListener : window.removeEventListener).call(window, 'resize', colocar)
+      return
+    }
+    if (si) {
+      const caja = ancla.closest('.body')?.getBoundingClientRect()
+      const r = ancla.getBoundingClientRect()
+      el.classList.toggle('up', !!caja && caja.bottom - r.bottom < 200 && r.top - caja.top > caja.bottom - r.bottom)
+    }
+  }
+  return { ver, colocar }
+}
 
 // ── combobox ────────────────────────────────────────────────────────────────
 
@@ -233,6 +296,7 @@ const combobox: Fabrica = (ctx, valor) => {
   const chips = h('ul', { class: 'cb-chips', hidden: !multiple })
   const estado = h('p', { class: 'sr', role: 'status' })
   const el = h('div', { class: 'cb' }, chips, h('div', { class: 'cb-box' }, input, lista), estado)
+  const flot = flotante(input, lista)
 
   const etiqueta = (v: string) => conocidas.get(v)?.label ?? v
   const conAvatar = () => !!fl.avatars || [...conocidas.values()].some((o) => o.avatar)
@@ -274,14 +338,8 @@ const combobox: Fabrica = (ctx, valor) => {
 
   const abrir = (si: boolean) => {
     abierto = si
-    lista.hidden = !si
+    flot.ver(si)
     input.setAttribute('aria-expanded', String(si))
-    if (si) {
-      // Si abajo no cabe (el campo está al final del diálogo), la lista se abre hacia arriba.
-      const caja = input.closest('.body')?.getBoundingClientRect()
-      const r = input.getBoundingClientRect()
-      lista.classList.toggle('up', !!caja && caja.bottom - r.bottom < 200 && r.top - caja.top > caja.bottom - r.bottom)
-    }
     if (!si) {
       activo = -1
       input.removeAttribute('aria-activedescendant')
@@ -320,6 +378,7 @@ const combobox: Fabrica = (ctx, valor) => {
     if (nota) items.push(fila(nota, 'muted'))
     else if (!visibles.length) items.push(fila(t.noResults, 'muted'))
     lista.replaceChildren(...items)
+    flot.colocar()
     if (activo >= 0) {
       input.setAttribute('aria-activedescendant', `${listaId}-${activo}`)
       lista.querySelector(`#${CSS.escape(`${listaId}-${activo}`)}`)?.scrollIntoView?.({ block: 'nearest' })
@@ -772,7 +831,7 @@ interface Calendario {
   pintar(desde: string, hasta: string): void
 }
 /** Mes en cuadrícula: flechas, Re Pág/Av Pág (mes), Inicio/Fin (semana), Enter o espacio elige. Semana desde lunes. */
-function calendario(o: { min?: string; max?: string; alElegir: (iso: string) => void }): Calendario {
+function calendario(o: { min?: string; max?: string; habiles?: BusinessDaysOptions; alElegir: (iso: string) => void }): Calendario {
   const t = T()
   let mes = new Date()
   mes = new Date(mes.getFullYear(), mes.getMonth(), 1)
@@ -813,8 +872,12 @@ function calendario(o: { min?: string; max?: string; alElegir: (iso: string) => 
         f.setDate(inicio.getDate() + w * 7 + d)
         const i = iso(f)
         const [a, b] = sel
+        const noHabil = !!o.habiles && !isBusinessDay(i, o.habiles)
+        const festivo = noHabil && ![0, 6].includes(f.getDay())
         const clases = [
           f.getMonth() !== mes.getMonth() ? 'out' : '',
+          noHabil ? 'off' : '',
+          festivo ? 'hol' : '',
           i === hoy ? 'today' : '',
           i === a || i === b ? 'sel' : '',
           a && b && i > a && i < b ? 'in' : '',
@@ -833,7 +896,9 @@ function calendario(o: { min?: string; max?: string; alElegir: (iso: string) => 
                 'data-d': i,
                 tabindex: i === foco ? '0' : '-1',
                 disabled: fuera(i),
-                'aria-label': f.toLocaleDateString(loc(), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
+                'aria-label':
+                  f.toLocaleDateString(loc(), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) +
+                  (festivo ? ` (${t.holiday})` : ''),
                 'aria-current': i === hoy ? 'date' : null,
                 onclick: () => {
                   foco = i
@@ -892,6 +957,106 @@ function calendario(o: { min?: string; max?: string; alElegir: (iso: string) => 
   }
 }
 
+/** Fecha sola con calendario desplegable (type: 'date' + calendar: true). Valor ISO AAAA-MM-DD. */
+const fechaCal: Fabrica = (ctx, valor) => {
+  const t = T()
+  const fl = ctx.field
+  const min = fl.min !== undefined ? String(fl.min) : undefined
+  const max = fl.max !== undefined ? String(fl.max) : undefined
+  const habiles: BusinessDaysOptions | undefined = fl.businessDays
+    ? { holidays: fl.holidays, mexican: fl.businessDays !== 'custom' }
+    : undefined
+  const input = h('input', {
+    id: ctx.id,
+    class: 'input',
+    type: 'text',
+    inputmode: 'numeric',
+    placeholder: fl.placeholder ?? t.datePh,
+    autocomplete: 'off',
+    disabled: fl.disabled,
+    value: isoATexto(typeof valor === 'string' ? valor : ''),
+    'aria-describedby': ctx.describedBy,
+    'aria-required': ctx.required ? 'true' : null,
+  })
+  const boton = h('button', { type: 'button', class: 'cal-btn', 'aria-label': t.openCal, 'aria-expanded': 'false', disabled: fl.disabled })
+  boton.appendChild(
+    svg(
+      '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><rect x="3" y="4.5" width="14" height="12.5" rx="2"/><path d="M3 8.5h14M7 2.5v4M13 2.5v4"/></svg>',
+    ),
+  )
+  let abierto = false
+  const cal = calendario({
+    min,
+    max,
+    habiles,
+    alElegir: (d) => {
+      input.value = isoATexto(d)
+      cerrar()
+      input.focus()
+      cambio(el)
+    },
+  })
+  cal.el.classList.add('cal-pop')
+  cal.el.hidden = true
+  const flot = flotante(input, cal.el)
+  const abrir = () => {
+    if (abierto) return
+    abierto = true
+    boton.setAttribute('aria-expanded', 'true')
+    cal.pintar(textoAIso(input.value) || '', '')
+    flot.ver(true)
+    cal.el.querySelector<HTMLElement>('.cal-day[tabindex="0"]')?.focus()
+  }
+  const cerrar = () => {
+    if (!abierto) return
+    abierto = false
+    boton.setAttribute('aria-expanded', 'false')
+    flot.ver(false)
+  }
+  boton.addEventListener('click', () => (abierto ? cerrar() : abrir()))
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown' || (e.key === 'Enter' && e.altKey)) {
+      e.preventDefault()
+      abrir()
+    }
+  })
+  input.addEventListener('input', () => {
+    if (abierto) cal.pintar(textoAIso(input.value) || '', '')
+  })
+  cal.el.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      e.stopPropagation()
+      input.dispatchEvent(new Event('nexus-dialogs:escape', { bubbles: true, composed: true }))
+      cerrar()
+      boton.focus()
+    } else if (e.key === 'Tab') cerrar()
+  })
+  // Clic fuera: cerrar (el calendario puede estar en la capa superior, por eso se escucha en el documento).
+  const fuera = (e: Event) => {
+    const path = e.composedPath()
+    if (abierto && !path.includes(cal.el) && !path.includes(boton) && !path.includes(input)) cerrar()
+  }
+  document.addEventListener('pointerdown', fuera, true)
+  const el = h('div', { class: 'affix datecal' }, input, boton, cal.el)
+  return {
+    el,
+    value: () => {
+      const v = textoAIso(input.value)
+      return v === null ? input.value : v
+    },
+    focus: () => input.focus(),
+    invalid: (on) => input.setAttribute('aria-invalid', String(on)),
+    validate: () => {
+      const v = textoAIso(input.value)
+      if (v === null) return t.badDate
+      if (!v) return null
+      if ((min && v < min) || (max && v > max)) return f(t.outOfRange, min ? legible(min) : '…', max ? legible(max) : '…')
+      return null
+    },
+    summary: () => legible(textoAIso(input.value) || ''),
+  }
+}
+
 const rango: Fabrica = (ctx, valor) => {
   const t = T()
   const fl = ctx.field
@@ -900,6 +1065,10 @@ const rango: Fabrica = (ctx, valor) => {
   const min = fl.min !== undefined ? String(fl.min) : undefined
   const max = fl.max !== undefined ? String(fl.max) : undefined
   const conCal = !!fl.calendar
+  const habiles: BusinessDaysOptions | undefined = fl.businessDays
+    ? { holidays: fl.holidays, mexican: fl.businessDays !== 'custom' }
+    : undefined
+  const cuenta = habiles ? h('p', { class: 'dr-count', role: 'status' }) : null
   // Con calendario: texto dd/mm/aaaa (sin el selector del navegador). Sin él: <input type="date">.
   const comunes = conCal
     ? {
@@ -943,6 +1112,7 @@ const rango: Fabrica = (ctx, valor) => {
     ? calendario({
         min,
         max,
+        habiles,
         alElegir: (d) => {
           const a = leer(desde) || ''
           if (!siguienteEsHasta || !a) {
@@ -967,6 +1137,10 @@ const rango: Fabrica = (ctx, valor) => {
       chips[i].setAttribute('aria-pressed', String(leer(desde) === iso(a) && leer(hasta) === iso(b)))
     })
     cal?.pintar(leer(desde) || '', leer(hasta) || '')
+    if (cuenta) {
+      const n = businessDays(leer(desde) || '', leer(hasta) || '', habiles)
+      cuenta.textContent = n ? (n === 1 ? t.business1 : f(t.businessN, n)) : ''
+    }
   }
   const el = h(
     'div',
@@ -978,6 +1152,7 @@ const rango: Fabrica = (ctx, valor) => {
       h('div', { class: 'dr-col' }, h('label', { for: ctx.id }, t.from), desde),
       h('div', { class: 'dr-col' }, h('label', { for: idHasta }, t.to), hasta),
     ),
+    cuenta,
     cal?.el,
   )
   for (const i of [desde, hasta])
@@ -1006,12 +1181,17 @@ const rango: Fabrica = (ctx, valor) => {
       if (b < a) return t.order
       if ((min && a < min) || (max && b > max)) return f(t.outOfRange, min ? legible(min) : '…', max ? legible(max) : '…')
       if (fl.maxDays) {
-        const dias = Math.round((desdeIso(b).getTime() - desdeIso(a).getTime()) / 86_400_000) + 1
-        if (dias > fl.maxDays) return f(t.maxDays, fl.maxDays)
+        // Con días hábiles, el máximo cuenta solo hábiles (los festivos y fines de semana no gastan vacaciones).
+        const dias = habiles ? businessDays(a, b, habiles) : Math.round((desdeIso(b).getTime() - desdeIso(a).getTime()) / 86_400_000) + 1
+        if (dias > fl.maxDays) return f(habiles ? t.maxBusiness : t.maxDays, fl.maxDays)
       }
       return null
     },
-    summary: () => `${legible(leer(desde) as string)} – ${legible(leer(hasta) as string)}`,
+    summary: () => {
+      const [a, b] = [leer(desde) as string, leer(hasta) as string]
+      const n = habiles ? businessDays(a, b, habiles) : 0
+      return `${legible(a)} – ${legible(b)}` + (n ? ` (${n === 1 ? t.business1 : f(t.businessN, n)})` : '')
+    },
   }
 }
 
@@ -1581,6 +1761,7 @@ export const CAMPOS: Record<string, Fabrica> = {
   phone: telefono,
   address: direccion,
   signature: firma,
+  datecal: fechaCal,
 }
 
 export const FIELDS_CSS = `
@@ -1593,6 +1774,7 @@ export const FIELDS_CSS = `
 .cb-list{position:absolute;z-index:5;left:0;right:0;top:calc(100% + 6px);margin:0;padding:6px;list-style:none;max-height:260px;overflow:auto;
   background:var(--_bg);border:1px solid var(--_line);border-radius:12px;box-shadow:0 12px 24px -4px rgba(16,24,40,.12),0 4px 8px -2px rgba(16,24,40,.04)}
 .cb-list[hidden]{display:none}
+.cb-list:popover-open{inset:auto;border:1px solid var(--_line);overflow:auto;color:var(--_fg)}
 .cb-list.up{top:auto;bottom:calc(100% + 6px)}
 .cb-opt{display:flex;gap:12px;align-items:center;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:14px;color:var(--_fg)}
 .cb-opt.active{background:var(--_surface)}
@@ -1675,6 +1857,15 @@ export const FIELDS_CSS = `
 .sig.has .sig-hint{color:transparent}
 .sig-name{margin-top:10px}
 .sig-tools{display:flex;justify-content:space-between;margin-top:6px}
+.datecal{position:relative;padding-right:0;gap:0;overflow:visible}
+.datecal .input{text-align:left;flex:1;min-width:0}
+.cal-btn{flex:none;width:40px;align-self:stretch;margin-left:8px;border:0;border-left:1px solid var(--_line);border-radius:0 11px 11px 0;background:var(--_surface);color:var(--_muted);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.cal-btn:hover{color:var(--_fg)}
+.cal-btn:focus-visible{outline:none;box-shadow:inset 0 0 0 2px var(--_accent)}
+.cal-pop{position:absolute;z-index:5;left:0;top:calc(100% + 6px);margin:0;background:var(--_bg);box-shadow:0 12px 24px -4px rgba(16,24,40,.12),0 4px 8px -2px rgba(16,24,40,.04);width:max-content;min-width:300px}
+.cal-pop[hidden]{display:none}
+.cal-pop.up{top:auto;bottom:calc(100% + 6px)}
+.cal-pop:popover-open{inset:auto;width:max-content!important;min-width:300px;border:1px solid var(--_line);color:var(--_fg);overflow:visible;max-height:none!important}
 .cal{margin-top:12px;padding:12px;border:1px solid var(--_line);border-radius:12px;max-width:340px}
 .cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .cal-title{font-weight:600;font-size:14px;color:var(--_fg)}
@@ -1691,6 +1882,11 @@ export const FIELDS_CSS = `
 .cal-day{width:40px;height:40px;border:0;border-radius:50%;background:transparent;color:var(--_fg);font:500 14px var(--_font);cursor:pointer;font-variant-numeric:tabular-nums}
 .cal-day:hover{background:var(--_surface)}
 .cal-day.out{color:var(--_subtle)}
+.cal-day.off{color:var(--_subtle);background:repeating-linear-gradient(135deg,transparent 0 3px,color-mix(in srgb,var(--_fg) 5%,transparent) 3px 4px)}
+.cal-day.hol{color:var(--_warning);font-weight:600}
+.cal-day.sel.off,.cal-day.sel.hol{color:var(--_accent-fg);background:var(--_accent)}
+.dr-count{margin:8px 0 0;font-size:13px;font-weight:600;color:var(--_accent)}
+.dr-count:empty{display:none}
 .cal-day.today{box-shadow:inset 0 0 0 1px var(--_border);font-weight:700}
 .cal-day.sel{background:var(--_accent);color:var(--_accent-fg);font-weight:600}
 .cal-day:disabled{opacity:.35;cursor:not-allowed;background:transparent}
