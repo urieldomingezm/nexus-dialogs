@@ -626,7 +626,7 @@ Búsqueda sin acentos, páginas, «seleccionar todos los de esta página», clic
 
 Para llenar el domicilio por código postal sin depender de un servicio externo, sirve el catálogo oficial desde tu sitio:
 
-1. Descarga el TXT en [correosdemexico.gob.mx](https://www.correosdemexico.gob.mx/SSLServicios/ConsultaCP/CodigoPostal_Exportar.aspx) («Descarga tu código postal»).
+1. Descarga el TXT en [correosdemexico.gob.mx](https://www.correosdemexico.gob.mx) («Descarga tu código postal»).
 2. Conviértelo en archivos pequeños por prefijo: `npx nexus-dialogs-sepomex CPdescarga.txt public/cp`
 3. Úsalo:
 
