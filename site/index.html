@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>nexus-dialogs · diálogos, formularios y asistentes para sistemas de empresa</title>
+    <meta name="description" content="Diálogos, formularios, asistentes y toasts para sistemas de empresa. Sin dependencias, TypeScript, <dialog> nativo con Shadow DOM, accesible y basado en promesas." />
+  </head>
+  <body>
+    <a class="saltar" href="#inicio">Saltar al contenido</a>
+    <!--@cabecera:inicio-->
+    <main id="inicio">
+      <section class="hero">
+        <h1>Diálogos, formularios y asistentes<br />para sistemas de empresa</h1>
+        <p class="lema">Las alertas resuelven el «¿Seguro?» y poco más. nexus-dialogs trae además formularios con validación, asistentes de varios pasos, importar y exportar Excel, validadores de México y plantillas de RR. HH., sobre el <code>&lt;dialog&gt;</code> nativo.</p>
+        <div class="insignias">
+          <span class="insignia">Sin dependencias</span>
+          <span class="insignia">TypeScript</span>
+          <span class="insignia">Shadow DOM</span>
+          <span class="insignia">WCAG 2.2 AA</span>
+          <span class="insignia">Vue · React · SweetAlert2</span>
+          <span class="insignia">v<!--@version--></span>
+        </div>
+        <div class="instalar"><code>npm i nexus-dialogs</code><button type="button" class="btn chico" data-copiar="npm i nexus-dialogs">Copiar</button></div>
+        <div class="acciones">
+          <a class="btn primario" href="guia.html#1-instalación">Empezar</a>
+          <a class="btn" href="ejemplos.html">Ver ejemplos</a>
+          <a class="btn" href="comparar.html">vs SweetAlert2</a>
+        </div>
+      </section>
+
+      <section class="bloque" aria-labelledby="prueba">
+        <h2 id="prueba">Pruébalo aquí mismo</h2>
+        <p class="sub">Estos botones usan la librería de esta página, no capturas.</p>
+        <div class="acciones izq">
+          <button type="button" class="btn peligro" id="b-borrar">Borrar a Laura Méndez</button>
+          <button type="button" class="btn" id="b-form">Nuevo gasto (formulario)</button>
+          <button type="button" class="btn" id="b-vacaciones">Pedir vacaciones (calendario)</button>
+          <button type="button" class="btn" id="b-toast">Guardar (toast)</button>
+        </div>
+      </section>
+
+      <section class="bloque" aria-labelledby="porque">
+        <h2 id="porque">Por qué</h2>
+        <div class="tarjetas">
+          <div class="tarjeta"><h3>Capa superior real</h3><p>Sin guerras de <code>z-index</code> con Bootstrap, SweetAlert2 o tu menú fijo. El fondo queda inerte y el scroll bloqueado.</p></div>
+          <div class="tarjeta"><h3>Shadow DOM</h3><p>El CSS de tu página no lo rompe y el suyo no se sale. Funciona con una CSP estricta, sin <code>unsafe-inline</code>.</p></div>
+          <div class="tarjeta"><h3>Promesas que no fallan</h3><p><code>const r = await dialog.confirm(…)</code> siempre resuelve con <code>{ confirmed, denied, value, reason }</code>.</p></div>
+          <div class="tarjeta"><h3>Accesible de verdad</h3><p>Foco inicial correcto, Esc, regreso del foco, errores ligados a cada campo, toasts anunciados y movimiento reducido. Probado con axe.</p></div>
+          <div class="tarjeta"><h3>Hecho para RR. HH. y contabilidad</h3><p>RFC, CURP, NSS y CLABE con dígito verificador, importes en pesos, días hábiles y festivos, firma, domicilio por código postal.</p></div>
+          <div class="tarjeta"><h3>Migra desde SweetAlert2</h3><p>Cambia el import y tu código sigue funcionando. <a href="comparar.html">Mira qué cubre y qué no</a>.</p></div>
+        </div>
+      </section>
+
+      <section class="bloque" aria-labelledby="rapido">
+        <h2 id="rapido">En una línea</h2>
+        <p class="sub">Cada receta ya trae el texto, los botones, el foco y la accesibilidad correctos.</p>
+<pre data-lang="ts"><code>import { dialog } from 'nexus-dialogs'
+import { confirmDelete } from 'nexus-dialogs/patterns'
+import { form } from 'nexus-dialogs/forms'
+import { toast } from 'nexus-dialogs/toast'
+
+if (await confirmDelete({ what: 'a Laura Méndez' })) await api.empleados.borrar(id)
+
+const r = await form({
+  title: 'Nuevo gasto',
+  fields: [
+    { name: 'rfc', label: 'RFC del proveedor', type: 'rfc', required: true },
+    { name: 'importe', label: 'Importe', type: 'money', required: true },
+  ],
+})
+if (r.confirmed) toast.success('Enviado a aprobación')</code></pre>
+      </section>
+
+      <section class="bloque" aria-labelledby="modulos">
+        <h2 id="modulos">Módulos: instala solo lo que usas</h2>
+        <p class="sub">Tamaños medidos al construir este sitio (minificado + gzip). Cada ruta se importa por separado.</p>
+        <div class="tabla"><table>
+          <thead><tr><th>Ruta</th><th>Para qué</th><th>Tamaño</th></tr></thead>
+          <tbody>
+            <tr><td><code>nexus-dialogs</code></td><td>alert, confirm, prompt, open</td><td class="dato"><!--@tam:nexus-dialogs--></td></tr>
+            <tr><td><code>nexus-dialogs/forms</code></td><td>form, wizard, formFromJSON y los campos</td><td class="dato"><!--@tam:forms--></td></tr>
+            <tr><td><code>nexus-dialogs/toast</code></td><td>Avisos con cola</td><td class="dato"><!--@tam:toast--></td></tr>
+            <tr><td><code>nexus-dialogs/patterns</code></td><td>Recetas: borrar, sin guardar, sesión, aprobar, acciones masivas</td><td class="dato"><!--@tam:patterns--></td></tr>
+            <tr><td><code>nexus-dialogs/import</code></td><td>Importar y exportar CSV y Excel</td><td class="dato"><!--@tam:import--></td></tr>
+            <tr><td><code>nexus-dialogs/table</code></td><td>Elegir filas de una tabla</td><td class="dato"><!--@tam:table--></td></tr>
+            <tr><td><code>nexus-dialogs/mx</code></td><td>RFC, CURP, NSS, CLABE, días hábiles</td><td class="dato"><!--@tam:mx--></td></tr>
+            <tr><td><code>nexus-dialogs/rrhh</code></td><td>Plantillas de RR. HH. en JSON</td><td class="dato"><!--@tam:rrhh--></td></tr>
+            <tr><td><code>nexus-dialogs/themes</code></td><td>Bootstrap, Tailwind, Material, oscuro</td><td class="dato"><!--@tam:themes--></td></tr>
+            <tr><td><code>nexus-dialogs/vue</code> · <code>/react</code></td><td>Plugin y hooks que cierran los diálogos al desmontar</td><td class="dato"><!--@tam:vue--> · <!--@tam:react--></td></tr>
+            <tr><td><code>nexus-dialogs/swal</code></td><td>Compatible con SweetAlert2</td><td class="dato"><!--@tam:swal--></td></tr>
+          </tbody>
+        </table></div>
+        <p class="nota">Las rutas que dependen del núcleo lo comparten: no se descarga dos veces.</p>
+      </section>
+    </main>
+    <!--@pie-->
+    <script type="module" src="./src/inicio.ts"></script>
+  </body>
+</html>

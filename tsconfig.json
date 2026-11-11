@@ -12,8 +12,16 @@
     "paths": {
       "nexus-dialogs/toast": ["./src/toast.ts"],
       "nexus-dialogs/forms": ["./src/forms.ts"],
+      "nexus-dialogs/patterns": ["./src/patterns.ts"],
+      "nexus-dialogs/mx": ["./src/mx.ts"],
+      "nexus-dialogs/themes": ["./src/themes.ts"],
+      "nexus-dialogs/import": ["./src/import.ts"],
+      "nexus-dialogs/table": ["./src/table.ts"],
+      "nexus-dialogs/sepomex": ["./src/sepomex.ts"],
+      "nexus-dialogs/rrhh": ["./src/rrhh.ts"],
+      "nexus-dialogs/swal": ["./src/swal.ts"],
       "nexus-dialogs": ["./src/index.ts"]
     }
   },
-  "include": ["src"]
+  "include": ["src", "site"]
 }

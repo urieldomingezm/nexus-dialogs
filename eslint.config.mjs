@@ -5,11 +5,11 @@ import prettier from 'eslint-config-prettier'
 import globals from 'globals'
 
 export default tseslint.config(
-  { ignores: ['dist/', 'coverage/', 'playwright-report/', 'test-results/', 'node_modules/', '.base/'] },
+  { ignores: ['dist/', 'site-dist/', 'coverage/', 'playwright-report/', 'test-results/', 'node_modules/', '.base/'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    files: ['src/**/*.ts'],
+    files: ['src/**/*.ts', 'site/**/*.ts'],
     languageOptions: { globals: globals.browser },
     rules: {
       'no-empty': ['error', { allowEmptyCatch: true }],
@@ -21,7 +21,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['test/**/*.{ts,mjs}', 'scripts/**/*.mjs', 'bin/**/*.mjs', '*.config.{js,mjs}'],
+    files: ['test/**/*.{ts,mjs}', 'scripts/**/*.mjs', 'bin/**/*.mjs', 'site/**/*.mjs', '*.config.{js,mjs}'],
     languageOptions: { globals: { ...globals.node, ...globals.browser, NexusDialogs: 'readonly', nd: 'readonly' } },
     rules: {
       'no-empty': ['error', { allowEmptyCatch: true }],
