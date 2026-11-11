@@ -230,6 +230,8 @@ test.describe('Sitio de documentación', () => {
       for (const tema of ['claro', 'oscuro']) {
         await page.goto(SITIO + p)
         await page.evaluate((t) => (document.documentElement.dataset.tema = t), tema)
+        // Sin transiciones ni animaciones de ningún tipo: axe mide el contraste en el estado final (WebKit lo medía a medias).
+        await page.addStyleTag({ content: '*, *::before, *::after { animation: none !important; transition: none !important }' })
         const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze()
         expect(
           r.violations.map(
