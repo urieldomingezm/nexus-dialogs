@@ -210,7 +210,10 @@ test.describe('Sitio de documentación', () => {
   })
 
   test('accesibilidad: las páginas no tienen violaciones de axe (WCAG 2.2 AA)', async ({ page, browserName }) => {
+    // La entrada de la portada anima la opacidad: sin movimiento el contraste se mide en el estado final.
+    await page.emulateMedia({ reducedMotion: 'reduce' })
     test.skip(browserName === 'firefox', 'axe se omite en Firefox (ver utilidades.mjs)')
+    test.setTimeout(90_000) // 11 páginas × 2 temas: ronda los 30 s por defecto
     for (const p of [
       'index.html',
       'ejemplos.html',
@@ -227,6 +230,8 @@ test.describe('Sitio de documentación', () => {
       for (const tema of ['claro', 'oscuro']) {
         await page.goto(SITIO + p)
         await page.evaluate((t) => (document.documentElement.dataset.tema = t), tema)
+        // Sin transiciones ni animaciones de ningún tipo: axe mide el contraste en el estado final (WebKit lo medía a medias).
+        await page.addStyleTag({ content: '*, *::before, *::after { animation: none !important; transition: none !important }' })
         const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze()
         expect(
           r.violations.map(
