@@ -2,6 +2,16 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versiones con [SemVer](https://semver.org/lang/es/).
 
+## [Sin publicar]
+
+### Agregado
+
+- Calendario en `daterange` con `calendar: true`: rango en dos clics, fechas escritas como `dd/mm/aaaa`, teclado completo.
+- Campo `signature`: firma con el dedo, el mouse o la pluma, o escribiendo el nombre (teclado). Valor en PNG.
+- `nexus-dialogs/import`: `importData()` para CSV y Excel (.xlsx) sin dependencias, con relación automática de columnas, tipos, `unique` y revisión de errores por fila. También `readSpreadsheet`, `parseCSV`, `guessMapping`, `processRows`, `convert`, `downloadTemplate`.
+- `nexus-dialogs/table`: `pickRows()` para elegir filas de una lista grande, con búsqueda, páginas, selección conservada y carga desde tu API.
+- `nexus-dialogs/sepomex`: `sepomexLookup()` y el comando `nexus-dialogs-sepomex` para servir el catálogo oficial de códigos postales desde tu sitio.
+
 ## [0.3.0] - 2026-11-10
 
 La 0.2.0 no se publicó: sus cambios salen en esta versión.

@@ -284,6 +284,7 @@ interface Field {
     upload?: (file: File, progress: (percent: number) => void) => Promise<unknown>;
     presets?: false | DatePreset[];
     maxDays?: number;
+    calendar?: boolean;
     length?: number;
     autoSubmit?: boolean;
     fields?: Field[];
@@ -298,7 +299,7 @@ interface Field {
 
 function fieldsFromJSON(campos: JSONField[], resolvers?: Record<string, (...args: any[]) => any>): Field[];
 
-type FieldType = 'text' | 'email' | 'tel' | 'url' | 'password' | 'number' | 'date' | 'time' | 'textarea' | 'select' | 'radio' | 'segmented' | 'checkbox' | 'switch' | 'money' | 'rfc' | 'curp' | 'nss' | 'clabe' | 'postal' | 'combobox' | 'file' | 'daterange' | 'otp' | 'items' | 'phone' | 'address';
+type FieldType = 'text' | 'email' | 'tel' | 'url' | 'password' | 'number' | 'date' | 'time' | 'textarea' | 'select' | 'radio' | 'segmented' | 'checkbox' | 'switch' | 'money' | 'rfc' | 'curp' | 'nss' | 'clabe' | 'postal' | 'combobox' | 'file' | 'daterange' | 'otp' | 'items' | 'phone' | 'address' | 'signature';
 
 function form<T extends Record<string, unknown> = Record<string, unknown>>(o: FormOptions<T>): Promise<DialogResult<T>>;
 
@@ -787,6 +788,124 @@ interface SweetAlertResult<T = any> {
     value?: T;
     dismiss?: DismissReason;
 }
+```
+
+## `nexus-dialogs/import`
+
+```ts
+function convert(raw: string, tipo?: ImportType): unknown;
+
+function downloadTemplate(columnas: ImportColumn[], nombre?: string): void;
+
+function excelDate(serie: number): string;
+
+function guessMapping(encabezados: string[], columnas: ImportColumn[]): Record<string, number>;
+
+interface ImportColumn {
+    name: string;
+    label: string;
+    type?: ImportType;
+    required?: boolean;
+    unique?: boolean;
+    aliases?: string[];
+    validate?: (value: any, row: Record<string, unknown>) => string | null | undefined | void;
+}
+
+function importData<T = Record<string, unknown>>(o: ImportOptions<T>): Promise<DialogResult<ImportResult<T>>>;
+
+interface ImportError {
+    row: number;
+    column?: string;
+    message: string;
+}
+
+interface ImportOptions<T> extends Omit<DialogOptions<ImportResult<T>>, 'render' | 'buttons' | 'collect'> {
+    columns: ImportColumn[];
+    maxRows?: number;
+    template?: string | false;
+    onImport?: (rows: T[]) => unknown | Promise<unknown>;
+}
+
+interface ImportResult<T> {
+    rows: T[];
+    errors: ImportError[];
+}
+
+type ImportType = 'text' | 'number' | 'date' | 'boolean' | 'email' | 'rfc' | 'curp' | 'nss' | 'clabe' | 'postal';
+
+function parseCSV(texto: string, separador?: string): string[][];
+
+function processRows<T = Record<string, unknown>>(datos: string[][], columnas: ImportColumn[], mapa: Record<string, number>, primeraFila?: number): ImportResult<T>;
+
+function readSpreadsheet(file: File | Blob): Promise<string[][]>;
+
+function readXLSX(file: Blob): Promise<string[][]>;
+```
+
+## `nexus-dialogs/table`
+
+```ts
+function pickRows<R = Record<string, unknown>>(o: PickRowsOptions<R>): Promise<DialogResult<R[]>>;
+
+interface PickRowsOptions<R> extends Omit<DialogOptions<R[]>, 'render' | 'buttons' | 'collect'> {
+    columns: TableColumn<R>[];
+    rows?: R[];
+    load?: (q: {
+        search: string;
+        page: number;
+        pageSize: number;
+    }) => Promise<TablePage<R>> | TablePage<R>;
+    rowKey?: string | ((row: R) => string);
+    multiple?: boolean;
+    selected?: string[];
+    isDisabled?: (row: R) => boolean;
+    pageSize?: number;
+    min?: number;
+    max?: number;
+    searchPlaceholder?: string;
+}
+
+interface TableColumn<R> {
+    key: string;
+    label: string;
+    align?: 'left' | 'right' | 'center';
+    format?: (value: any, row: R) => string;
+}
+
+interface TablePage<R> {
+    rows: R[];
+    total: number;
+}
+```
+
+## `nexus-dialogs/sepomex`
+
+```ts
+function buildSepomexShards(texto: string): Record<string, SepomexShard>;
+
+function sepomexLookup(o: SepomexOptions): (cp: string) => Promise<SepomexResult | null>;
+
+interface SepomexOptions {
+    baseUrl: string;
+    fetch?: (url: string) => Promise<{
+        ok: boolean;
+        json(): Promise<unknown>;
+    }>;
+}
+
+interface SepomexResult {
+    state: string;
+    municipality: string;
+    city?: string;
+    neighborhoods: string[];
+}
+
+type SepomexShard = Record<string, [
+    string,
+    string,
+    string,
+    string[]
+]>;
 ```
 
 ## `nexus-dialogs/all`

@@ -46,6 +46,14 @@
   <button id="c-json">Formulario desde JSON</button>
 </div></section>
 
+<section><h2>RR. HH.</h2><div class="fila">
+  <button id="h-vacaciones">Vacaciones (calendario)</button>
+  <button id="h-firma">Firmar recibo</button>
+  <button id="h-importar">Importar empleados</button>
+  <button id="h-elegir">Elegir empleados</button>
+  <button id="h-sepomex">Domicilio con SEPOMEX</button>
+</div></section>
+
 <section><h2>Recetas (nexus-dialogs/patterns)</h2><div class="fila">
   <button id="r-delete">Eliminar con nombre</button>
   <button id="r-unsaved">Cambios sin guardar</button>
@@ -82,6 +90,9 @@
   import { toast } from '../../src/toast.ts'
   import { themes } from '../../src/themes.ts'
   import * as patterns from '../../src/patterns.ts'
+  import { importData } from '../../src/import.ts'
+  import { pickRows } from '../../src/table.ts'
+  import { sepomexLookup } from '../../src/sepomex.ts'
   const { dialog, configure } = nd
   window.nd = { ...nd, ...patterns, form, wizard, toast, themes }
   const { confirmDelete, unsavedChanges, sessionTimeout, approval, bulkAction, choose, loading } = patterns
@@ -192,6 +203,33 @@
   ] }))
   on('c-otp', () => form({ title: 'Confirma que eres tú', text: 'Escribe el código de 6 dígitos que enviamos a an•••@empresa.mx.', submitText: 'Verificar', size: 'sm', fields: [
     { name: 'codigo', label: 'Código de verificación', type: 'otp', required: true, validate: (v) => (v === '123456' ? null : 'El código no coincide.') },
+  ] }))
+  on('h-vacaciones', () => form({ title: 'Solicitar vacaciones', submitText: 'Enviar solicitud', fields: [
+    { name: 'dias', label: 'Fechas', type: 'daterange', calendar: true, required: true, maxDays: 20, presets: false },
+    { name: 'nota', label: 'Comentario', type: 'textarea' },
+  ] }))
+  on('h-firma', () => form({ title: 'Recibo de nómina · Quincena 21', text: 'Al firmar aceptas haber recibido $ 8,450.00 MXN.', submitText: 'Firmar recibo', fields: [
+    { name: 'firma', label: 'Tu firma', type: 'signature', required: true },
+  ] }))
+  on('h-importar', () => importData({ title: 'Importar empleados', columns: [
+    { name: 'numero', label: 'Número de empleado', required: true, unique: true, aliases: ['num', 'no'] },
+    { name: 'nombre', label: 'Nombre completo', required: true, aliases: ['empleado'] },
+    { name: 'rfc', label: 'RFC', type: 'rfc', unique: true },
+    { name: 'ingreso', label: 'Fecha de ingreso', type: 'date' },
+    { name: 'salario', label: 'Salario diario', type: 'number' },
+  ], onImport: () => new Promise((r) => setTimeout(r, 300)) }))
+  const AREAS = ['Almacén', 'Nómina', 'Ventas', 'Sistemas', 'Producción']
+  const NOMBRES = ['Ana Torres', 'Luis Herrera', 'Marta Gil', 'Óscar Núñez', 'Sofía Ruiz', 'Jorge Peña', 'Elena Ríos', 'Raúl Vega']
+  const EMPLEADOS = Array.from({ length: 480 }, (_, i) => ({ id: String(1001 + i), nombre: `${NOMBRES[i % 8]} ${i + 1}`, area: AREAS[i % 5], salario: 300 + (i % 9) * 55 }))
+  on('h-elegir', () => pickRows({ title: 'Agregar participantes al curso', rows: EMPLEADOS, max: 30, isDisabled: (e) => e.id === '1003',
+    columns: [
+      { key: 'id', label: 'Núm.' },
+      { key: 'nombre', label: 'Nombre' },
+      { key: 'area', label: 'Área' },
+      { key: 'salario', label: 'Salario diario', align: 'right', format: (v) => '$ ' + v.toFixed(2) },
+    ] }))
+  on('h-sepomex', () => form({ title: 'Domicilio', fields: [
+    { name: 'dom', label: 'Domicilio', type: 'address', required: true, lookupPostalCode: sepomexLookup({ baseUrl: './cp/' }), help: 'Catálogo de prueba: 64000, 01000 o 44100' },
   ] }))
   // Catálogo de prueba (en una app real: tu API o SEPOMEX).
   const CPS = {
