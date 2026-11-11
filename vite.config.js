@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import { fileURLToPath } from 'node:url'
 import { readFileSync } from 'node:fs'
+import { docsPlugin } from './site/plugin-docs.mjs'
 
 const { version } = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'))
 const define = { __VERSION__: JSON.stringify(version) }
@@ -8,6 +9,11 @@ const define = { __VERSION__: JSON.stringify(version) }
 const src = (f) => fileURLToPath(new URL(`./src/${f}`, import.meta.url))
 // Lo más específico primero: 'nexus-dialogs' también coincidiría con 'nexus-dialogs/toast'.
 const ALIAS = { 'nexus-dialogs/toast': src('toast.ts'), 'nexus-dialogs/forms': src('forms.ts'), 'nexus-dialogs': src('index.ts') }
+// El sitio de documentación y las páginas de prueba usan todas las rutas desde el código fuente.
+const ALIAS_TODAS = Object.fromEntries([
+  ...['patterns', 'mx', 'themes', 'import', 'table', 'sepomex', 'rrhh', 'swal'].map((m) => [`nexus-dialogs/${m}`, src(`${m}.ts`)]),
+  ...Object.entries(ALIAS),
+])
 
 // Un build por modo. `npm run build` los corre todos. forms depende del núcleo como paquete externo
 // para compartir la misma configuración (configure) y la misma pila de diálogos.
@@ -69,6 +75,24 @@ export default defineConfig(({ mode, command }) => {
       },
     }
   }
-  // Servidor de desarrollo y pruebas: todo desde el código fuente.
-  return { define, resolve: { alias: ALIAS } }
+  // Sitio de documentación: `npm run build:site` → site-dist/ (rutas relativas: sirve en GitHub Pages bajo cualquier ruta).
+  if (command === 'build' && mode === 'site') {
+    const paginas = ['index', 'guia', 'ejemplos', 'api', 'comparar']
+    return {
+      root: 'site',
+      base: './',
+      define,
+      plugins: [docsPlugin()],
+      resolve: { alias: ALIAS_TODAS },
+      build: {
+        outDir: '../site-dist',
+        emptyOutDir: true,
+        target: 'es2022',
+        rollupOptions: { input: Object.fromEntries(paginas.map((p) => [p, fileURLToPath(new URL(`./site/${p}.html`, import.meta.url))])) },
+      },
+    }
+  }
+  // Servidor de desarrollo y pruebas: todo desde el código fuente (el plugin solo actúa en las páginas del sitio).
+  // sweetalert2 solo lo usa la página de comparación: se pre-empaqueta al arrancar para que no recargue la página a mitad de una prueba.
+  return { define, plugins: [docsPlugin()], resolve: { alias: ALIAS_TODAS }, optimizeDeps: { include: ['sweetalert2'] } }
 })

@@ -867,6 +867,7 @@ La API pública completa, generada de los tipos, está en [`api/nexus-dialogs.ap
 ```bash
 npm ci
 npm run dev           # página de pruebas en test/paginas/
+npm run build:site    # sitio de documentación en site-dist/ (necesita npm run build antes)
 npm run test:unit     # Vitest + happy-dom
 npm run test:e2e      # Playwright (Chromium, Firefox, WebKit) + axe
 npm run build && npm run size && npm run api:check && npm run check:paquete

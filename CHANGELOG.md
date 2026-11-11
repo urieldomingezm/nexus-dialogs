@@ -6,6 +6,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ### Agregado
 
+- Sitio de documentación (`site/`, `npm run build:site`): guía, galería de unos 35 ejemplos que se ejecutan en la página con su código, referencia de la API y una página «Frente a SweetAlert2» con escenarios lado a lado (SweetAlert2 real, el adaptador `nexus-dialogs/swal` y la API nativa), tabla de cobertura verificada por pruebas contra el paquete `sweetalert2` y lista priorizada de lo que todavía falta. Se publica en GitHub Pages con el flujo `docs.yml`.
 - `nexus-dialogs/react`: hooks `useDialog()`, `useForm()` y `useToast()`, y `NexusDialogsProvider` para configurar. Los diálogos del componente se cierran al desmontarlo, `isOpen` vuelve a renderizar, las funciones son estables entre renders y funciona con `StrictMode`. Probado con React 18 y 19. `react` es dependencia opcional.
 - Calendario en `daterange` con `calendar: true`: rango en dos clics, fechas escritas como `dd/mm/aaaa`, teclado completo.
 - Campo `signature`: firma con el dedo, el mouse o la pluma, o escribiendo el nombre (teclado). Valor en PNG.

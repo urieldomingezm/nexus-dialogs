@@ -37,6 +37,9 @@ jobs:
       - name: Build (librería + tipos)
         run: npm run build
 
+      - name: Sitio de documentación
+        run: npm run build:site
+
       - name: Tamaño (gzip)
         run: npm run size
 
