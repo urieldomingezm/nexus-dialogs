@@ -12,54 +12,57 @@
     <main id="inicio">
       <section class="hero">
         <div class="hero-texto">
-          <p class="sobre">Librería para sistemas de empresa</p>
-          <h1>Diálogos, formularios y asistentes <span class="grad">que sí resuelven el trabajo</span></h1>
-          <p class="lema">Las alertas resuelven el «¿Seguro?» y poco más. nexus-dialogs trae además formularios con validación, asistentes de varios pasos, importar y exportar Excel, validadores de México y plantillas de RR. HH., sobre el <code>&lt;dialog&gt;</code> nativo.</p>
+          <h1>Diálogos, formularios y asistentes</h1>
+          <p class="lema">Sobre el <code>&lt;dialog&gt;</code> nativo, sin dependencias y con accesibilidad probada.</p>
           <div class="acciones izq">
             <a class="btn primario grande" href="guia.html#1-instalación">Empezar</a>
             <a class="btn grande" href="ejemplos.html">Ver ejemplos</a>
           </div>
           <div class="instalar"><code>npm i nexus-dialogs</code><button type="button" class="btn chico" data-copiar="npm i nexus-dialogs">Copiar</button></div>
-          <div class="insignias">
-            <span class="insignia">Sin dependencias</span>
-            <span class="insignia">TypeScript</span>
-            <span class="insignia">Shadow DOM</span>
-            <span class="insignia">WCAG 2.2 AA</span>
-            <span class="insignia">Vue · React · Angular · SweetAlert2</span>
-            <span class="insignia">v<!--@version--></span>
-          </div>
         </div>
         <div class="ventana" aria-label="Ejemplo de código ejecutable">
-          <div class="ventana-barra"><span class="pt"></span><span class="pt"></span><span class="pt"></span><span class="ventana-t">empleados.ts</span></div>
+          <div class="ventana-barra"><span class="ventana-t">empleados.ts</span></div>
 <pre data-lang="ts"><code>import { confirmDelete } from 'nexus-dialogs/patterns'
 
 if (await confirmDelete({ what: 'a Laura Méndez' })) {
   await api.empleados.borrar(id)
 }</code></pre>
-          <div class="ventana-pie"><span>Corre con la librería de esta página</span><button type="button" class="btn primario chico" id="b-hero">▶ Ejecutar</button></div>
+          <div class="ventana-pie"><span>Corre con la librería de esta página</span><button type="button" class="btn primario chico" id="b-hero">Ejecutar</button></div>
         </div>
       </section>
 
-      <section class="datos" aria-label="Cifras">
+      <section class="datos" aria-label="Cifras"><div class="datos-fila">
         <div><strong>0</strong><span>dependencias</span></div>
         <div><strong><!--@tam:nexus-dialogs--></strong><span>el núcleo, gzip</span></div>
         <div><strong>9</strong><span>plantillas de RR. HH.</span></div>
         <div><strong>AA</strong><span>WCAG 2.2, probado con axe</span></div>
-      </section>
+      </div></section>
+
+      <div class="insignias" aria-label="Compatibilidad">
+        <span class="insignia">Sin dependencias</span>
+        <span class="insignia">TypeScript</span>
+        <span class="insignia">Shadow DOM</span>
+        <span class="insignia">WCAG 2.2 AA</span>
+        <span class="insignia">Vue</span>
+        <span class="insignia">React</span>
+        <span class="insignia">Angular</span>
+        <span class="insignia">SweetAlert2</span>
+      </div>
 
       <section class="bloque" aria-labelledby="prueba">
         <h2 id="prueba">Pruébalo aquí mismo</h2>
         <p class="sub">Estos botones usan la librería de esta página, no capturas.</p>
-        <div class="acciones izq">
-          <button type="button" class="btn peligro" id="b-borrar">Borrar a Laura Méndez</button>
-          <button type="button" class="btn" id="b-form">Nuevo gasto (formulario)</button>
-          <button type="button" class="btn" id="b-vacaciones">Pedir vacaciones (calendario)</button>
-          <button type="button" class="btn" id="b-toast">Guardar (toast)</button>
-        </div>
+        <ul class="acciones izq">
+            <li><button type="button" class="btn peligro" id="b-borrar">Borrar a Laura Méndez</button></li>
+            <li><button type="button" class="btn" id="b-form">Nuevo gasto (formulario)</button></li>
+            <li><button type="button" class="btn" id="b-vacaciones">Pedir vacaciones (calendario)</button></li>
+            <li><button type="button" class="btn" id="b-toast">Guardar (toast)</button></li>
+          </ul>
       </section>
 
       <section class="bloque" aria-labelledby="porque">
         <h2 id="porque">Por qué</h2>
+        <p class="sub">Las alertas resuelven el «¿Seguro?» y poco más. nexus-dialogs trae además formularios con validación, asistentes de varios pasos, importar y exportar Excel, validadores de México y plantillas de RR. HH.</p>
         <div class="tarjetas">
           <div class="tarjeta"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3 8l9 5 9-5-9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5"/></svg></span><h3>Capa superior real</h3><p>Sin guerras de <code>z-index</code> con Bootstrap, otras librerías o tu menú fijo. El fondo queda inerte y el scroll bloqueado.</p></div>
           <div class="tarjeta"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 4.5 3.4 8 8 9 4.6-1 8-4.5 8-9V6l-8-3Z"/></svg></span><h3>Shadow DOM</h3><p>El CSS de tu página no lo rompe y el suyo no se sale. Funciona con una CSP estricta, sin <code>unsafe-inline</code>.</p></div>
@@ -73,7 +76,7 @@ if (await confirmDelete({ what: 'a Laura Méndez' })) {
       <section class="bloque" aria-labelledby="rapido">
         <h2 id="rapido">En una línea</h2>
         <p class="sub">Cada receta ya trae el texto, los botones, el foco y la accesibilidad correctos.</p>
-<pre data-lang="ts"><code>import { dialog } from 'nexus-dialogs'
+<div class="caja"><pre data-lang="ts"><code>import { dialog } from 'nexus-dialogs'
 import { confirmDelete } from 'nexus-dialogs/patterns'
 import { form } from 'nexus-dialogs/forms'
 import { toast } from 'nexus-dialogs/toast'
@@ -87,7 +90,7 @@ const r = await form({
     { name: 'importe', label: 'Importe', type: 'money', required: true },
   ],
 })
-if (r.confirmed) toast.success('Enviado a aprobación')</code></pre>
+if (r.confirmed) toast.success('Enviado a aprobación')</code></pre></div>
       </section>
 
       <section class="bloque" aria-labelledby="modulos">
