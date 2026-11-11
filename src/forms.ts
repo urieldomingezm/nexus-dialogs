@@ -76,6 +76,13 @@ export type FieldType =
   | 'address'
   | 'signature'
 
+/**
+ * Columnas del formulario. `1` o `2` fijas (en pantallas angostas `2` se queda en dos columnas mientras quepan
+ * campos de ~9 rem; si no, baja a una). `'auto'` reparte los campos en tantas columnas como quepan (2 en un
+ * teléfono, 3 en escritorio), y los campos largos (textarea, radio, firma…) ocupan toda la fila.
+ */
+export type FormColumns = 1 | 2 | 'auto'
+
 export type Option = string | { value: string; label: string; disabled?: boolean; description?: string; group?: string; avatar?: string }
 type Msg = string | void | null | undefined
 
@@ -102,7 +109,7 @@ export interface Field {
   validate?: (value: any, values: Record<string, unknown>) => Msg | Promise<Msg>
   autocomplete?: string
   inputmode?: string
-  /** Con columns: 2, ocupa las dos columnas. */
+  /** Con columns: 2 o 'auto', ocupa toda la fila. */
   span?: 1 | 2
   /** Igual que `visible`, pero declarativo (sirve en JSON). */
   visibleIf?: Condition
@@ -227,7 +234,7 @@ class FieldSet {
   constructor(
     fields: Field[],
     valores: Record<string, unknown>,
-    private columns: 1 | 2 = 1,
+    private columns: FormColumns = 1,
     alCambiar: () => void = () => {},
   ) {
     this.alCambiar = alCambiar
@@ -379,7 +386,9 @@ class FieldSet {
           : input
       c.wrap = h('div', { class: 'field' }, etiqueta(id), control, ayuda, msg)
     }
-    if (f.span === 2 && this.columns === 2) c.wrap.classList.add('span-2')
+    if (this.columns !== 1 && (f.span === 2 || (this.columns === 'auto' && f.span !== 1 && FILA_COMPLETA.has(tipo)))) {
+      c.wrap.classList.add('span-2')
+    }
 
     c.inicial = JSON.stringify(this.valorDe(c), serializable)
     const al = async (ev: Event) => {
@@ -684,7 +693,7 @@ export interface FormOptions<T> extends ConBorrador, Omit<DialogOptions<T>, 'req
   /** Valores iniciales (por nombre). También puedes poner `value` en cada campo. */
   values?: Partial<T>
   /** 1 o 2 columnas. En celular siempre 1. */
-  columns?: 1 | 2
+  columns?: FormColumns
   /** Validación entre campos: devuelve { campo: 'mensaje' }. Puede ser async. */
   validate?: (values: T) => Record<string, string> | void | Promise<Record<string, string> | void>
   /** Texto del botón principal. Por omisión «Guardar». */
@@ -713,7 +722,7 @@ function abrirForm<T extends Record<string, unknown>>(
     role: 'dialog',
     initialFocus: 'first-field',
     dismissible: { backdrop: false },
-    size: o.columns === 2 ? 'lg' : 'md',
+    size: o.columns === 2 || o.columns === 'auto' ? 'lg' : 'md',
     ...o,
     moduleCss: FORM_CSS + FIELDS_CSS,
     buttons: o.buttons ?? [
@@ -745,7 +754,7 @@ export interface WizardStep {
   title: string
   description?: string
   fields: Field[]
-  columns?: 1 | 2
+  columns?: FormColumns
   /** Validación del paso completo (entre campos). */
   validate?: (values: Record<string, unknown>) => Record<string, string> | void | Promise<Record<string, string> | void>
   /** Mostrar el paso solo si se cumple (con los valores de los pasos anteriores). Función o condición declarativa. */
@@ -1001,7 +1010,7 @@ export interface JSONStep extends Omit<WizardStep, 'fields' | 'validate' | 'when
 export interface FormSchema {
   title: string
   text?: string
-  columns?: 1 | 2
+  columns?: FormColumns
   size?: 'sm' | 'md' | 'lg' | 'xl'
   submitText?: string
   cancelText?: string
@@ -1088,11 +1097,17 @@ export function formFromJSON<T extends Record<string, unknown> = Record<string, 
   }
 }
 
+/** En columns: 'auto', estos tipos ocupan toda la fila (salvo `span: 1`): son largos por naturaleza. */
+const FILA_COMPLETA = new Set<FieldType>(['textarea', 'radio', 'segmented', 'items', 'address', 'signature', 'file', 'daterange', 'otp'])
+
 const FORM_CSS = `
 .grid{display:grid;gap:16px}
 .cols-2{grid-template-columns:1fr 1fr}
+.cols-auto{grid-template-columns:repeat(auto-fill,minmax(var(--nd-col-min,11rem),1fr))}
 .span-2{grid-column:1/-1}
-.narrow .cols-2{grid-template-columns:1fr}
+/* Teléfono: dos columnas mientras quepan campos de ~9 rem; si no, una. El motor pone .narrow con matchMedia. */
+.narrow .cols-2,.narrow .cols-auto{grid-template-columns:repeat(auto-fill,minmax(max(var(--nd-col-min-narrow,8.75rem),calc((100% - 12px)/2)),1fr));gap:14px 12px}
+.narrow .cols-auto{grid-template-columns:repeat(auto-fill,minmax(var(--nd-col-min-narrow,8.75rem),1fr))}
 .field[hidden],[hidden]{display:none!important}
 fieldset.field{border:0;margin:0;padding:0;min-width:0}
 legend{font-size:14px;font-weight:500;color:var(--_label);padding:0;margin-bottom:6px}

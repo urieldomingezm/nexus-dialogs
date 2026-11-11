@@ -8,6 +8,16 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 - **`strictHtml` es `true` por omisión.** El `html` en cadena (`html` de `dialog.*` y, en `nexus-dialogs/swal`, `html`, `iconHtml`, `closeButtonHtml` y `loaderHtml`) ya no se interpreta: se muestra como texto, salvo que configures un `sanitize`. Para volver al comportamiento anterior con contenido propio: `configure({ strictHtml: false })`. Con contenido de fuera: `configure({ sanitize: (h) => DOMPurify.sanitize(h) })`. Los `Node` y los textos no cambian. Esto es lo que más afecta a quien migra de SweetAlert2.
 
+### Agregado
+
+- **`columns: 'auto'`** en `form`, `wizard` y `formFromJSON`: columnas responsive (2 en un teléfono, 3 en escritorio) con los campos largos a fila completa. `columns: 2` ahora se queda en dos columnas en un teléfono mientras quepan campos de ~9 rem. Variables `--nd-col-min` y `--nd-col-min-narrow`.
+
+### Cambiado
+
+- En teléfono, los botones del pie van en una sola fila (hasta 3 columnas) en lugar de apilados.
+- Con icono, el contenido `html` ocupa todo el ancho del encabezado, sin hueco bajo el icono.
+- Límite de tamaño de `nexus-dialogs.all.js`: 41.5 KB (antes 41).
+
 ### Corregido
 
 - **Doble confirmación.** Pulsar «Confirmar» (o un botón con `onClick` asíncrono) dos veces mientras la primera acción sigue en curso ya no ejecuta `preConfirm`/`onClick` dos veces.
