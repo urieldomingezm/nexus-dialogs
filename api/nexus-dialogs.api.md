@@ -670,6 +670,49 @@ interface UseDialogReturn {
 const useToast: () => typeof toast;
 ```
 
+## `nexus-dialogs/react`
+
+```ts
+function NexusDialogsProvider({ children, ...opciones }: NexusDialogsProviderProps): ReactNode;
+
+interface NexusDialogsProviderProps extends PluginOptions {
+    children?: ReactNode;
+}
+
+interface PluginOptions extends GlobalConfig {
+    toast?: ToastConfig;
+}
+
+function useDialog(): UseDialogReturn;
+
+interface UseDialogReturn {
+    alert: typeof base.alert;
+    confirm: typeof base.confirm;
+    prompt: typeof base.prompt;
+    open: typeof base.open;
+    success: typeof base.success;
+    error: typeof base.error;
+    warning: typeof base.warning;
+    info: typeof base.info;
+    isOpen: boolean;
+    closeAll: () => void;
+    scoped: <F extends Fn>(fn: F) => F;
+}
+
+function useForm(): UseFormReturn;
+
+interface UseFormReturn {
+    form: typeof form;
+    wizard: typeof wizard;
+    formFromJSON: typeof formFromJSON;
+    isOpen: boolean;
+    closeAll: () => void;
+    scoped: <F extends Fn>(fn: F) => F;
+}
+
+const useToast: () => typeof toast;
+```
+
 ## `nexus-dialogs/swal`
 
 ```ts

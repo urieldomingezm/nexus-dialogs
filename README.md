@@ -25,6 +25,7 @@ Las librerías de alertas resuelven el «¿Seguro?» y poco más. En un sistema 
 2. [Inicio rápido](#2-inicio-rápido)
 3. [Recetas: lo de todos los días en una línea](#3-recetas-lo-de-todos-los-días-en-una-línea)
    - [Vue 3](#vue-3)
+   - [React](#react)
    - [¿Vienes de SweetAlert2?](#vienes-de-sweetalert2)
 4. [Estándar de botones](#4-estándar-de-botones)
 5. [Diálogos](#5-diálogos)
@@ -53,6 +54,7 @@ npm i nexus-dialogs
 | `nexus-dialogs/patterns` | Recetas en una línea: borrar, cambios sin guardar, sesión, aprobaciones, acciones masivas… |
 | `nexus-dialogs/mx` | Validadores de RFC, CURP, NSS, CLABE y código postal (también en Node) |
 | `nexus-dialogs/vue` | Plugin y composables para Vue 3 |
+| `nexus-dialogs/react` | Hooks y proveedor para React 18+ |
 | `nexus-dialogs/swal` | Compatible con SweetAlert2: cambia el import y listo |
 
 Sin bundler, con un `<script>`:
@@ -247,6 +249,49 @@ async function eliminar(empleado) {
 - Los toasts no se cierran al desmontar: «Guardado» sigue visible en la siguiente página.
 - En la Options API: `this.$dialog.confirm(…)` y `this.$toast.success(…)`.
 - `vue` es dependencia opcional: solo se necesita si importas `nexus-dialogs/vue`.
+
+### React
+
+```tsx
+// main.tsx (opcional: solo si quieres configurar idioma, tema o toasts)
+import { NexusDialogsProvider } from 'nexus-dialogs/react'
+
+root.render(
+  <NexusDialogsProvider scheme="auto" toast={{ position: 'top-right' }}>
+    <App />
+  </NexusDialogsProvider>,
+)
+```
+
+```tsx
+import { useDialog, useForm, useToast } from 'nexus-dialogs/react'
+import { confirmDelete } from 'nexus-dialogs/patterns'
+
+function Empleados() {
+  const dialog = useDialog()
+  const { form, scoped } = useForm()
+  const toast = useToast()
+
+  async function eliminar(empleado: Empleado) {
+    if ((await dialog.confirm({ title: `¿Eliminar a ${empleado.nombre}?`, danger: true })).confirmed) toast.success('Eliminado')
+  }
+
+  async function nuevo() {
+    const r = await form({ title: 'Nuevo empleado', fields: [{ name: 'nombre', label: 'Nombre', required: true }] })
+    if (r.confirmed) guardar(r.value)
+  }
+  // …
+}
+```
+
+- Es el mismo comportamiento que en Vue: los diálogos que abre el componente **se cierran solos al desmontarlo** (por ejemplo, si el usuario cambia de ruta con uno abierto). La promesa termina con `reason: 'program'`, así que no sigas actualizando el estado del componente si ya no existe.
+- `useDialog()` trae `alert`, `confirm`, `prompt`, `open`, `success`, `error`, `warning` e `info`. `useForm()` trae `form`, `wizard` y `formFromJSON`. Los dos incluyen `isOpen` (el componente se vuelve a renderizar al cambiar), `closeAll()` y `scoped()` para el resto: `scoped(confirmDelete)`, `scoped(pickRows)`, `scoped(importData)`.
+- Las funciones que devuelven los hooks son **estables entre renders**: puedes ponerlas en las dependencias de `useEffect` o `useCallback`. Envuelve con `scoped()` una sola vez (fuera del render o con `useMemo`).
+- Funciona con `StrictMode`. Los toasts no se cierran al desmontar: «Guardado» sigue visible en la siguiente pantalla.
+- `NexusDialogsProvider` no pinta nada propio y configura antes de que corran los efectos de los hijos. Si no necesitas configurar nada, no hace falta.
+- Con Next.js, úsalos en componentes de cliente (`'use client'`). Importar el paquete no toca el DOM, así que el render en servidor no falla.
+- Si dos componentes tienen diálogos abiertos a la vez, el que abrió primero también registra los del otro: al desmontarlo se cerrarían los dos. Es lo mismo en Vue.
+- `react` (18 o superior) es dependencia opcional: solo se necesita si importas `nexus-dialogs/react`.
 
 ### ¿Vienes de SweetAlert2?
 
@@ -801,6 +846,7 @@ configure({ labels: { cancel: 'Cerrar', submit: 'Guardar cambios' } })
 | `confirmDelete`, `unsavedChanges`, `sessionTimeout`, `watchIdle`, `approval`, `bulkAction`, `choose`, `loading`, `configurePatterns` | `nexus-dialogs/patterns` |
 | `isRFC`, `isCURP`, `isNSS`, `isCLABE`, `isPostalCode`, `normalize` | `nexus-dialogs/mx` |
 | `NexusDialogs` (plugin), `useDialog`, `useToast` | `nexus-dialogs/vue` |
+| `NexusDialogsProvider`, `useDialog`, `useForm`, `useToast` | `nexus-dialogs/react` |
 | `Swal` (por omisión), `DismissReason` | `nexus-dialogs/swal` |
 | `configure({ lang, labels, theme, scheme, defaults, sheetOnMobile })` | Global |
 
@@ -813,7 +859,7 @@ La API pública completa, generada de los tipos, está en [`api/nexus-dialogs.ap
 - Navegadores actuales: Chrome/Edge 111+, Firefox 113+, Safari 16.4+ (usa `<dialog>` modal y `color-mix()`). Probado en Chromium, Firefox y WebKit.
 - **nexus-tours**: los diálogos son `<dialog open>` de verdad, así que los tours los detectan y pueden explicar lo que hay dentro.
 - Bootstrap, Tailwind, SweetAlert2: sin choques de `z-index` ni de CSS. Para migrar de SweetAlert2, ver [¿Vienes de SweetAlert2?](#vienes-de-sweetalert2).
-- Vue 3.3+ con `nexus-dialogs/vue`.
+- Vue 3.3+ con `nexus-dialogs/vue`. React 18+ con `nexus-dialogs/react` (probado con 18 y 19).
 - Node/SSR: importar no toca el DOM; los diálogos se abren solo en el navegador.
 
 ## 14. Desarrollo

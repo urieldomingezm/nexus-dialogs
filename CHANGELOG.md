@@ -6,6 +6,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ### Agregado
 
+- `nexus-dialogs/react`: hooks `useDialog()`, `useForm()` y `useToast()`, y `NexusDialogsProvider` para configurar. Los diálogos del componente se cierran al desmontarlo, `isOpen` vuelve a renderizar, las funciones son estables entre renders y funciona con `StrictMode`. Probado con React 18 y 19. `react` es dependencia opcional.
 - Calendario en `daterange` con `calendar: true`: rango en dos clics, fechas escritas como `dd/mm/aaaa`, teclado completo.
 - Campo `signature`: firma con el dedo, el mouse o la pluma, o escribiendo el nombre (teclado). Valor en PNG.
 - `nexus-dialogs/import`: `importData()` para CSV y Excel (.xlsx) sin dependencias, con relación automática de columnas, tipos, `unique` y revisión de errores por fila. También `readSpreadsheet`, `parseCSV`, `guessMapping`, `processRows`, `convert`, `downloadTemplate`.

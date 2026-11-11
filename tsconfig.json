@@ -11,6 +11,7 @@
     "noUnusedParameters": true,
     "paths": {
       "nexus-dialogs/toast": ["./src/toast.ts"],
+      "nexus-dialogs/forms": ["./src/forms.ts"],
       "nexus-dialogs": ["./src/index.ts"]
     }
   },

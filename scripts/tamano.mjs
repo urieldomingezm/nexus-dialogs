@@ -15,6 +15,7 @@ const LIMITES = {
   patterns: 7,
   mx: 1.3,
   vue: 1,
+  react: 1.2,
   swal: 3.5,
   'nexus-dialogs.swal.iife': 14,
   import: 10.5,
