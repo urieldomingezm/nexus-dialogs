@@ -124,7 +124,7 @@ const CSS = `
 .warnbar{margin:0}
 .bar.warnbar div{background:var(--_warning)}
 .facts{margin:0 0 16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));border:1px solid var(--_line);border-radius:12px;overflow:hidden}
-.facts div{padding:12px 14px;border-right:1px solid var(--_line);border-bottom:1px solid var(--_line);margin:0 -1px -1px 0}
+.facts div{padding:12px 14px;border-inline-end:1px solid var(--_line);border-bottom:1px solid var(--_line);margin-inline-end:-1px;margin-block-end:-1px}
 .facts dt{font-size:12px;color:var(--_subtle)}
 .facts dd{margin:2px 0 0;font-weight:600;font-size:14px;color:var(--_fg)}
 .warn{margin:0 0 16px;padding:12px 14px;border-radius:12px;font-size:14px;line-height:20px;color:var(--_fg);
@@ -140,7 +140,7 @@ const CSS = `
 .chip input:checked+span{border-color:color-mix(in srgb,var(--_accent) 50%,var(--_bg));background:color-mix(in srgb,var(--_accent) 8%,var(--_bg));color:color-mix(in srgb,var(--_accent) 75%,var(--_fg));font-weight:600}
 .chip input:focus-visible+span{box-shadow:0 0 0 4px var(--_focus)}
 .warn-top{margin:12px 0 0}
-.warn-list{margin:4px 0 0;padding-left:18px}
+.warn-list{margin:4px 0 0;padding-inline-start:18px}
 .count{display:flex;justify-content:space-between;font-size:13px;margin-top:6px;color:var(--_subtle)}
 .count .msg{margin:0}
 .table{border:1px solid var(--_line);border-radius:12px;overflow:hidden;font-size:14px}

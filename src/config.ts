@@ -10,6 +10,8 @@ export interface GlobalConfig {
   theme?: Record<string, string>
   /** Esquema de color. 'auto' sigue al sistema. Por omisión 'light'. */
   scheme?: Scheme
+  /** Dirección del texto. 'auto' (por omisión) sigue a la de la página (`<html dir="rtl">`). */
+  dir?: 'ltr' | 'rtl' | 'auto'
   /** Valores por omisión para todos los diálogos. */
   defaults?: Partial<DialogOptions<any>>
   /** En pantallas angostas, los diálogos centrados se vuelven hoja inferior. Por omisión true. */
@@ -21,6 +23,7 @@ const estado: Required<Omit<GlobalConfig, 'labels'>> & { labels: Labels } = {
   labels: { ...es },
   theme: {},
   scheme: 'light',
+  dir: 'auto',
   defaults: {},
   sheetOnMobile: true,
 }
@@ -34,6 +37,7 @@ export function configure(c: GlobalConfig): void {
   if (c.labels) Object.assign(estado.labels, c.labels)
   if (c.theme) estado.theme = { ...estado.theme, ...c.theme }
   if (c.scheme) estado.scheme = c.scheme
+  if (c.dir) estado.dir = c.dir
   if (c.defaults) estado.defaults = { ...estado.defaults, ...c.defaults }
   if (c.sheetOnMobile !== undefined) estado.sheetOnMobile = c.sheetOnMobile
 }

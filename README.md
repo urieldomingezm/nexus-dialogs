@@ -833,6 +833,17 @@ Español por omisión. Inglés con `configure({ lang: 'en' })` (y `toast.configu
 configure({ labels: { cancel: 'Cerrar', submit: 'Guardar cambios' } })
 ```
 
+### Derecha a izquierda (RTL)
+
+Los diálogos y toasts siguen la dirección de tu página: con `<html dir="rtl">` todo se espeja (botón ×, orden de los botones, iconos, interruptores, calendario con las flechas invertidas, tablas y listas). También se puede fijar a mano:
+
+```ts
+configure({ dir: 'rtl' })              // 'ltr' | 'rtl' | 'auto' (por omisión: la de la página)
+await dialog.alert({ title: 'مرحبا', dir: 'rtl' }) // solo este diálogo
+```
+
+Los teléfonos se escriben siempre de izquierda a derecha. `placement: 'left' | 'right'` y las posiciones de los toasts (`top-left`…) son físicas: en una página RTL elige el lado que quieras.
+
 ## 12. Referencia rápida
 
 | | |

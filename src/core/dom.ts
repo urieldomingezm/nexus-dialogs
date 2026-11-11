@@ -61,3 +61,20 @@ export function css<T extends HTMLElement>(el: T, props: Record<string, string>)
   for (const [k, v] of Object.entries(props)) el.style.setProperty(k, v)
   return el
 }
+
+/** Dirección efectiva del texto: la pedida o, si es 'auto', la que tenga la página (`dir` en <html> o <body>, o `direction` en CSS). */
+export function direccion(pedida: 'ltr' | 'rtl' | 'auto' | undefined): 'ltr' | 'rtl' {
+  if (pedida === 'ltr' || pedida === 'rtl') return pedida
+  if (typeof document === 'undefined') return 'ltr'
+  const atributo = document.body?.closest('[dir]')?.getAttribute('dir')
+  if (atributo === 'rtl' || atributo === 'ltr') return atributo
+  return getComputedStyle(document.documentElement).direction === 'rtl' ? 'rtl' : 'ltr'
+}
+
+/** ¿El elemento (dentro del Shadow DOM de un diálogo) se lee de derecha a izquierda? */
+export function esRtl(el: Element): boolean {
+  const raiz = el.getRootNode()
+  const host = raiz instanceof ShadowRoot ? raiz.host : null
+  const d = host?.getAttribute('dir')
+  return d ? d === 'rtl' : getComputedStyle(el).direction === 'rtl'
+}

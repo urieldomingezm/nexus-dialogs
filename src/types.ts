@@ -95,6 +95,8 @@ export interface DialogOptions<T = unknown> {
   /** Variables `--nd-*` solo para este diálogo. */
   theme?: Record<string, string>
   scheme?: Scheme
+  /** Dirección del texto de este diálogo; por omisión la global (`configure({ dir })`) o la de la página. */
+  dir?: 'ltr' | 'rtl'
   onOpen?: (ctx: DialogContext) => void
   onClose?: (result: DialogResult<T>) => void
 }

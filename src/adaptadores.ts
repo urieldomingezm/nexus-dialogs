@@ -115,5 +115,5 @@ export interface PluginOptions extends GlobalConfig {
 export function aplicarConfig(opciones: PluginOptions): void {
   const { toast: t, ...global } = opciones
   configure(global)
-  toast.configure({ lang: global.lang, scheme: global.scheme, theme: global.theme, ...t })
+  toast.configure({ lang: global.lang, scheme: global.scheme, dir: global.dir, theme: global.theme, ...t })
 }

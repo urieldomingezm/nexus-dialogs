@@ -9,7 +9,7 @@
  * ```
  * Se monta dentro del diálogo modal de arriba cuando hay uno abierto (si no, quedaría inerte detrás).
  */
-import { angosto, h, uid } from './core/dom'
+import { angosto, direccion, h, uid } from './core/dom'
 import { icon } from './core/icons'
 import { adopt } from './core/sheet'
 import { en, es } from './i18n'
@@ -47,6 +47,8 @@ export interface ToastConfig {
   duration?: number
   lang?: 'es' | 'en'
   scheme?: Scheme
+  /** Dirección del texto; 'auto' sigue a la página. */
+  dir?: 'ltr' | 'rtl' | 'auto'
   theme?: Record<string, string>
 }
 
@@ -65,6 +67,7 @@ const cfg: Required<Omit<ToastConfig, 'theme'>> & { theme: Record<string, string
   duration: 4000,
   lang: 'es',
   scheme: 'light',
+  dir: 'auto',
   theme: {},
 }
 const visibles: Item[] = []
@@ -134,8 +137,9 @@ function modalArriba(): HTMLDialogElement | null {
 }
 
 function montar(): void {
+  host?.setAttribute('dir', direccion(cfg.dir))
   if (!host) {
-    host = h('div', { 'data-nexus-toast': '', 'data-scheme': cfg.scheme })
+    host = h('div', { 'data-nexus-toast': '', 'data-scheme': cfg.scheme, dir: direccion(cfg.dir) })
     const root = host.attachShadow({ mode: 'open' })
     adopt(root, CSS_TOAST)
     lista = h('ol', { class: cfg.position, 'aria-label': L().notifications })
@@ -323,6 +327,7 @@ export function configureToast(c: ToastConfig): void {
   Object.assign(cfg, { ...definidos, theme: { ...cfg.theme, ...c.theme } })
   if (host) {
     host.setAttribute('data-scheme', cfg.scheme)
+    host.setAttribute('dir', direccion(cfg.dir))
     lista.classList.remove('top-left', 'top-center', 'top-right', 'bottom-left', 'bottom-center', 'bottom-right')
     lista.classList.add(cfg.position)
     for (const [k, v] of Object.entries(cfg.theme)) host.style.setProperty(k.startsWith('--') ? k : `--nd-${k}`, v)
