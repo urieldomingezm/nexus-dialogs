@@ -1118,10 +1118,10 @@ select.input{appearance:none;background-image:linear-gradient(45deg,transparent 
 .summary{margin:0 0 18px;padding:12px 14px;border-radius:12px;border:1px solid color-mix(in srgb,var(--_error) 25%,var(--_bg));
   background:color-mix(in srgb,var(--_error) 6%,var(--_bg));font-size:14px}
 .summary:focus{outline:none;box-shadow:0 0 0 4px color-mix(in srgb,var(--_error) 15%,transparent)}
-.summary p{margin:0 0 4px;font-weight:600;color:var(--_cancel-fg)}
+.summary p{margin:0 0 4px;font-weight:600;color:color-mix(in srgb,var(--_cancel-fg) 70%,var(--_fg))}
 .summary ul{margin:0;padding-inline-start:20px}
 .summary li{margin:2px 0}
-.summary a{color:var(--_cancel-fg);display:block;min-height:24px;line-height:24px}
+.summary a{color:color-mix(in srgb,var(--_cancel-fg) 70%,var(--_fg));display:block;min-height:24px;line-height:24px}
 /* Asistente: barras de progreso con el nombre del paso debajo. */
 .stepper{list-style:none;margin:0 0 20px;padding:0;display:flex;gap:8px;font-size:13px;font-weight:500;color:var(--_subtle)}
 .stepper li{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}

@@ -16,7 +16,7 @@ Las librerías de alertas resuelven el «¿Seguro?» y poco más. En un sistema 
 - **Capa superior real**: sin guerras de `z-index` con Bootstrap, SweetAlert2 o tu menú fijo. El fondo queda inerte y el scroll bloqueado.
 - **Shadow DOM**: el CSS de tu página no lo rompe y el suyo no se sale.
 - **Promesas**: `const r = await dialog.confirm(…)`; nunca rechaza, siempre resuelve con `{ confirmed, denied, value, reason }`.
-- **Accesible**: foco inicial correcto (Cancelar en acciones destructivas), Esc, regreso del foco, errores ligados a cada campo, toasts anunciados en regiones vivas. Probado con axe en claro, oscuro y Bootstrap.
+- **Accesible**: foco inicial correcto (Cancelar en acciones destructivas), Esc, regreso del foco, errores ligados a cada campo, toasts anunciados en regiones vivas. Probado con axe en claro, oscuro, Bootstrap, Tailwind y Material, con teclado, movimiento reducido y reflow a 320 px. Qué se prueba y qué falta (lectores de pantalla): [`docs/accesibilidad.md`](docs/accesibilidad.md).
 - **Estándar de botones**: un color por intención, igual en toda la app, y sin iconos en los botones.
 
 ## Índice
@@ -371,7 +371,7 @@ Sin bundler, cambia el `<script>` de SweetAlert2 por este (define `window.Swal`)
 - `theme` entiende `light`, `dark` y `auto`; `target` monta el diálogo en ese elemento pero sigue siendo modal; `reverseButtons: true` pone Confirmar primero; `template` no acepta `<swal-function-param>`.
 - Sin equivalente: `Swal.version`, `topLayer`, `showClass`/`hideClass` y `animation` (el movimiento sale del tema y respeta «reducir movimiento»).
 
-Cuando tengas tiempo, pasa a la API propia (`dialog.confirm`, recetas): es más corta y tiene tipos más precisos.
+Cuando tengas tiempo, pasa a la API propia (`dialog.confirm`, recetas): es más corta y tiene tipos más precisos. En el sitio hay una [guía de migración](https://urieldomingezm.github.io/nexus-dialogs/migracion.html) con ejemplos de antes y después que puedes ejecutar, equivalencias y una lista de verificación.
 
 ## 4. Estándar de botones
 

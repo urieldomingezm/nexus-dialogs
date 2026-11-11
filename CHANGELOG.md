@@ -11,8 +11,13 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 - Plantillas de RR. HH.: `evaluacion`, `capacitacion` y `cambioPuesto` (ya son nueve).
 - `nexus-dialogs/swal`: `loaderHtml` y `getLoader` (indicador de «procesando» visible), `argsToParams`, `isValidParameter`, `isUpdatableParameter` y `bindClickHandler` (`data-swal-template`).
 
+- Sitio: página **Mini ERP** (alta con asistente, importar y exportar Excel, vacaciones, acción masiva y bajas con «Deshacer»), **guía de migración** desde SweetAlert2 con ejemplos que se ejecutan y página de **accesibilidad** (`docs/accesibilidad.md`).
+- Pruebas: casos extremos (diálogos apilados y encadenados, desmontar con promesas pendientes, validaciones asíncronas que fallan, CSV y Excel corruptos o enormes, SSR, navegadores sin `matchMedia` ni hojas construibles) y accesibilidad en navegador real (contraste y axe por tema, teclado, foco, movimiento reducido, reflow a 320 px y colores forzados).
+
 ### Corregido
 
+- Contraste: el botón de peligro del esquema oscuro y del tema `dark` pasa de 3.8:1 a 4.9:1, y el texto del resumen de errores del formulario cumple 4.5:1 con los temas Bootstrap y Tailwind.
+- Con navegadores sin hojas de estilo construibles, los estilos globales se agregan al `<head>` sin depender de `instanceof Document`.
 - Vue y React: cada diálogo queda a nombre del componente que lo pidió (también los anidados). Con dos componentes con diálogos abiertos a la vez, desmontar uno ya no cierra los del otro.
 
 ## [0.4.0] - 2026-11-11

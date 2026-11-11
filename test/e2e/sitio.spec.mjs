@@ -22,12 +22,15 @@ test.describe('Sitio de documentación', () => {
     ['index.html', /nexus-dialogs/],
     ['guia.html', /Guía/],
     ['ejemplos.html', /Ejemplos/],
+    ['erp.html', /Mini ERP/],
+    ['migracion.html', /Migrar/],
+    ['accesibilidad.html', /Accesibilidad/],
     ['api.html', /API/],
   ]) {
     test(`${pagina}: carga, sin marcadores sin resolver ni errores`, async ({ pagina: page }) => {
       await page.goto(SITIO + pagina)
       await expect(page).toHaveTitle(titulo)
-      await expect(page.locator('header.cabecera nav a[aria-current="page"]')).toHaveCount(pagina === 'index.html' ? 1 : 1)
+      await expect(page.locator('header.cabecera nav a[aria-current="page"]')).toHaveCount(pagina === 'accesibilidad.html' ? 0 : 1)
       expect(await page.content()).not.toContain('<!--@')
       await expect(page.locator('footer.pie')).toContainText('MIT')
     })
@@ -147,9 +150,57 @@ test.describe('Sitio de documentación', () => {
     await expect(r).toContainText('"clabeMala": false')
   })
 
+  test('mini ERP: baja con confirmación y «Deshacer», cambio de puesto y acción masiva', async ({ pagina: page }) => {
+    await page.goto(SITIO + 'erp.html')
+    const filas = page.locator('#e-filas tr')
+    await expect(filas).toHaveCount(5)
+    await filas
+      .first()
+      .getByRole('button', { name: /Dar de baja/ })
+      .click()
+    await page.locator('dialog[data-nexus-dialog]').last().locator('button[data-id="confirm"]').click()
+    await expect(filas).toHaveCount(4)
+    await page.locator('[data-nexus-toast]').getByRole('button', { name: 'Deshacer' }).click()
+    await expect(filas).toHaveCount(5)
+    await filas
+      .first()
+      .getByRole('button', { name: /Cambiar puesto/ })
+      .click()
+    const d = page.locator('dialog[data-nexus-dialog]').last()
+    await d.locator('input[name="puesto"]').fill('Gerente de turno')
+    await d.locator('button[data-id="confirm"]').click()
+    await expect(filas.first()).toContainText('Gerente de turno')
+    await page.locator('#e-masiva').click()
+    await page.locator('dialog[data-nexus-dialog]').last().locator('button[data-id="run"]').click()
+    await page.locator('dialog[data-nexus-dialog]').last().locator('button[data-id="done"]').click({ timeout: 15000 })
+    await expect(page.locator('#e-log li').first()).toContainText('Mover de área')
+  })
+
+  test('mini ERP: exportar descarga empleados.xlsx y el alta abre el asistente', async ({ pagina: page }) => {
+    await page.goto(SITIO + 'erp.html')
+    const descarga = page.waitForEvent('download')
+    await page.locator('#e-exportar').click()
+    expect((await descarga).suggestedFilename()).toBe('empleados.xlsx')
+    await page.locator('#e-alta').click()
+    await expect(page.locator('dialog[data-nexus-dialog]').last()).toContainText('Alta de empleado')
+  })
+
+  test('migración: el mismo código de SweetAlert2 corre con el adaptador y con la API propia', async ({ pagina: page }) => {
+    await page.goto(SITIO + 'migracion.html')
+    expect(await page.locator('.mig').count()).toBeGreaterThanOrEqual(7)
+    await page.locator('#m-borrar button[data-mig="swal"]').click()
+    const d = page.locator('dialog[data-nexus-dialog]').last()
+    await expect(d.locator('button[data-id="confirm"]')).toHaveClass('btn btn-danger')
+    await d.locator('button[data-id="confirm"]').click()
+    await expect(page.locator('#mig-salida')).toContainText('SweetAlert2 (adaptador) → true')
+    await page.locator('#m-borrar button[data-mig="nativa"]').click()
+    await page.locator('dialog[data-nexus-dialog]').last().locator('button[data-id="confirm"]').click()
+    await expect(page.locator('#mig-salida')).toContainText('API propia → true')
+  })
+
   test('accesibilidad: las páginas no tienen violaciones de axe (WCAG 2.2 AA)', async ({ page, browserName }) => {
     test.skip(browserName === 'firefox', 'axe se omite en Firefox (ver utilidades.mjs)')
-    for (const p of ['index.html', 'ejemplos.html', 'guia.html']) {
+    for (const p of ['index.html', 'ejemplos.html', 'guia.html', 'erp.html', 'migracion.html', 'accesibilidad.html']) {
       await page.goto(SITIO + p)
       const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze()
       expect(

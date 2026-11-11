@@ -912,3 +912,95 @@ th {
 .acciones.izq {
   justify-content: flex-start;
 }
+
+/* ── Mini ERP ───────────────────────────────────────────────────────────── */
+.erp-barra {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.erp-barra h2 {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.erp-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.erp-fila-acc {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+  white-space: nowrap;
+}
+.erp-log {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  font-size: 0.92rem;
+  color: var(--suave);
+}
+.erp-log li {
+  background: var(--panel);
+  border: 1px solid var(--linea);
+  border-radius: 10px;
+  padding: 8px 12px;
+}
+.solo-lectores {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ── Guía de migración ──────────────────────────────────────────────────── */
+.mig {
+  background: var(--panel);
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  padding: 4px 20px 18px;
+  margin: 18px 0;
+}
+.mig h3 {
+  margin-top: 16px;
+}
+.mig h4 {
+  margin: 12px 0 0;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--suave);
+}
+.mig-cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 0 16px;
+}
+.mig-cols > div {
+  min-width: 0;
+}
+.mig-salida {
+  display: block;
+  position: sticky;
+  top: 70px;
+  z-index: 5;
+  margin: 12px 0;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--linea);
+  background: var(--acento-suave);
+  color: var(--texto);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.86rem;
+  overflow-wrap: anywhere;
+}
