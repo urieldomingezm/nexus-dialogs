@@ -4,13 +4,21 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ## [Sin publicar]
 
+### Agregado
+
+- `nexus-dialogs/angular`: `provideNexusDialogs()`, `injectDialog()`, `injectForm()` e `injectToast()` para Angular 16+. `isOpen` es una señal, los diálogos se cierran al destruir el componente y no usa decoradores. Solo ESM, como `@angular/core`, que es dependencia opcional.
+- Soporte RTL (derecha a izquierda): los diálogos y toasts siguen `<html dir="rtl">` o `configure({ dir })` / `dir` por diálogo. CSS con propiedades lógicas, calendario y temporizador espejados y teclado invertido en el calendario.
+- Plantillas de RR. HH.: `evaluacion`, `capacitacion` y `cambioPuesto` (ya son nueve).
+- `nexus-dialogs/swal`: `loaderHtml` y `getLoader` (indicador de «procesando» visible), `argsToParams`, `isValidParameter`, `isUpdatableParameter` y `bindClickHandler` (`data-swal-template`).
+
+### Corregido
+
+- Vue y React: cada diálogo queda a nombre del componente que lo pidió (también los anidados). Con dos componentes con diálogos abiertos a la vez, desmontar uno ya no cierra los del otro.
+
 ## [0.4.0] - 2026-11-11
 
 ### Agregado
 
-- Soporte RTL (derecha a izquierda): los diálogos y toasts siguen `<html dir="rtl">` o `configure({ dir })` / `dir` por diálogo. CSS con propiedades lógicas, calendario y temporizador espejados y teclado invertido en el calendario.
-- Plantillas de RR. HH.: `evaluacion`, `capacitacion` y `cambioPuesto` (ya son nueve).
-- `nexus-dialogs/swal`: `loaderHtml` y `getLoader` (indicador de «procesando» visible), `argsToParams`, `isValidParameter`, `isUpdatableParameter` y `bindClickHandler` (`data-swal-template`).
 - `nexus-dialogs/swal`, paridad con SweetAlert2: accesores (`getContainer`, `getTitle`, `getHtmlContainer`, `getIcon`, `getImage`, `getActions`, `getFooter`, `getCloseButton`, `getTimerProgressBar`, `getProgressSteps`, `getValidationMessage`, `getInputLabel`, `getFocusableElements`); `Swal.update()` completo (título, texto, html, icono, imagen, pasos, pie y botones) y `Swal.close(resultado)`; `inputAutoTrim`, `inputAutoFocus` y `returnInputValueOnDeny`; temporizador (`stopTimer`, `resumeTimer`, `toggleTimer`, `increaseTimer`, `getTimerLeft`, `isTimerRunning`); campos `file`, `range` y `week`; `imageUrl` (+ancho, alto, alt), `iconHtml`, `progressSteps`; `enableButtons`, `disableButtons`, `enableInput`, `disableInput`; `reverseButtons`, `allowEnterKey`, `theme`, `target`, `draggable`, `template`, `didDestroy`, `closeButtonHtml` y los `aria-label` de los botones.
 - Motor: `ctx.timer` (`TimerControl`: `left`, `running`, `stop`, `resume`, `increase`) en `DialogContext`.
 - Sitio de documentación (`site/`, `npm run build:site`): guía, galería de unos 35 ejemplos que se ejecutan en la página con su código y referencia de la API. Se publica en GitHub Pages con el flujo `docs.yml`.
@@ -31,7 +39,6 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ### Corregido
 
-- Vue y React: cada diálogo queda a nombre del componente que lo pidió (también los anidados). Con dos componentes con diálogos abiertos a la vez, desmontar uno ya no cierra los del otro.
 
 - La lista del buscador y el calendario desplegable ya no se recortan en el borde del diálogo: se abren en la capa superior (Popover API) y hacia arriba cuando abajo no caben.
 

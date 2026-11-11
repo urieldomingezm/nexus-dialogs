@@ -87,6 +87,10 @@
         "default": "./dist/vue.cjs"
       }
     },
+    "./angular": {
+      "types": "./dist/angular.d.ts",
+      "default": "./dist/angular.js"
+    },
     "./react": {
       "import": {
         "types": "./dist/react.d.ts",
@@ -182,6 +186,9 @@
       "vue": [
         "./dist/vue.d.ts"
       ],
+      "angular": [
+        "./dist/angular.d.ts"
+      ],
       "react": [
         "./dist/react.d.ts"
       ],
@@ -234,6 +241,7 @@
     "approval",
     "vue",
     "react",
+    "angular",
     "sweetalert2"
   ],
   "engines": {
@@ -245,7 +253,7 @@
   },
   "scripts": {
     "dev": "vite --open /test/paginas/",
-    "build": "vite build --mode core && vite build --mode all && vite build --mode forms && vite build --mode toast && vite build --mode themes && vite build --mode patterns && vite build --mode mx && vite build --mode vue && vite build --mode react && vite build --mode swal && vite build --mode swalglobal && vite build --mode import && vite build --mode table && vite build --mode sepomex && vite build --mode rrhh && tsc -p tsconfig.build.json && node scripts/tipos.mjs",
+    "build": "vite build --mode core && vite build --mode all && vite build --mode forms && vite build --mode toast && vite build --mode themes && vite build --mode patterns && vite build --mode mx && vite build --mode vue && vite build --mode react && vite build --mode angular && vite build --mode swal && vite build --mode swalglobal && vite build --mode import && vite build --mode table && vite build --mode sepomex && vite build --mode rrhh && tsc -p tsconfig.build.json && node scripts/tipos.mjs",
     "build:site": "vite build --mode site",
     "test": "npm run test:unit && npm run test:e2e",
     "test:unit": "vitest run",
@@ -263,10 +271,14 @@
     "prepublishOnly": "npm run build"
   },
   "peerDependencies": {
+    "@angular/core": ">=16",
     "react": ">=18",
     "vue": ">=3.3"
   },
   "peerDependenciesMeta": {
+    "@angular/core": {
+      "optional": true
+    },
     "react": {
       "optional": true
     },
@@ -275,6 +287,7 @@
     }
   },
   "devDependencies": {
+    "@angular/core": "^22.2.5",
     "@arethetypeswrong/cli": "^0.18.5",
     "@axe-core/playwright": "^4.14.0",
     "@eslint/js": "^9.39.5",
@@ -292,6 +305,7 @@
     "prettier": "^3.9.10",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
+    "rxjs": "^7.8.2",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.72.2",
     "vite": "^7.3.8",

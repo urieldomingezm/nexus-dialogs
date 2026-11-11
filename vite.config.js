@@ -38,6 +38,14 @@ const LIBS = {
     formats: ['es', 'cjs'],
     external: ['vue', 'nexus-dialogs', 'nexus-dialogs/toast'],
   },
+  angular: {
+    entry: 'src/angular.ts',
+    name: 'NexusDialogsAngular',
+    fileName: 'angular',
+    // @angular/core solo se publica como ESM: no hay versión CJS.
+    formats: ['es'],
+    external: ['@angular/core', 'nexus-dialogs', 'nexus-dialogs/toast', 'nexus-dialogs/forms'],
+  },
   react: {
     entry: 'src/react.ts',
     name: 'NexusDialogsReact',

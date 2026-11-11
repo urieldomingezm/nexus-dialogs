@@ -26,6 +26,7 @@ Las librerías de alertas resuelven el «¿Seguro?» y poco más. En un sistema 
 3. [Recetas: lo de todos los días en una línea](#3-recetas-lo-de-todos-los-días-en-una-línea)
    - [Vue 3](#vue-3)
    - [React](#react)
+   - [Angular](#angular)
    - [¿Vienes de SweetAlert2?](#vienes-de-sweetalert2)
 4. [Estándar de botones](#4-estándar-de-botones)
 5. [Diálogos](#5-diálogos)
@@ -55,6 +56,7 @@ npm i nexus-dialogs
 | `nexus-dialogs/mx` | Validadores de RFC, CURP, NSS, CLABE y código postal (también en Node) |
 | `nexus-dialogs/vue` | Plugin y composables para Vue 3 |
 | `nexus-dialogs/react` | Hooks y proveedor para React 18+ |
+| `nexus-dialogs/angular` | Funciones de inyección y señales para Angular 16+ |
 | `nexus-dialogs/swal` | Compatible con SweetAlert2: cambia el import y listo |
 
 Sin bundler, con un `<script>`:
@@ -292,6 +294,46 @@ function Empleados() {
 - Con Next.js, úsalos en componentes de cliente (`'use client'`). Importar el paquete no toca el DOM, así que el render en servidor no falla.
 - Cada diálogo queda a nombre del componente que lo pidió (también los anidados), aunque dos componentes tengan diálogos abiertos a la vez: al desmontar uno se cierran solo los suyos. Un diálogo abierto desde fuera de los hooks no es de nadie.
 - `react` (18 o superior) es dependencia opcional: solo se necesita si importas `nexus-dialogs/react`.
+
+### Angular
+
+Funciones de inyección y señales, sin decoradores (Angular 16 o superior; con o sin zone.js):
+
+```ts
+// app.config.ts (opcional: solo para idioma, tema, esquema, dirección o toasts)
+import { provideNexusDialogs } from 'nexus-dialogs/angular'
+
+export const appConfig: ApplicationConfig = {
+  providers: [provideNexusDialogs({ scheme: 'auto', toast: { position: 'top-right' } })],
+}
+```
+
+```ts
+// En un componente o servicio
+import { Component } from '@angular/core'
+import { injectDialog, injectForm, injectToast } from 'nexus-dialogs/angular'
+import { confirmDelete } from 'nexus-dialogs/patterns'
+
+@Component({
+  selector: 'app-empleados',
+  template: `<button (click)="borrar()" [disabled]="dialog.isOpen()">Borrar</button>`,
+})
+export class Empleados {
+  dialog = injectDialog()
+  forms = injectForm()
+  toast = injectToast()
+  private confirmarBorrado = this.dialog.scoped(confirmDelete)
+
+  async borrar() {
+    if (await this.confirmarBorrado({ what: 'a Laura Méndez' })) this.toast.success('Eliminada')
+  }
+}
+```
+
+- `injectDialog()` trae `alert`, `confirm`, `prompt`, `open`, `success`, `error`, `warning` e `info`; `injectForm()` trae `form`, `wizard` y `formFromJSON`. Los dos incluyen `isOpen` (una **señal**), `closeAll()` y `scoped()` para recetas y otras funciones que abren diálogos.
+- Llámalas en un contexto de inyección (campo de la clase, constructor o `inject`). Los diálogos que abre el componente se cierran solos cuando Angular lo destruye, por ejemplo al cambiar de ruta; los toasts no.
+- Cada diálogo queda a nombre del componente que lo pidió, aunque haya varios abiertos a la vez.
+- `@angular/core` (16 o superior) es dependencia opcional y este módulo solo existe como ESM, igual que Angular. Importar el paquete no toca el DOM, así que SSR no falla.
 
 ### ¿Vienes de SweetAlert2?
 
@@ -861,8 +903,9 @@ Los teléfonos se escriben siempre de izquierda a derecha. `placement: 'left' | 
 | `isRFC`, `isCURP`, `isNSS`, `isCLABE`, `isPostalCode`, `normalize` | `nexus-dialogs/mx` |
 | `NexusDialogs` (plugin), `useDialog`, `useToast` | `nexus-dialogs/vue` |
 | `NexusDialogsProvider`, `useDialog`, `useForm`, `useToast` | `nexus-dialogs/react` |
+| `provideNexusDialogs`, `injectDialog`, `injectForm`, `injectToast` | `nexus-dialogs/angular` |
 | `Swal` (por omisión), `DismissReason` | `nexus-dialogs/swal` |
-| `configure({ lang, labels, theme, scheme, defaults, sheetOnMobile })` | Global |
+| `configure({ lang, labels, theme, scheme, dir, defaults, sheetOnMobile })` | Global |
 
 Eventos en `document`: `nexus-dialogs:open` y `nexus-dialogs:close` (con `detail.dialog`).
 
@@ -873,7 +916,7 @@ La API pública completa, generada de los tipos, está en [`api/nexus-dialogs.ap
 - Navegadores actuales: Chrome/Edge 111+, Firefox 113+, Safari 16.4+ (usa `<dialog>` modal y `color-mix()`). Probado en Chromium, Firefox y WebKit.
 - **nexus-tours**: los diálogos son `<dialog open>` de verdad, así que los tours los detectan y pueden explicar lo que hay dentro.
 - Bootstrap, Tailwind, SweetAlert2: sin choques de `z-index` ni de CSS. Para migrar de SweetAlert2, ver [¿Vienes de SweetAlert2?](#vienes-de-sweetalert2).
-- Vue 3.3+ con `nexus-dialogs/vue`. React 18+ con `nexus-dialogs/react` (probado con 18 y 19).
+- Vue 3.3+ con `nexus-dialogs/vue`. React 18+ con `nexus-dialogs/react` (probado con 18 y 19). Angular 16+ con `nexus-dialogs/angular`.
 - Node/SSR: importar no toca el DOM; los diálogos se abren solo en el navegador.
 
 ## 14. Desarrollo

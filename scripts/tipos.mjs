@@ -24,6 +24,7 @@ const conExtension = (texto, ext) =>
 for (const f of archivos) {
   const original = readFileSync(f, 'utf8')
   writeFileSync(f, conExtension(original, '.js'))
-  writeFileSync(f.replace(/\.d\.ts$/, '.d.cts'), conExtension(original, '.cjs'))
+  // angular es solo ESM (@angular/core no tiene versión CommonJS): no lleva .d.cts.
+  if (!f.endsWith('angular.d.ts')) writeFileSync(f.replace(/\.d\.ts$/, '.d.cts'), conExtension(original, '.cjs'))
 }
-console.log(`✓ tipos: ${archivos.length} .d.ts con extensiones y sus copias .d.cts`)
+console.log(`✓ tipos: ${archivos.length} .d.ts con extensiones y sus copias .d.cts (angular, solo ESM, sin copia)`)
