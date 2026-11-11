@@ -317,7 +317,7 @@ Sin bundler, cambia el `<script>` de SweetAlert2 por este (define `window.Swal`)
 <script src="https://cdn.jsdelivr.net/npm/nexus-dialogs/dist/nexus-dialogs.swal.iife.js"></script>
 ```
 
-**Qué cubre**: `Swal.fire(título, html, icono)` y `Swal.fire({…})`, `Swal.mixin`, toasts (`toast: true`, `position`, `timer`), botones confirm/deny/cancel, `input` (text, email, password, number, tel, url, date, textarea, select, radio, checkbox) con `inputOptions`, `inputValidator` y `validationMessage`, `preConfirm`, `preDeny`, `timer`, `allowOutsideClick`, `allowEscapeKey`, `showCloseButton`, `didOpen`/`didClose`, el resultado `{ isConfirmed, isDenied, isDismissed, value, dismiss }`, `Swal.DismissReason` y los métodos `close`, `isVisible`, `showLoading`, `hideLoading`, `isLoading`, `showValidationMessage`, `resetValidationMessage`, `update`, `getInput`, `getConfirmButton`, `clickConfirm` y similares.
+**Qué cubre**: `Swal.fire(título, html, icono)` y `Swal.fire({…})`, `Swal.mixin`, toasts (`toast: true`, `position`, `timer`), botones confirm/deny/cancel, `input` (text, email, password, number, tel, url, date, week, range, file, textarea, select, radio, checkbox) con `inputOptions`, `inputValidator`, `validationMessage`, `inputAutoTrim`, `inputAutoFocus` y `returnInputValueOnDeny`, `preConfirm`, `preDeny`, `timer` (con `stopTimer`, `resumeTimer`, `toggleTimer`, `increaseTimer`, `getTimerLeft`), `imageUrl`, `iconHtml`, `progressSteps`, `reverseButtons`, `allowEnterKey`, `draggable`, `template`, `theme` (light, dark y auto), `target`, los `aria-label` de los botones, los ganchos `willOpen`, `didOpen`, `willClose`, `didClose` y `didDestroy`, el resultado `{ isConfirmed, isDenied, isDismissed, value, dismiss }`, `Swal.DismissReason` y los métodos `close(resultado)`, `update` (título, texto, html, icono, imagen, pasos, pie y botones), `isVisible`, `showLoading`, `hideLoading`, `isLoading`, `showValidationMessage`, `resetValidationMessage`, `enableButtons`, `disableButtons`, `enableInput`, `disableInput`, los accesores (`getPopup`, `getContainer`, `getTitle`, `getHtmlContainer`, `getIcon`, `getImage`, `getInput`, `getActions`, `getFooter`, `getCloseButton`, `getTimerProgressBar`, `getProgressSteps`, `getFocusableElements`…) y `clickConfirm` y similares.
 
 **Qué cambia a propósito**:
 - Se aplica el [estándar de botones](#4-estándar-de-botones). Una confirmación cuyo botón dice «eliminar», «borrar» o «delete» pasa sola a **peligro**: botón rojo y el foco en Cancelar. Fuérzalo con `danger: true`.
@@ -325,6 +325,9 @@ Sin bundler, cambia el `<script>` de SweetAlert2 por este (define `window.Swal`)
 - El orden de los botones es siempre Cancelar, Denegar, Confirmar (la acción principal a la derecha).
 - Los textos por omisión salen en el idioma configurado («Aceptar», «Cancelar»).
 - Los toasts usan la cola de `nexus-dialogs/toast`; la posición es una sola para todos.
+- El contenido vive dentro del Shadow DOM: en vez de `document.getElementById('x')` usa `Swal.getHtmlContainer().querySelector('#x')`. El «popup» que reciben los ganchos y devuelve `getPopup()` es el panel, así que `popup.querySelector(…)` funciona.
+- `theme` entiende `light`, `dark` y `auto`; `target` monta el diálogo en ese elemento pero sigue siendo modal; `reverseButtons: true` pone Confirmar primero; `template` no acepta `<swal-function-param>`.
+- Falta `loaderHtml`/`getLoader`, `bindClickHandler`, `isValidParameter`, `isUpdatableParameter` y `argsToParams`. La tabla completa está en la página «Frente a SweetAlert2» de la documentación.
 
 Cuando tengas tiempo, pasa a la API propia (`dialog.confirm`, recetas): es más corta y tiene tipos más precisos.
 

@@ -33,6 +33,61 @@ test.describe('SweetAlert2 (nexus-dialogs/swal)', () => {
     expect(await resultado(p)).toMatchObject({ isConfirmed: true, value: 'urieldomingezm' })
   })
 
+  test('pasos, imagen, update y close(resultado) en un navegador real, accesibles', async ({ page: p }) => {
+    await p.evaluate(() => {
+      window.ultimo = null
+      window.Swal.fire({
+        title: 'Paso 1',
+        html: '<span id="dentro">hola</span>',
+        icon: 'info',
+        imageUrl: 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2210%22 height=%2210%22/%3E',
+        imageAlt: 'logo',
+        progressSteps: ['1', '2', '3'],
+        currentProgressStep: 0,
+      }).then((r) => (window.ultimo = r))
+    })
+    await expect(enDialogo(p, '.swal-step')).toHaveCount(3)
+    await expect(enDialogo(p, '.swal-step[aria-current=step]')).toHaveText('1')
+    expect(await axe(p)).toEqual([])
+    expect(await p.evaluate(() => window.Swal.getHtmlContainer().querySelector('#dentro').textContent)).toBe('hola')
+    await p.evaluate(() => window.Swal.update({ title: 'Paso 2', currentProgressStep: 1, showCancelButton: true }))
+    await expect(enDialogo(p, '.title')).toHaveText('Paso 2')
+    await expect(enDialogo(p, '.swal-step[aria-current=step]')).toHaveText('2')
+    await expect(boton(p, 'cancel')).toBeVisible()
+    await p.evaluate(() => window.Swal.close({ isConfirmed: true, value: 'cerrado desde fuera' }))
+    expect(await resultado(p)).toMatchObject({ isConfirmed: true, value: 'cerrado desde fuera' })
+  })
+
+  test('draggable: arrastrar la cabecera mueve el panel', async ({ page: p }) => {
+    await p.evaluate(() => {
+      window.Swal.fire({ title: 'Muéveme', text: 'texto', draggable: true })
+    })
+    const titulo = enDialogo(p, '.title')
+    const antes = await titulo.boundingBox()
+    await p.mouse.move(antes.x + 10, antes.y + 5)
+    await p.mouse.down()
+    await p.mouse.move(antes.x + 90, antes.y + 65, { steps: 4 })
+    await p.mouse.up()
+    const despues = await titulo.boundingBox()
+    expect(Math.round(despues.x - antes.x)).toBeGreaterThan(60)
+    expect(Math.round(despues.y - antes.y)).toBeGreaterThan(40)
+    await p.keyboard.press('Escape')
+  })
+
+  test('timer: stopTimer lo detiene y resumeTimer lo cierra', async ({ page: p }) => {
+    await p.evaluate(() => {
+      window.ultimo = null
+      window.Swal.fire({ title: 'Con tiempo', timer: 600, timerProgressBar: true }).then((r) => (window.ultimo = r))
+    })
+    await expect(enDialogo(p, '.timer')).toBeAttached()
+    await p.evaluate(() => window.Swal.stopTimer())
+    await p.waitForTimeout(900)
+    expect(await p.evaluate(() => window.ultimo)).toBeNull()
+    expect(await p.evaluate(() => window.Swal.isTimerRunning())).toBe(false)
+    await p.evaluate(() => window.Swal.resumeTimer())
+    expect(await resultado(p)).toMatchObject({ isDismissed: true, dismiss: 'timer' })
+  })
+
   test('toast con timer', async ({ page: p }) => {
     await p.click('#s-toast')
     await expect(p.locator('[data-nexus-toast] li')).toContainText('Signed in successfully')

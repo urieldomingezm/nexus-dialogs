@@ -2,7 +2,7 @@
 // Shadow DOM tiene el contenido. Todos los diálogos públicos (alert, confirm, prompt, form, wizard) pasan por aquí.
 import { config, labels } from '../config'
 import { CORE_CSS } from '../styles'
-import type { ButtonSpec, CloseReason, DialogContext, DialogOptions, DialogResult, Dismissible } from '../types'
+import type { ButtonSpec, CloseReason, DialogContext, DialogOptions, DialogResult, Dismissible, TimerControl } from '../types'
 import { activeDeep, angosto, focusables, h, reducedMotion, uid } from './dom'
 import { closeIcon, icon } from './icons'
 import { adopt, globalStyles } from './sheet'
@@ -21,6 +21,12 @@ export interface EngineOptions<T> extends DialogOptions<T> {
   onAction?: (button: ButtonSpec, ctx: DialogContext) => boolean | Promise<boolean>
   /** CSS adicional del módulo (forms). */
   moduleCss?: string
+  /** Dónde montar el `<dialog>` (por omisión `document.body`). Sigue siendo modal y en la capa superior. */
+  target?: Element
+  /** `false`: Enter dentro de un campo ya no confirma. */
+  allowEnter?: boolean
+  /** Justo al empezar a cerrar, antes de la animación y de quitarlo del DOM. */
+  onClosing?: (ctx: DialogContext) => void
 }
 
 interface Abierto {
@@ -149,6 +155,7 @@ export function openDialog<T = unknown>(opciones: EngineOptions<T>): Promise<Dia
   const previo = activeDeep()
   const textos = new Map<HTMLButtonElement, string>()
 
+  let control: TimerControl | undefined
   const ctx: DialogContext = {
     dialog,
     root,
@@ -199,6 +206,9 @@ export function openDialog<T = unknown>(opciones: EngineOptions<T>): Promise<Dia
       )
     },
     button: (id) => foot.querySelector<HTMLButtonElement>(`button[data-id="${CSS.escape(id)}"]`),
+    get timer() {
+      return control
+    },
   }
 
   // ── Escribir para confirmar ───────────────────────────────────────────────
@@ -287,30 +297,63 @@ export function openDialog<T = unknown>(opciones: EngineOptions<T>): Promise<Dia
   }
 
   // ── Timer ─────────────────────────────────────────────────────────────────
-  let restante = o.timer ?? 0
+  let total = o.timer ?? 0
+  let restante = total
   let inicio = 0
   let pausado = true
+  let detenido = false
   let frame = 0
   const barra = restante && o.timerProgress !== false ? h('div', { class: 'timer', 'aria-hidden': 'true' }) : null
   if (barra) panel.appendChild(barra)
+  const pintar = (queda: number): void => {
+    if (barra) barra.style.transform = `scaleX(${Math.max(0, Math.min(1, queda / total))})`
+  }
   const tick = (t: number): void => {
     if (pausado || terminado) return
     const queda = restante - (t - inicio)
-    if (barra) barra.style.transform = `scaleX(${Math.max(0, queda / (o.timer as number))})`
+    pintar(queda)
     if (queda <= 0) return terminar('timer', undefined, false, false)
     frame = requestAnimationFrame(tick)
   }
   const reanudar = (): void => {
-    if (!o.timer || !pausado || terminado) return
+    if (!total || !pausado || terminado || detenido) return
     pausado = false
     inicio = performance.now()
     frame = requestAnimationFrame(tick)
   }
   const pausar = (): void => {
-    if (!o.timer || pausado) return
+    if (!total || pausado) return
     pausado = true
     cancelAnimationFrame(frame)
     restante -= performance.now() - inicio
+  }
+  const queda = (): number => Math.max(0, pausado ? restante : restante - (performance.now() - inicio))
+  if (total) {
+    control = {
+      left: queda,
+      running: () => !pausado && !terminado,
+      stop() {
+        const q = queda()
+        detenido = true
+        pausar()
+        return q
+      },
+      resume() {
+        detenido = false
+        reanudar()
+        return queda()
+      },
+      increase(ms) {
+        if (terminado) return 0
+        const corriendo = !pausado
+        pausar()
+        restante = Math.max(0, restante + ms)
+        total = Math.max(total, restante)
+        pintar(restante)
+        if (corriendo) reanudar()
+        return queda()
+      },
+    }
   }
 
   // ── Eventos ───────────────────────────────────────────────────────────────
@@ -327,7 +370,7 @@ export function openDialog<T = unknown>(opciones: EngineOptions<T>): Promise<Dia
   overlay.addEventListener('click', () => void intentarCerrar('backdrop'))
   root.addEventListener('keydown', (ev) => {
     const e = ev as KeyboardEvent
-    if (e.key !== 'Enter' || e.isComposing || e.shiftKey || e.ctrlKey || e.altKey) return
+    if (o.allowEnter === false || e.key !== 'Enter' || e.isComposing || e.shiftKey || e.ctrlKey || e.altKey) return
     const t = e.target as HTMLElement
     if (!(t instanceof HTMLInputElement) || ['button', 'submit', 'reset', 'file'].includes(t.type)) return
     // Enter = botón principal: confirmar o, en un asistente, «Siguiente».
@@ -344,6 +387,11 @@ export function openDialog<T = unknown>(opciones: EngineOptions<T>): Promise<Dia
     if (terminado) return
     terminado = true
     cancelAnimationFrame(frame)
+    try {
+      o.onClosing?.(ctx)
+    } catch (e) {
+      console.error(e)
+    }
     soltarAngosto()
     const i = pila.findIndex((a) => a.ctx === ctx)
     if (i >= 0) pila.splice(i, 1)
@@ -371,7 +419,7 @@ export function openDialog<T = unknown>(opciones: EngineOptions<T>): Promise<Dia
   }
 
   // ── Abrir ─────────────────────────────────────────────────────────────────
-  document.body.appendChild(dialog)
+  ;(o.target?.isConnected ? o.target : document.body).appendChild(dialog)
   try {
     dialog.showModal()
   } catch {
