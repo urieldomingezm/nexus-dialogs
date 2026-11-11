@@ -80,4 +80,19 @@ test.describe('recetas', () => {
     await expect(dialogos(p)).toHaveCount(1)
     expect(await resultado(p)).toEqual({ n: 148 })
   })
+
+  test('loading: el giro del indicador no genera barra de desplazamiento ni se corta', async ({ pagina: p }) => {
+    await p.emulateMedia({ reducedMotion: 'no-preference' })
+    await p.evaluate(() => (window.carga = window.nd.loading.open('Timbrando 148 recibos…')))
+    await expect(dialogos(p)).toHaveCount(1)
+    for (let i = 0; i < 6; i++) {
+      const m = await p.evaluate(() => {
+        const b = document.querySelector('dialog[data-nexus-dialog] [data-nexus-host]').shadowRoot.querySelector('.body')
+        return { sh: b.scrollHeight, ch: b.clientHeight }
+      })
+      expect(m.sh, 'sin desbordamiento').toBeLessThanOrEqual(m.ch)
+      await p.waitForTimeout(110)
+    }
+    await p.evaluate(() => window.carga.close())
+  })
 })
