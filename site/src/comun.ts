@@ -126,6 +126,11 @@ function menuLateral(): void {
     ul.appendChild(li)
   }
   destino.appendChild(ul)
+  const movil = document.createElement('details')
+  movil.className = 'toc-movil'
+  movil.innerHTML = '<summary>En esta página</summary>'
+  movil.appendChild(ul.cloneNode(true))
+  cont.insertBefore(movil, cont.querySelector('h1')?.nextSibling ?? cont.firstChild)
   if (!('IntersectionObserver' in window)) return
   const enlaces = new Map(titulos.map((t) => [t.id, ul.querySelector<HTMLAnchorElement>(`a[href="#${CSS.escape(t.id)}"]`)!]))
   const visibles = new Set<string>()
@@ -140,5 +145,25 @@ function menuLateral(): void {
   titulos.forEach((t) => obs.observe(t))
 }
 
+// ── Menú de la cabecera en pantallas chicas ─────────────────────────────────
+function menuMovil(): void {
+  const cab = document.querySelector<HTMLElement>('.cabecera')
+  const btn = cab?.querySelector<HTMLButtonElement>('.menu-btn')
+  if (!cab || !btn) return
+  const poner = (abierto: boolean) => {
+    cab.classList.toggle('abierto', abierto)
+    btn.setAttribute('aria-expanded', String(abierto))
+  }
+  btn.addEventListener('click', () => poner(btn.getAttribute('aria-expanded') !== 'true'))
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && cab.classList.contains('abierto')) {
+      poner(false)
+      btn.focus()
+    }
+  })
+  cab.querySelectorAll('nav a').forEach((a) => a.addEventListener('click', () => poner(false)))
+}
+
 decorarCodigo()
 menuLateral()
+menuMovil()

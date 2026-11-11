@@ -33,3 +33,7 @@ $('b-vacaciones').addEventListener('click', async () => {
 $('b-toast').addEventListener('click', () => {
   toast.success('Empleado guardado', { action: { label: 'Deshacer', onClick: () => toast('Cambio deshecho') } })
 })
+
+$('b-hero').addEventListener('click', async () => {
+  if (await confirmDelete({ what: 'a Laura Méndez' })) toast.success('Laura Méndez eliminada')
+})
