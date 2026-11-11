@@ -134,8 +134,10 @@ test.describe('movimiento reducido y reflow', () => {
     const corriendo = await p.evaluate(() => {
       const d = document.querySelector('dialog[data-nexus-dialog]')
       const h = d.querySelector('[data-nexus-host]')
-      const larga = (a) => a.playState === 'running' && Number(a.effect?.getComputedTiming().duration ?? 0) > 1
-      return h.shadowRoot.getAnimations().filter(larga).length + d.getAnimations().filter(larga).length
+      const anim = (a) => a.playState === 'running' && typeof CSSAnimation !== 'undefined' && a instanceof CSSAnimation
+      const panel = h.shadowRoot.querySelector('.panel')
+      const trans = panel ? parseFloat(getComputedStyle(panel).transitionDuration) : 0
+      return h.shadowRoot.getAnimations().filter(anim).length + d.getAnimations().filter(anim).length + (trans > 0.001 ? 1 : 0)
     })
     expect(corriendo).toBe(0)
     await boton(p, 'cancel').click()
