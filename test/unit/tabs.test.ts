@@ -4,7 +4,7 @@ import { tabs, tabsDialog } from '../../src/tabs'
 import { $, $$, boton, esperar } from './utilidades'
 
 const dos = [
-  { id: 'general', label: 'Datos generales', content: 'Folio 53270' },
+  { id: 'general', label: 'Datos generales', content: 'Folio 1024' },
   { id: 'cita', label: 'Cita y entrevista', content: 'Hora 9:00' },
 ]
 const tecla = (el: Element, key: string) => el.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }))
@@ -24,7 +24,7 @@ describe('tabs()', () => {
     expect([t1.tabIndex, t2.tabIndex]).toEqual([0, -1])
     expect(p1.inert).toBe(false)
     expect(p2.inert).toBe(true)
-    expect(p1.textContent).toBe('Folio 53270')
+    expect(p1.textContent).toBe('Folio 1024')
     expect(c.current).toBe('general')
   })
 
@@ -175,10 +175,10 @@ describe('tamaños de tabs()', () => {
 
 describe('tabsDialog()', () => {
   it('abre el diálogo con las pestañas, un botón «Cerrar» y el foco en la pestaña activa', async () => {
-    const p = tabsDialog({ title: 'Mariela Ortega', tabs: dos, header: 'Citado' })
-    expect($('.title').textContent).toBe('Mariela Ortega')
+    const p = tabsDialog({ title: 'Ana Torres', tabs: dos, header: 'Citado' })
+    expect($('.title').textContent).toBe('Ana Torres')
     expect($('.tabs-head').textContent).toBe('Citado')
-    expect($('[role=tablist]').getAttribute('aria-label')).toBe('Mariela Ortega')
+    expect($('[role=tablist]').getAttribute('aria-label')).toBe('Ana Torres')
     expect(sel()).toEqual(['true', 'false'])
     expect($$('.foot button').map((b) => b.textContent)).toEqual(['Cerrar'])
     $$('[role=tab]')[1].click()

@@ -59,7 +59,7 @@ test.describe('Seguimiento: tamaño y disposición', () => {
   })
 
   test('el seguimiento vertical (md) mide 32 px por marcador', async ({ page }) => {
-    const d = await abrir(page, 'seguimiento', 'Ortega Vázquez Mariela Berenice')
+    const d = await abrir(page, 'seguimiento', 'Torres Reyes Ana Lucía')
     expect(Math.round((await caja(d.locator('.tl-mark').first())).width)).toBe(32)
   })
 })

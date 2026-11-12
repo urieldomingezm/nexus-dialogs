@@ -628,8 +628,8 @@ export async function pestanas() {
     return c
   }
   const r = await tabsDialog({
-    title: 'Mariela Berenice Ortega Vazquez',
-    header: 'Citado · Repartidor Auto Propio, San Luis Potosí',
+    title: 'Ana Lucía Torres Reyes',
+    header: 'Citado · Auxiliar administrativo, Sucursal Centro',
     variant: 'segmented',
     tabs: [
       {
@@ -637,12 +637,12 @@ export async function pestanas() {
         label: 'Datos generales',
         content: () =>
           hoja(
-            fila('Folio', '53270'),
-            fila('Plaza', 'San Luis Potosí'),
-            fila('Vacante', 'Repartidor Auto Propio - 100% Comisiones'),
-            fila('Teléfono', '5214448000160'),
-            fila('Medio de reclutamiento', 'WhatsApp bot'),
-            fila('Ejecutivo', 'Alondra Escobedo Vidales'),
+            fila('Folio', '1024'),
+            fila('Sucursal', 'Centro'),
+            fila('Vacante', 'Auxiliar administrativo'),
+            fila('Teléfono', '55 5555 0100'),
+            fila('Medio de reclutamiento', 'WhatsApp'),
+            fila('Ejecutivo', 'Carlos Méndez'),
           ),
       },
       {
@@ -669,16 +669,16 @@ export async function pestanas() {
  */
 export async function seguimiento() {
   const r = await timelineDialog({
-    title: 'Ortega Vázquez Mariela Berenice',
+    title: 'Torres Reyes Ana Lucía',
     steps: [
       { id: 'cita', title: 'Cita', description: 'Cita registrada; falta confirmar asistencia.', date: '13/11/2026', status: 'current' },
-      { id: 'neo', title: 'Enlace NEO', description: 'Sin liga de documentos registrada.', status: 'pending' },
+      { id: 'enlace', title: 'Enlace de documentos', description: 'Sin liga de documentos registrada.', status: 'pending' },
       { id: 'docs', title: 'Documentos', description: 'Sin expediente recibido todavía.', status: 'pending' },
-      { id: 'ap', title: 'Revisión AP', description: 'Pendiente de recibir documentos.', status: 'pending' },
+      { id: 'revision', title: 'Revisión', description: 'Pendiente de recibir documentos.', status: 'pending' },
       { id: 'contrato', title: 'Contratado', description: 'Pendiente de aprobación y confirmación del alta.', status: 'pending' },
       { id: 'ingreso', title: 'Ingreso y capacitación', description: 'Sin dato de ingreso o capacitación.', status: 'pending' },
     ],
-    footnote: 'Los estados se muestran con base en registros de MiQP, NEO y la reserva de ingreso.',
+    footnote: 'Los estados se muestran con base en los registros del sistema.',
   })
   return r
 }
@@ -720,7 +720,7 @@ export async function seguimientoHorizontal() {
     steps: [
       { id: 'cita', title: 'Cita', description: 'Asistió.', date: '13/11/2026', status: 'done' },
       { id: 'docs', title: 'Documentos', description: 'Recibidos.', date: '14/11/2026', status: 'done' },
-      { id: 'ap', title: 'Revisión AP', description: 'En revisión.', status: 'current' },
+      { id: 'revision', title: 'Revisión', description: 'En revisión.', status: 'current' },
       { id: 'alta', title: 'Alta', description: 'Pendiente de aprobación.', status: 'pending' },
       { id: 'ingreso', title: 'Ingreso', description: 'Sin fecha.', status: 'pending' },
     ],

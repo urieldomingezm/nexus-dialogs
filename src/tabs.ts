@@ -6,7 +6,7 @@
  * import { tabsDialog } from 'nexus-dialogs/tabs'
  *
  * await tabsDialog({
- *   title: 'Mariela Ortega Vázquez',
+ *   title: 'Ana Torres Reyes',
  *   tabs: [
  *     { id: 'general', label: 'Datos generales', content: () => tarjetaGeneral(candidato) },
  *     { id: 'cita', label: 'Cita y entrevista', content: () => tarjetaCita(candidato) },

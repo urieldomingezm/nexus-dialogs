@@ -6,12 +6,12 @@
  * import { timelineDialog } from 'nexus-dialogs/timeline'
  *
  * await timelineDialog({
- *   title: 'Ortega Vázquez Mariela Berenice',
+ *   title: 'Torres Reyes Ana Lucía',
  *   steps: [
  *     { id: 'cita', title: 'Cita', description: 'Cita registrada; falta confirmar asistencia.', date: '13/11/2026', status: 'current' },
  *     { id: 'docs', title: 'Documentos', description: 'Sin expediente recibido todavía.', status: 'pending' },
  *   ],
- *   footnote: 'Los estados salen de los registros de MiQP y NEO.',
+ *   footnote: 'Los estados salen de los registros del sistema.',
  * })
  * ```
  * Cada etapa dice su estado con **texto** («Completada», «En curso», «Pendiente»…), no solo con color. Arriba va el resumen
