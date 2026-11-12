@@ -288,6 +288,7 @@
     "test:e2e:chromium": "playwright test --project=chromium",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
+    "nueva-version": "node scripts/nueva-version.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "size": "node scripts/tamano.mjs",
