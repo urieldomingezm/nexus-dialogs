@@ -4,6 +4,8 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ## [Sin publicar]
 
+## [0.5.2] - 2026-11-12
+
 ### Agregado
 
 - Sitio de documentación: página **Pruebas** (mesa de pruebas). Se elige el tema (Nexus, Tailwind, Bootstrap, Material) y el modo (claro, oscuro, como el sistema), se abren los diálogos de verdad, se marca una lista de revisión que se guarda en el navegador y se copia un resumen (versión, navegador, apariencia) o se abre un reporte con esos datos ya llenos.
