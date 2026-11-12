@@ -4,7 +4,7 @@
 
 **Diálogos, formularios, asistentes y toasts para sistemas de empresa.**
 Una biblioteca de interfaces transaccionales para aplicaciones empresariales, con lo que un sistema administrativo mexicano necesita.
-Sin dependencias · TypeScript · `<dialog>` nativo + Shadow DOM · accesible (WCAG 2.2 AA) · basado en promesas
+Sin dependencias · TypeScript · `<dialog>` nativo + Shadow DOM · accesibilidad con objetivo WCAG 2.2 AA (pruebas automáticas, sin certificar) · basado en promesas
 
 Hecho por [**DevMedina**](https://devmedina.is-a.dev/) (Angel Uriel Domínguez Medina) · rama de librerías de **Nexus** · Licencia MIT
 
@@ -16,13 +16,15 @@ Las librerías de alertas resuelven el «¿Seguro?» y poco más. En un sistema 
 
 - **Capa superior real**: sin guerras de `z-index` con Bootstrap, SweetAlert2 o tu menú fijo. El fondo queda inerte y el scroll bloqueado.
 - **Shadow DOM**: el CSS de tu página no lo rompe y el suyo no se sale.
-- **Promesas**: los diálogos (`dialog.*`, formularios, asistentes, tablas y recetas) resuelven siempre con `{ confirmed, denied, value, reason }` y nunca rechazan: cancelar no es un error (`const r = await dialog.confirm(…)`). Rechazan solo las funciones que no abren un diálogo de usuario o que reciben algo mal armado: `formFromJSON` (tipo desconocido o resolver que falta), `loading` (relanza el error de tu tarea) y `readSpreadsheet` (archivo ilegible). Detalle en [`docs/contratos.md`](docs/contratos.md).
-- **Accesible**: foco inicial correcto (Cancelar en acciones destructivas), Esc, regreso del foco, errores ligados a cada campo, toasts anunciados en regiones vivas. Probado con axe en claro, oscuro, Bootstrap, Tailwind y Material, con teclado, movimiento reducido y reflow a 320 px. Qué se prueba y qué falta (lectores de pantalla): [`docs/accesibilidad.md`](docs/accesibilidad.md).
+- **Promesas**: las operaciones de diálogo (`dialog.alert`, `dialog.confirm`, `dialog.prompt` y `dialog.open`, y también formularios, asistentes, tablas y recetas) resuelven siempre con un `DialogResult` `{ confirmed, denied, value, reason }` y nunca rechazan: cancelar no es un error (`const r = await dialog.confirm(…)`). Las funciones auxiliares tienen sus propias condiciones de rechazo: `formFromJSON` (tipo desconocido o resolver que falta), `loading` (relanza el error de tu tarea) y `readSpreadsheet` (archivo ilegible). Detalle en [`docs/contratos.md`](docs/contratos.md).
+- **Accesible** (objetivo WCAG 2.2 AA; no es una certificación): foco inicial correcto (Cancelar en acciones destructivas), Esc, regreso del foco, errores ligados a cada campo, toasts anunciados en regiones vivas. Probado con axe en claro, oscuro, Bootstrap, Tailwind y Material, con teclado, movimiento reducido y reflow a 320 px. Qué se prueba y qué falta (lectores de pantalla): [`docs/accesibilidad.md`](docs/accesibilidad.md).
 - **Estándar de botones**: un color por intención, igual en toda la app, y sin iconos en los botones.
 - **Seguro por omisión**: los textos siempre se insertan como texto; solo el `html` en cadena se interpreta y se puede filtrar con `configure({ sanitize })`; por omisión (`strictHtml`) se muestra como texto si no hay filtro. Funciona con CSP estricta y Trusted Types, y el CSV exportado no permite inyección de fórmulas. Detalle en [`docs/seguridad.md`](docs/seguridad.md).
 - **Por niveles**: núcleo de ~10 KB, UI avanzada, empresa e integraciones, cada uno en su subruta; lo que no importas no se descarga. Qué pesa cada parte y qué está validado todavía: [`docs/arquitectura.md`](docs/arquitectura.md).
 
-> **Estado**: probada en Chromium, Firefox y WebKit con pruebas unitarias, de casos extremos y de accesibilidad (axe). Falta validarla con lectores de pantalla y en aplicaciones en producción. Limitaciones, navegadores, versionado y cobertura: [`docs/limitaciones.md`](docs/limitaciones.md). Qué devuelve cada función: [`docs/contratos.md`](docs/contratos.md). Compatibilidad con SweetAlert2 parámetro por parámetro: [`docs/swal-compat.md`](docs/swal-compat.md).
+> **Estado**: probada en Chromium, Firefox y WebKit con pruebas unitarias, de casos extremos y de accesibilidad (axe). Falta validarla con lectores de pantalla y en aplicaciones en producción. Limitaciones, navegadores, versionado y cobertura: [`docs/limitaciones.md`](docs/limitaciones.md). Qué devuelve cada función: [`docs/contratos.md`](docs/contratos.md). Compatibilidad con SweetAlert2 parámetro por parámetro: [`docs/swal-compat.md`](docs/swal-compat.md). ¿La usas fuera de Nexus? [Cuéntanos cómo te fue](https://github.com/urieldomingezm/nexus-dialogs/issues/new?template=adopcion.yml): hoy es lo que más falta para estabilizarla.
+
+> **¿Acabas de llegar?** Empieza por los [Primeros pasos](https://urieldomingezm.github.io/nexus-dialogs/primeros-pasos.html): cinco minutos para instalar y abrir tu primer diálogo. Esta guía es la referencia completa; no hace falta leerla de corrido.
 
 ## Índice
 
@@ -162,7 +164,7 @@ const sesion = watchIdle({
 // sesion.reset() cuenta como actividad; sesion.stop() deja de vigilar (al cerrar sesión).
 ```
 
-O el aviso suelto: `await sessionTimeout({ seconds: 120 })`. Cumple WCAG 2.2.1: cuenta regresiva visible, foco en «Seguir trabajando», extensiones sin límite y al lector de pantalla solo se anuncia cada minuto.
+O el aviso suelto: `await sessionTimeout({ seconds: 120 })`. Atiende el criterio WCAG 2.2.1: cuenta regresiva visible, foco en «Seguir trabajando», extensiones sin límite y al lector de pantalla solo se anuncia cada minuto.
 
 ### Aprobar o rechazar
 
@@ -948,7 +950,36 @@ toast.configure({ scheme: 'auto', theme: themes.bootstrap })
 
 Variables: `accent`, `accent-contrast`, `danger`, `danger-contrast`, `success`, `warning`, `info`, `bg`, `fg`, `muted`, `border`, `surface`, `line`, `cancel-fg`, `cancel-border`, `error`, `overlay`, `radius`, `control-radius`, `font`, `title-font`, `shadow`, `focus`.
 
-Temas incluidos: `light`, `dark`, `bootstrap`, `tailwind`, `material`. Para CSS propio de un diálogo: `styles: '.title { … }'` y `className`.
+Temas incluidos: `light`, `dark`, `bootstrap`, `tailwind`, `tailwindDark`, `material`.
+
+### Tailwind, Bootstrap y el modo claro y oscuro de tu página
+
+`themes.tailwind` es la paleta clara y `themes.tailwindDark` su par oscuro (slate e indigo). `followPageScheme` observa el modo de tu página y cambia entre las dos, también cuando la persona usa un interruptor de tema:
+
+```ts
+import { configure } from 'nexus-dialogs'
+import { toast } from 'nexus-dialogs/toast'
+import { themes, followPageScheme } from 'nexus-dialogs/themes'
+
+followPageScheme(
+  ({ scheme, theme }) => {
+    configure({ scheme, theme })
+    toast.configure({ scheme, theme })
+  },
+  { light: themes.tailwind, dark: themes.tailwindDark },
+)
+```
+
+Qué entiende como «oscuro»:
+
+| Tu página | Opción |
+|---|---|
+| Tailwind con `darkMode: 'class'` (v3) o `@custom-variant dark` (v4): `<html class="dark">` | por omisión (`strategy: 'class'`) |
+| Tailwind sin configurar, que sigue el modo del sistema | `strategy: 'media'` |
+| Bootstrap 5.3 (`data-bs-theme="dark"`) o `data-theme="dark"` | por omisión; con `light: themes.bootstrap` |
+| Otra clase para el modo oscuro | `darkClass: 'tema-noche'` |
+
+Devuelve una función que deja de observar. Los diálogos que se abran después salen en el modo nuevo; uno ya abierto conserva el que tenía. Sin esto, `configure({ theme: themes.tailwind })` fija colores claros y no cambian con el modo de la página. Para CSS propio de un diálogo: `styles: '.title { … }'` y `className`.
 
 El CSS se aplica con hojas de estilo construibles (`adoptedStyleSheets`), así que funciona con una Content-Security-Policy estricta sin `unsafe-inline`.
 

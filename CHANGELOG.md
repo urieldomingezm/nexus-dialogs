@@ -4,6 +4,15 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ## [Sin publicar]
 
+### Agregado
+
+- **Tailwind en modo oscuro**: `themes.tailwindDark`, el par oscuro de `themes.tailwind` (slate e indigo, con axe en verde), y `followPageScheme()` en `nexus-dialogs/themes`, que sigue el modo claro u oscuro de la página (`<html class="dark">` de Tailwind v3 y v4, `data-bs-theme` de Bootstrap 5.3, `data-theme`, o el modo del sistema con `strategy: 'media'`) y llama a tu `configure` en cada cambio. Sin dependencias.
+
+### Cambiado
+
+- Documentación: la accesibilidad se presenta como objetivo WCAG 2.2 AA con pruebas automáticas, no como certificación; la promesa de que los diálogos nunca rechazan se limita a las operaciones de diálogo y nombra las funciones que sí pueden rechazar.
+- Los ejemplos de `tabs` y `timeline` usan datos neutrales.
+
 ## [0.5.1] - 2026-11-12
 
 ### Corregido

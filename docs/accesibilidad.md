@@ -1,6 +1,6 @@
 # Accesibilidad
 
-nexus-dialogs apunta a **WCAG 2.2 nivel AA**. Esta página dice con claridad qué se prueba de forma automática en cada cambio, qué todavía se revisa a mano y cómo repetir esa revisión.
+nexus-dialogs apunta a **WCAG 2.2 nivel AA** como objetivo de conformidad. No es una certificación ni una auditoría externa: lo que sigue son las pruebas que sí se hacen. Esta página dice con claridad qué se prueba de forma automática en cada cambio, qué todavía se revisa a mano y cómo repetir esa revisión.
 
 ## Qué se prueba automáticamente
 

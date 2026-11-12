@@ -491,7 +491,21 @@ function update(id: string, cambios: ToastOptions): void;
 ```ts
 function applyTheme(theme: Theme, el?: HTMLElement): void;
 
+function followPageScheme(aplicar: (modo: {
+    scheme: PageScheme;
+    theme: Theme;
+}) => void, opciones?: FollowPageSchemeOptions): () => void;
+
+interface FollowPageSchemeOptions {
+    strategy?: 'class' | 'media';
+    darkClass?: string;
+    light?: Theme;
+    dark?: Theme;
+}
+
 function fromBootstrap(el?: Element): Theme;
+
+type PageScheme = 'light' | 'dark';
 
 type Theme = Record<string, string>;
 
@@ -500,6 +514,7 @@ const themes: {
     dark: Theme;
     bootstrap: Theme;
     tailwind: Theme;
+    tailwindDark: Theme;
     material: Theme;
 };
 ```
@@ -1634,6 +1649,7 @@ const themes: {
     dark: Theme;
     bootstrap: Theme;
     tailwind: Theme;
+    tailwindDark: Theme;
     material: Theme;
 };
 
