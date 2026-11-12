@@ -238,13 +238,7 @@ function detener(): void {
 pantalla?.addEventListener('pointerdown', detener)
 pantalla?.addEventListener('keydown', detener)
 document.querySelectorAll('button[data-escena]').forEach((b) =>
-  b.addEventListener('click', () => {
-    detener()
-    abrirEscena((b as HTMLElement).dataset.escena as Escena)
-    avisoId++ // un aviso pendiente ya no aplica
-    avisoToast?.classList.remove('visible')
-    avisoToast?.setAttribute('inert', '')
-  }),
+  b.addEventListener('click', () => elegir((b as HTMLElement).dataset.escena as Escena)),
 )
 
 dialogo?.addEventListener('click', async (e) => {
@@ -259,6 +253,32 @@ dialogo?.addEventListener('input', (e) => {
   const t = e.target as HTMLElement
   if (t.getAttribute('aria-invalid') === 'true') error(t.id, '')
 })
+
+/** Elegir una escena la abre y, si hay movimiento, la reproduce una vez (el cursor escribe y pulsa); al terminar queda lista para usarse. */
+function elegir(e: Escena): void {
+  for (const c of [...activos]) c() // corta lo que estuviera reproduciéndose
+  automatico = false
+  ciclo++
+  avisoId++ // un aviso pendiente ya no aplica
+  avisoToast?.classList.remove('visible')
+  avisoToast?.setAttribute('inert', '')
+  cursor?.classList.remove('visible')
+  abrirEscena(e)
+  if (sinMovimiento.matches) return
+  automatico = true
+  void (async (token: number) => {
+    try {
+      await esperar(token, 700)
+      await interpretar(e, token)
+      automatico = false
+      abrirEscena(e)
+    } catch (err) {
+      if (!(err instanceof Cancelado)) throw err
+      // Alguien la tomó a media reproducción: si el diálogo quedó cerrado, se vuelve a abrir.
+      if (dialogo && !dialogo.classList.contains('entra')) abrirEscena(escenaActual)
+    }
+  })(ciclo)
+}
 
 // ── La invitación: un cursor que recorre las escenas ─────────────────────────
 function moverCursor(objetivo: Element): void {
@@ -303,14 +323,20 @@ const GUION: Record<Escena, (t: number) => Promise<void>> = {
   },
 }
 
+/** Una escena completa: el cursor aparece, hace el guion y se va. */
+async function interpretar(e: Escena, token: number): Promise<void> {
+  cursor?.classList.add('visible')
+  await esperar(token, 500)
+  await GUION[e](token)
+  cursor?.classList.remove('visible')
+}
+
 async function reproducir(token: number): Promise<void> {
   try {
     for (let i = 0; token === ciclo; i = (i + 1) % ESCENAS.length) {
       abrirEscena(ESCENAS[i])
-      cursor?.classList.add('visible')
-      await esperar(token, 1000)
-      await GUION[ESCENAS[i]](token)
-      cursor?.classList.remove('visible')
+      await esperar(token, 500)
+      await interpretar(ESCENAS[i], token)
       await esperar(token, 400)
     }
   } catch (e) {

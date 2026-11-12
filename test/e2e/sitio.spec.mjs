@@ -452,6 +452,28 @@ test.describe('Sitio: demo, cifras, buscador y volver arriba', () => {
     await expect(toast).toContainText('Solicitud rechazada')
   })
 
+  test('al elegir otra escena se reproduce sola y luego queda lista para usarse', async ({ page }) => {
+    await npm(page)
+    await page.goto(SITIO + 'index.html')
+    const pantalla = page.locator('.demo-pantalla')
+    await pantalla.scrollIntoViewIfNeeded()
+    await page.locator('button[data-escena=aprobar]').click()
+    await expect(pantalla.locator('.demo-titulo')).toHaveText('Solicitud de vacaciones')
+    await expect(pantalla.locator('#demo-motivo')).toHaveValue('Cubre su equipo', { timeout: 6000 }) // lo escribe solo
+    await expect(pantalla.locator('.demo-toast')).toContainText('Solicitud aprobada', { timeout: 6000 })
+    // Al terminar vuelve a abrirse, sin cursor, y se puede usar.
+    await expect(pantalla.locator('#demo-motivo')).toHaveValue('', { timeout: 8000 })
+    await expect(pantalla.locator('.demo-cursor')).not.toHaveClass(/visible/)
+    await pantalla.locator('#demo-motivo').fill('Lo uso yo')
+    await pantalla.getByRole('button', { name: 'Rechazar' }).click()
+    await expect(pantalla.locator('.demo-toast')).toContainText('Solicitud rechazada')
+    // Otra escena, a media reproducción: la nueva reemplaza a la anterior.
+    await page.locator('button[data-escena=formulario]').click()
+    await page.locator('button[data-escena=borrar]').click()
+    await expect(pantalla.locator('.demo-titulo')).toHaveText('¿Eliminar a Laura Méndez?')
+    await expect(pantalla.locator('.demo-toast')).toContainText('Laura Méndez eliminada', { timeout: 8000 })
+  })
+
   test('la maqueta y sus avisos de error pasan axe, también con otra apariencia', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' })
     await page.goto(SITIO + 'index.html')
