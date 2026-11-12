@@ -4,6 +4,10 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ## [Sin publicar]
 
+### Añadido
+
+- Sitio de documentación: partículas conectadas en la portada, aparición suave de las secciones al hacer scroll y chispas al confirmar un ejemplo. Son decorativas, no usan dependencias, se detienen con la pestaña oculta o fuera de pantalla, usan menos partículas en celular y se apagan con «reducir movimiento».
+
 ## [0.5.4] - 2026-11-12
 
 ### Corregido

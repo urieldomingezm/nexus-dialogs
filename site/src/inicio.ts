@@ -2,6 +2,7 @@ import './comun'
 import { confirmDelete } from 'nexus-dialogs/patterns'
 import { form } from 'nexus-dialogs/forms'
 import { toast } from 'nexus-dialogs/toast'
+import { chispas } from './animaciones'
 
 const $ = (id: string) => document.getElementById(id)!
 
@@ -46,5 +47,8 @@ $('b-toast').addEventListener('click', () => {
 })
 
 $('b-hero').addEventListener('click', async () => {
-  if (await confirmDelete({ what: 'a Laura Méndez' })) toast.success('Laura Méndez eliminada')
+  if (await confirmDelete({ what: 'a Laura Méndez' })) {
+    toast.success('Laura Méndez eliminada')
+    chispas($('b-hero'))
+  }
 })
