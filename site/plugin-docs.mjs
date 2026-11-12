@@ -165,6 +165,7 @@ function cabecera(activa) {
   <button type="button" class="menu-btn" aria-expanded="false" aria-controls="menu-principal" aria-label="Menú"><span aria-hidden="true"></span></button>
   <nav id="menu-principal" aria-label="Principal">${enlaces}<a class="solo-movil" href="${REPO}" rel="noopener">GitHub</a><a class="solo-movil" href="${NPM}" rel="noopener">npm</a></nav>
   <div class="herr">
+    <button type="button" class="buscar-btn" data-buscar aria-haspopup="dialog" aria-keyshortcuts="/ Control+K" title="Buscar en la documentación (atajo: /)"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 16l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Buscar</span><kbd aria-hidden="true">/</kbd></button>
     <a class="ico-enlace" href="${REPO}" rel="noopener">GitHub</a>
     <a class="ico-enlace" href="${NPM}" rel="noopener">npm</a>
     <button type="button" class="tema" data-tema title="Cambiar entre automático, claro y oscuro"></button>
@@ -240,8 +241,49 @@ function riel(html, pagina) {
       </aside>`
 }
 
+
+/** Índice de búsqueda: páginas del menú, encabezados de las páginas de texto y ejemplos de la galería. */
+export function construirIndice() {
+  const entradas = []
+  for (const e of MENU) for (const [, href, texto, desc] of Array.isArray(e) ? [e] : e.items) entradas.push({ t: texto, p: 'Página', d: desc ?? '', u: href })
+  const encabezados = (html, pagina, nombre) => {
+    for (const m of html.matchAll(/<h([23]) id="([^"]+)"><a class="ancla"[^>]*>#<\/a>([\s\S]*?)<\/h\1>/g)) {
+      const t = m[3].replace(/<[^>]+>/g, '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').trim()
+      if (t) entradas.push({ t, p: nombre, d: '', u: `${pagina}#${m[2]}` })
+    }
+  }
+  for (const [, href, texto] of MENU.flatMap((e) => (Array.isArray(e) ? [e] : e.items))) {
+    let origen = ''
+    try {
+      origen = leer(href)
+    } catch {
+      continue
+    }
+    if (origen.includes('<!--@readme-->')) encabezados(readmeHtml(), href, texto)
+    if (origen.includes('<!--@api-->')) encabezados(apiHtml(), href, texto)
+    for (const m of origen.matchAll(/<!--@md:([\w./-]+)-->/g)) encabezados(mdHtml(m[1]), href, texto)
+  }
+  try {
+    const def = leer('./src/ejemplos-def.ts')
+    for (const m of def.matchAll(/^ \* id: (\S+)\n \* grupo: (.+)\n \* titulo: (.+)\n \* desc: (.+)$/gm)) entradas.push({ t: m[3], p: `Ejemplos · ${m[2]}`, d: m[4], u: `ejemplos.html#${m[1]}` })
+  } catch {
+    /* sin ejemplos: el índice sigue con lo demás */
+  }
+  return entradas
+}
+
+const VIRTUAL = 'virtual:indice-busqueda'
+function indicePlugin() {
+  return {
+    name: 'nexus-dialogs-indice',
+    resolveId: (id) => (id === VIRTUAL ? `\0${VIRTUAL}` : null),
+    load: (id) => (id === `\0${VIRTUAL}` ? `export default ${JSON.stringify(construirIndice())}` : null),
+  }
+}
+
 export function docsPlugin() {
   return [
+    indicePlugin(),
     {
       name: 'nexus-dialogs-docs',
       transformIndexHtml: {

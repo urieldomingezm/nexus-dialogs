@@ -14,6 +14,10 @@
         <div class="hero-texto">
           <h1>Diálogos, formularios y asistentes</h1>
           <p class="lema">Sobre el <code>&lt;dialog&gt;</code> nativo, sin dependencias y con accesibilidad probada.</p>
+          <p class="escribe">
+            Para <span class="escribe-txt" aria-hidden="true" data-escribe="solicitudes de vacaciones|altas de empleados|aprobaciones con motivo|borrados con confirmación|importar desde Excel">solicitudes de vacaciones</span><span class="cursor" aria-hidden="true"></span>
+            <span class="sr-only">: solicitudes de vacaciones, altas de empleados, aprobaciones con motivo, borrados con confirmación e importar desde Excel.</span>
+          </p>
           <div class="acciones izq">
             <a class="btn primario grande" href="primeros-pasos.html">Empezar</a>
             <a class="btn grande" href="ejemplos.html">Ver ejemplos</a>
@@ -29,6 +33,31 @@ if (await confirmDelete({ what: 'a Laura Méndez' })) {
 }</code></pre>
           <div class="ventana-pie"><span>Corre con la librería de esta página</span><button type="button" class="btn primario chico" id="b-hero">Ejecutar</button></div>
         </div>
+      </section>
+
+      <section class="bloque demo" aria-labelledby="demo-t">
+        <h2 id="demo-t">Míralo en acción</h2>
+        <p class="sub">Así se ven los diálogos con cada apariencia. Elige una: los diálogos de esta página cambian con ella.</p>
+        <div class="demo-pantalla" aria-hidden="true">
+          <div class="demo-fondo"><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="demo-velo"></div>
+          <div class="demo-dialogo entra">
+            <p class="demo-titulo">¿Eliminar a Laura Méndez?</p>
+            <p class="demo-texto">Se eliminará su registro. Esta acción no se puede deshacer.</p>
+            <div class="demo-botones"><span class="demo-btn cancelar">Cancelar</span><span class="demo-btn peligro" data-objetivo>Eliminar</span></div>
+          </div>
+          <div class="demo-toast"><span>Laura Méndez eliminada</span><b>Deshacer</b></div>
+          <span class="demo-cursor"></span>
+        </div>
+        <div class="demo-controles chips" role="group" aria-label="Apariencia de los diálogos">
+          <button type="button" class="chip" data-apariencia="nexus" aria-pressed="true">Nexus</button>
+          <button type="button" class="chip" data-apariencia="material" aria-pressed="false">Material</button>
+          <button type="button" class="chip" data-apariencia="bootstrap" aria-pressed="false">Bootstrap</button>
+          <button type="button" class="chip" data-apariencia="tailwind" aria-pressed="false">Tailwind</button>
+          <button type="button" class="chip" data-apariencia="oscuro" aria-pressed="false">Oscuro</button>
+          <button type="button" class="btn primario chico" id="b-demo">Abrir uno de verdad</button>
+        </div>
+        <p id="demo-estado" class="sr-only" role="status"></p>
       </section>
 
       <section class="datos" aria-label="Cifras"><div class="datos-fila">
