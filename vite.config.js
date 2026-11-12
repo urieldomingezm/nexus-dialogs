@@ -103,6 +103,7 @@ export default defineConfig(({ mode, command }) => {
       'primeros-pasos',
       'guia',
       'ejemplos',
+      'pruebas',
       'erp',
       'migracion',
       'accesibilidad',

@@ -4,13 +4,14 @@
 import { axe, boton, enDialogo, expect, resultado, sinDialogos, test } from './utilidades.mjs'
 
 // Cada tema se prueba con el esquema para el que está hecho: `light` (el de siempre) sigue al esquema del sistema;
-// `dark` es oscuro; bootstrap, tailwind y material son paletas claras.
+// `dark` y `tailwindDark` son oscuros; bootstrap, tailwind y material son paletas claras.
 const COMBINACIONES = [
   ['light', 'light'],
   ['light', 'dark'],
   ['dark', 'dark'],
   ['bootstrap', 'light'],
   ['tailwind', 'light'],
+  ['tailwindDark', 'dark'],
   ['material', 'light'],
 ]
 

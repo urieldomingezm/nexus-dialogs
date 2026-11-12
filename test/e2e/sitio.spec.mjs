@@ -23,6 +23,7 @@ test.describe('Sitio de documentación', () => {
     ['primeros-pasos.html', /Primeros pasos/],
     ['guia.html', /Guía/],
     ['ejemplos.html', /Ejemplos/],
+    ['pruebas.html', /Pruebas/],
     ['erp.html', /Mini ERP/],
     ['migracion.html', /Migrar/],
     ['accesibilidad.html', /Accesibilidad/],
@@ -255,6 +256,7 @@ test.describe('Sitio de documentación', () => {
     for (const p of [
       'index.html',
       'ejemplos.html',
+      'pruebas.html',
       'primeros-pasos.html',
       'guia.html',
       'erp.html',
