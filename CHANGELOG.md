@@ -4,6 +4,10 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ## [Sin publicar]
 
+### Cambiado
+
+- Sitio de documentación: el menú se organiza en submenús (Empezar, Probar, Referencia, Migrar) con una línea que describe cada página, y el pie de página pasa a cuatro columnas de enlaces (Documentación, Referencia, Migración, Proyecto). En la portada, la cifra «0 dependencias» se cambia por las descargas semanales de npm.
+
 ## [0.5.2] - 2026-11-12
 
 ### Agregado

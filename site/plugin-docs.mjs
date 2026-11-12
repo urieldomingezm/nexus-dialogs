@@ -19,16 +19,45 @@ const SITE = (process.env.SITE_URL || 'https://urieldomingezm.github.io/nexus-di
 const leer = (ruta) => readFileSync(new URL(ruta, import.meta.url), 'utf8')
 const pkg = JSON.parse(leer('../package.json'))
 
+// Menú de la cabecera: enlaces sueltos y grupos con submenú. Cada página es [id, archivo, texto, descripción corta].
 const MENU = [
   ['inicio', 'index.html', 'Inicio'],
-  ['primeros-pasos', 'primeros-pasos.html', 'Primeros pasos'],
-  ['guia', 'guia.html', 'Guía'],
-  ['ejemplos', 'ejemplos.html', 'Ejemplos'],
-  ['pruebas', 'pruebas.html', 'Pruebas'],
-  ['erp', 'erp.html', 'Mini ERP'],
-  ['migracion', 'migracion.html', 'Migrar'],
-  ['api', 'api.html', 'API'],
+  {
+    texto: 'Empezar',
+    items: [
+      ['primeros-pasos', 'primeros-pasos.html', 'Primeros pasos', 'Instalar y abrir tu primer diálogo'],
+      ['guia', 'guia.html', 'Guía', 'Cómo se usa cada pieza'],
+      ['novedades', 'novedades.html', 'Novedades', 'Lo último que cambió'],
+    ],
+  },
+  {
+    texto: 'Probar',
+    items: [
+      ['ejemplos', 'ejemplos.html', 'Ejemplos', 'Casos listos para ejecutar'],
+      ['pruebas', 'pruebas.html', 'Pruebas', 'Revisa temas, modo claro y oscuro'],
+      ['erp', 'erp.html', 'Mini ERP', 'Una aplicación completa de muestra'],
+    ],
+  },
+  {
+    texto: 'Referencia',
+    items: [
+      ['api', 'api.html', 'API', 'Funciones, opciones y tipos'],
+      ['contratos', 'contratos.html', 'Contratos', 'Qué promete cada función'],
+      ['arquitectura', 'arquitectura.html', 'Arquitectura', 'Cómo está construida'],
+      ['limitaciones', 'limitaciones.html', 'Limitaciones', 'Lo que no hace'],
+      ['seguridad', 'seguridad.html', 'Seguridad', 'HTML, CSP y buenas prácticas'],
+      ['accesibilidad', 'accesibilidad.html', 'Accesibilidad', 'Objetivo, pruebas y límites'],
+    ],
+  },
+  {
+    texto: 'Migrar',
+    items: [
+      ['migracion', 'migracion.html', 'Migrar de SweetAlert2', 'Paso a paso'],
+      ['swal-compat', 'swal-compat.html', 'Compatibilidad SweetAlert2', 'Qué cubre el adaptador'],
+    ],
+  },
 ]
+
 
 /** Dirección sin extensión: `ejemplos.html` → `ejemplos` y `index.html` → la raíz. GitHub Pages sirve `/ejemplos` con `ejemplos.html`. */
 const sinExtension = (f) => (f === 'index.html' ? '' : f.replace(/\.html$/, ''))
@@ -122,8 +151,14 @@ const tamano = (ruta) => {
 const kb = (n) => (n === null ? '—' : `${n.toFixed(1)} KB`)
 
 function cabecera(activa) {
-  const enlaces = MENU.map(
-    ([id, href, texto]) => `<a href="${href}"${id === activa ? ' aria-current="page"' : ''}>${texto}</a>`,
+  const enlace = ([id, href, texto, desc]) =>
+    desc
+      ? `<a href="${href}"${id === activa ? ' aria-current="page"' : ''}><span class="sm-tit">${texto}</span><span class="sm-desc">${desc}</span></a>`
+      : `<a href="${href}"${id === activa ? ' aria-current="page"' : ''}>${texto}</a>`
+  const enlaces = MENU.map((e, i) =>
+    Array.isArray(e)
+      ? enlace(e)
+      : `<div class="grupo${e.items.some(([id]) => id === activa) ? ' activo' : ''}"><button type="button" class="grupo-btn" aria-expanded="false" aria-controls="sm-${i}">${e.texto}</button><div class="submenu" id="sm-${i}">${e.items.map(enlace).join('')}</div></div>`,
   ).join('')
   return `<header class="cabecera">
   <a class="marca" href="index.html"><span class="logo"><svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g transform="rotate(-6 32 32)"><rect x="5" y="5" width="54" height="54" rx="12" fill="#6D28D9" stroke="#1A1033" stroke-width="5"/><text x="32" y="41" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace" font-weight="900" font-size="22" fill="#FFFFFF">&lt;/&gt;</text></g></svg></span>nexus-dialogs</a>
@@ -140,21 +175,24 @@ function cabecera(activa) {
 const ICONO =
   '<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Cg transform=%27rotate%28-6 32 32%29%27%3E%3Crect x=%275%27 y=%275%27 width=%2754%27 height=%2754%27 rx=%2712%27 fill=%27%236D28D9%27 stroke=%27%231A1033%27 stroke-width=%275%27/%3E%3Ctext x=%2732%27 y=%2741%27 text-anchor=%27middle%27 font-family=%27ui-monospace,Menlo,Consolas,monospace%27 font-weight=%27900%27 font-size=%2722%27 fill=%27%23FFFFFF%27%3E%26lt%3B/%26gt%3B%3C/text%3E%3C/g%3E%3C/svg%3E" />'
 
+// Pie de página: la marca y cuatro columnas de enlaces; los de documentación salen del mismo MENU de la cabecera.
+const columna = (titulo, enlaces) =>
+  `<nav aria-label="${titulo}"><p class="pie-tit">${titulo}</p><ul>${enlaces.map(([href, texto, ext]) => `<li><a href="${href}"${ext ? ' rel="noopener"' : ''}>${texto}</a></li>`).join('')}</ul></nav>`
+const pagina = (id) => MENU.flatMap((e) => (Array.isArray(e) ? [e] : e.items)).find(([i]) => i === id)
+const deMenu = (...ids) => ids.map((id) => pagina(id)).map(([, href, texto]) => [href, texto])
+
 const pie = () => `<footer class="pie">
-  <p><strong>nexus-dialogs</strong> v${pkg.version}. Licencia MIT. Hecho por <a class="firma" href="https://devmedina.is-a.dev/" rel="noopener"><svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g transform="rotate(-6 32 32)"><rect x="5" y="5" width="54" height="54" rx="12" fill="#6D28D9" stroke="#1A1033" stroke-width="5"/><text x="32" y="41" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace" font-weight="900" font-size="22" fill="#FFFFFF">&lt;/&gt;</text></g></svg>DevMedina</a>, rama de librerías de Nexus.</p>
-  <nav aria-label="Pie de página">
-    <a href="${REPO}" rel="noopener">Código</a>
-    <a href="${NPM}" rel="noopener">npm</a>
-    <a href="novedades.html">Novedades</a>
-    <a href="arquitectura.html">Arquitectura</a>
-    <a href="seguridad.html">Seguridad</a>
-    <a href="limitaciones.html">Limitaciones</a>
-    <a href="contratos.html">Contratos</a>
-    <a href="swal-compat.html">Compatibilidad SweetAlert2</a>
-    <a href="accesibilidad.html">Accesibilidad</a>
-    <a href="migracion.html">Migrar de SweetAlert2</a>
-    <a href="${REPO}/issues" rel="noopener">Reportar un problema</a>
-  </nav>
+  <div class="pie-cuerpo">
+    <div class="pie-marca">
+      <p class="pie-nombre"><strong>nexus-dialogs</strong> <span>v${pkg.version}</span></p>
+      <p>Diálogos, formularios y toasts para la web, sin dependencias.</p>
+    </div>
+    ${columna('Documentación', deMenu('primeros-pasos', 'guia', 'ejemplos', 'pruebas', 'erp'))}
+    ${columna('Referencia', deMenu('api', 'contratos', 'arquitectura', 'limitaciones', 'seguridad', 'accesibilidad'))}
+    ${columna('Migración', deMenu('migracion', 'swal-compat'))}
+    ${columna('Proyecto', [[REPO, 'Código', true], [NPM, 'npm', true], ...deMenu('novedades'), [`${REPO}/issues`, 'Reportar un problema', true]])}
+  </div>
+  <p class="pie-legal">Licencia MIT. Hecho por <a class="firma" href="https://devmedina.is-a.dev/" rel="noopener"><svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g transform="rotate(-6 32 32)"><rect x="5" y="5" width="54" height="54" rx="12" fill="#6D28D9" stroke="#1A1033" stroke-width="5"/><text x="32" y="41" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace" font-weight="900" font-size="22" fill="#FFFFFF">&lt;/&gt;</text></g></svg>DevMedina</a>, rama de librerías de Nexus.</p>
 </footer>`
 
 const atributo = (html, rx) => html.match(rx)?.[1]

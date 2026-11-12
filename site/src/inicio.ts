@@ -5,6 +5,17 @@ import { toast } from 'nexus-dialogs/toast'
 
 const $ = (id: string) => document.getElementById(id)!
 
+// Cuánta gente la usa: descargas de la última semana según npm. Si no responde, la cifra queda en «—» y el enlace lleva a npm.
+void (async () => {
+  try {
+    const r = await fetch('https://api.npmjs.org/downloads/point/last-week/nexus-dialogs')
+    const { downloads } = (await r.json()) as { downloads?: number }
+    if (typeof downloads === 'number') $('n-descargas').textContent = new Intl.NumberFormat('es-MX').format(downloads)
+  } catch {
+    /* sin red o npm no responde: se queda el guion */
+  }
+})()
+
 $('b-borrar').addEventListener('click', async () => {
   if (await confirmDelete({ what: 'a Laura Méndez' })) toast.success('Laura Méndez eliminada')
 })
