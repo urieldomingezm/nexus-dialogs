@@ -363,3 +363,44 @@ test.describe('Sitio: animaciones', () => {
     expect(await lienzo.evaluate((c) => c.toDataURL())).toBe(a)
   })
 })
+
+test.describe('Sitio: texto que se escribe e inclinación', () => {
+  test.use({ reducedMotion: 'no-preference' })
+
+  test('portada: el texto cambia solo y los lectores de pantalla leen la lista fija', async ({ page }) => {
+    await page.goto(SITIO + 'index.html')
+    const texto = page.locator('.escribe-txt')
+    await expect(texto).toHaveAttribute('aria-hidden', 'true')
+    const primera = await texto.textContent()
+    await expect.poll(async () => await texto.textContent(), { timeout: 9000 }).not.toBe(primera)
+    await expect(page.locator('.escribe .sr-only')).toContainText('importar desde Excel')
+  })
+
+  test('las tarjetas se inclinan con el mouse y vuelven al salir', async ({ page }) => {
+    await page.goto(SITIO + 'index.html')
+    const tarjeta = page.locator('main .tarjeta').first()
+    await tarjeta.scrollIntoViewIfNeeded()
+    await expect(tarjeta).not.toHaveClass(/revela/)
+    const caja = await tarjeta.boundingBox()
+    await page.mouse.move(caja.x + 10, caja.y + 10)
+    await page.mouse.move(caja.x + caja.width - 10, caja.y + caja.height - 10)
+    await expect(tarjeta).toHaveClass(/inclina/)
+    expect(await tarjeta.evaluate((t) => getComputedStyle(t).transform)).not.toBe('none')
+    await page.mouse.move(2, 2)
+    await expect(tarjeta).not.toHaveClass(/inclina/)
+  })
+
+  test('con movimiento reducido el texto queda fijo y no hay inclinación', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await page.goto(SITIO + 'index.html')
+    const texto = page.locator('.escribe-txt')
+    const primera = await texto.textContent()
+    await page.waitForTimeout(2600)
+    expect(await texto.textContent()).toBe(primera)
+    const tarjeta = page.locator('main .tarjeta').first()
+    const caja = await tarjeta.boundingBox()
+    await page.mouse.move(caja.x + 10, caja.y + 10)
+    await page.mouse.move(caja.x + caja.width - 10, caja.y + caja.height - 10)
+    await expect(tarjeta).not.toHaveClass(/inclina/)
+  })
+})

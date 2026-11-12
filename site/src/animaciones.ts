@@ -154,8 +154,11 @@ function aparecer(): void {
     (es) => {
       for (const e of es) {
         if (!e.isIntersecting) continue
-        e.target.classList.add('visto')
-        io.unobserve(e.target)
+        const el = e.target
+        el.classList.add('visto')
+        // Terminada la entrada se quita la clase: no debe competir con otras transformaciones (la inclinación).
+        el.addEventListener('transitionend', () => el.classList.remove('revela', 'visto'), { once: true })
+        io.unobserve(el)
       }
     },
     { rootMargin: '0px 0px -8% 0px', threshold: 0.05 },
@@ -239,7 +242,103 @@ export function fueConfirmado(res: unknown): boolean {
   return false
 }
 
+// ── Texto que se escribe solo ────────────────────────────────────────────────
+// El primer texto ya está en el HTML: sin JS o con «reducir movimiento» se queda fijo.
+function escribir(): void {
+  const nodo = document.querySelector<HTMLElement>('[data-escribe]')
+  if (!nodo) return
+  const frases = (nodo.dataset.escribe ?? '').split('|').filter(Boolean)
+  if (frases.length < 2) return
+  let i = 0
+  let n = frases[0].length
+  let borrando = true
+  let t = 0
+  function paso(): void {
+    if (sinMovimiento.matches) {
+      nodo!.textContent = frases[0]
+      return
+    }
+    if (document.hidden) {
+      t = window.setTimeout(paso, 500)
+      return
+    }
+    let espera: number
+    if (borrando) {
+      n--
+      espera = 26
+      if (n <= 0) {
+        // Termina de borrar: sigue la próxima frase.
+        borrando = false
+        i = (i + 1) % frases.length
+        n = 0
+        espera = 280
+      }
+    } else {
+      n++
+      espera = 55
+      if (n >= frases[i].length) {
+        borrando = true
+        espera = 1800
+      }
+    }
+    nodo!.textContent = frases[i].slice(0, Math.max(n, 0))
+    t = window.setTimeout(paso, espera)
+  }
+  t = window.setTimeout(paso, 2000)
+  sinMovimiento.addEventListener('change', () => {
+    clearTimeout(t)
+    if (sinMovimiento.matches) nodo.textContent = frases[0]
+    else {
+      i = 0
+      n = frases[0].length
+      borrando = true
+      t = window.setTimeout(paso, 1200)
+    }
+  })
+}
+
+// ── Inclinación 3D de las tarjetas ───────────────────────────────────────────
+// Solo con mouse (hover y puntero fino). Las tarjetas anchas se inclinan menos para no marear.
+function inclinar(): void {
+  if (!matchMedia('(hover: hover) and (pointer: fine)').matches) return
+  let activa: HTMLElement | null = null
+  const quitar = (): void => {
+    if (!activa) return
+    activa.classList.remove('inclina')
+    activa.style.removeProperty('--rx')
+    activa.style.removeProperty('--ry')
+    activa = null
+  }
+  document.addEventListener(
+    'pointermove',
+    (e) => {
+      if (sinMovimiento.matches) return quitar()
+      if (e.buttons) return // seleccionando texto o arrastrando: no se mueve nada
+      const t = (e.target as Element).closest<HTMLElement>('main .tarjeta, main .ejemplo')
+      if (!t) return quitar()
+      if (t !== activa) {
+        quitar()
+        activa = t
+      }
+      const r = t.getBoundingClientRect()
+      const x = (e.clientX - r.left) / r.width - 0.5
+      const y = (e.clientY - r.top) / r.height - 0.5
+      const max = r.width > 600 || r.height > 400 ? 1.2 : 3
+      t.style.setProperty('--rx', `${(-y * max * 2).toFixed(2)}deg`)
+      t.style.setProperty('--ry', `${(x * max * 2).toFixed(2)}deg`)
+      t.classList.add('inclina')
+    },
+    { passive: true },
+  )
+  document.addEventListener('pointerout', (e) => {
+    if (!e.relatedTarget) quitar()
+  })
+  addEventListener('blur', quitar)
+}
+
 // ── Arranque ─────────────────────────────────────────────────────────────────
 const hero = document.querySelector<HTMLElement>('.hero:not(.chico)')
 if (hero) particulas(hero)
 aparecer()
+escribir()
+inclinar()

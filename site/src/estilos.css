@@ -1466,7 +1466,7 @@ input[type='checkbox'] {
   display: grid;
   gap: 0.15rem;
   padding: var(--space-xs) var(--space-md);
-  border-radius: 10px;
+  border-radius: 8px;
   text-transform: none;
   white-space: normal;
 }
@@ -1540,6 +1540,67 @@ input[type='checkbox'] {
   .revela.visto {
     opacity: 1;
     transform: none;
+  }
+}
+/* Texto que se escribe solo (portada). */
+.escribe {
+  font-size: var(--text-lead);
+  color: var(--color-ink-2);
+  min-height: 1.5em;
+}
+.escribe-txt {
+  color: var(--color-accent-text);
+  font-weight: 600;
+}
+.cursor {
+  display: none;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .cursor {
+    display: inline-block;
+    width: 2px;
+    height: 1.1em;
+    margin-inline-start: 2px;
+    vertical-align: text-bottom;
+    background: var(--color-accent-text);
+    animation: parpadea 1s steps(1) infinite;
+  }
+  @keyframes parpadea {
+    50% {
+      opacity: 0;
+    }
+  }
+  .hero-texto > :nth-child(5) {
+    animation-delay: 280ms;
+  }
+}
+
+/* Inclinación 3D al pasar el mouse: solo con mouse y con el movimiento permitido. */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .tarjeta:not(.revela),
+  .ejemplo {
+    transition:
+      transform var(--dur-short) var(--ease-out),
+      box-shadow var(--dur-short) var(--ease-out),
+      background-color var(--dur-short) var(--ease-out);
+  }
+  .inclina {
+    transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+    background: var(--color-paper-2);
+    border-color: transparent;
+    border-radius: 8px;
+    /* El primer anillo hace de «relleno» visual sin mover el diseño. */
+    box-shadow:
+      0 0 0 6px var(--color-paper-2),
+      0 18px 40px -18px oklch(0% 0 0 / 0.35);
   }
 }
 @media print {
