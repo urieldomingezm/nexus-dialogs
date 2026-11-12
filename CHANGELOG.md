@@ -4,6 +4,10 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ## [Sin publicar]
 
+### Corregido
+
+- Diálogos sin botones de pie (por ejemplo `showConfirmButton: false` con un menú de acciones en `html`): el contenido ya no queda pegado al borde inferior ni parece cortado; ahora deja el mismo margen que con botones.
+
 ## [0.5.3] - 2026-11-12
 
 ### Corregido

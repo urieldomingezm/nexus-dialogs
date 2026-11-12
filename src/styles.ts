@@ -77,7 +77,7 @@ export const CORE_CSS =
 .body{padding:20px 24px 0;overflow:auto;flex:1 1 auto;min-height:0}
 .body:empty{display:none}
 .foot{margin-top:24px;padding:16px 24px 20px;display:flex;gap:12px;justify-content:flex-end;align-items:center;flex-wrap:wrap;border-top:1px solid var(--_line)}
-.foot:empty{display:none}
+.foot:empty,.narrow .foot:empty{display:block;height:24px;margin:0;padding:0;border:0}
 /* Con tres o más botones, el primero (Cancelar, Guardar borrador) se va a la izquierda. */
 .foot>.btn:first-child:nth-last-child(n+3){margin-inline-end:auto}
 .foot.plain{border-top:0;padding-top:0}
