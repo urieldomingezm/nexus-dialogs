@@ -5,6 +5,8 @@ import { enDialogo, expect, test } from './utilidades.mjs'
 const TECLADO = 300
 
 test.describe('teclado en pantalla (visualViewport)', () => {
+  test.use({ hasTouch: true })
+
   test('la hoja inferior y sus botones quedan sobre el teclado, y se restauran al cerrarlo', async ({ pagina: p }) => {
     await p.setViewportSize({ width: 390, height: 780 })
     await p.evaluate(() => {
@@ -74,5 +76,20 @@ test.describe('teclado en pantalla (visualViewport)', () => {
     const i = await input.boundingBox()
     expect(l.y + l.height).toBeLessThanOrEqual(780 - 300 + 1)
     expect(Math.min(Math.abs(l.y - (i.y + i.height)), Math.abs(i.y - (l.y + l.height)))).toBeLessThan(24)
+  })
+})
+
+test.describe('escritorio con visualViewport distinto', () => {
+  test('sin puntero táctil no se altera la posición del diálogo', async ({ pagina: p }) => {
+    await p.setViewportSize({ width: 1000, height: 700 })
+    await p.evaluate(() => {
+      const vv = new EventTarget()
+      Object.assign(vv, { offsetTop: 0, height: 300, width: 1000 })
+      Object.defineProperty(window, 'visualViewport', { value: vv, configurable: true })
+    })
+    await p.evaluate(() => void window.nd.confirm({ title: '¿Seguro?' }).catch(() => {}))
+    await expect(enDialogo(p, '.panel')).toBeVisible()
+    const b = await enDialogo(p, '.panel').boundingBox()
+    expect(b.y + b.height / 2).toBeGreaterThan(250)
   })
 })

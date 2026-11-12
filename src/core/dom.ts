@@ -70,11 +70,18 @@ export function angosto(el: Element, clase = 'narrow'): () => void {
   return () => mq.removeEventListener?.('change', aplicar)
 }
 
-/** Zona visible real (descontando el teclado en pantalla). Android Chrome no cambia `innerHeight` al abrir el teclado: solo encoge `visualViewport`. */
+/**
+ * Zona visible real cuando el teclado en pantalla de un celular o tableta tapa parte de la página.
+ * Android Chrome no cambia `innerHeight` al abrir el teclado: solo encoge `visualViewport`.
+ * Solo se considera con puntero táctil y un recorte de al menos 80 px; en escritorio siempre es la ventana completa.
+ */
 export function zonaVisible(): { top: number; bottom: number } {
+  const completa = { top: 0, bottom: window.innerHeight }
   const vv = typeof window !== 'undefined' ? window.visualViewport : null
-  if (!vv) return { top: 0, bottom: window.innerHeight }
-  return { top: vv.offsetTop, bottom: vv.offsetTop + vv.height }
+  if (!vv || typeof matchMedia !== 'function' || !matchMedia('(any-pointer: coarse)').matches) return completa
+  const top = vv.offsetTop
+  const bottom = vv.offsetTop + vv.height
+  return window.innerHeight - (bottom - top) >= 80 ? { top, bottom } : completa
 }
 
 /** Ajusta `el` a la zona visible mientras el teclado está abierto (variables --vv-t/--vv-b/--vv-max); sin teclado las quita. */
@@ -83,8 +90,7 @@ export function seguirVisualViewport(el: HTMLElement): () => void {
   if (!vv) return () => {}
   const aplicar = () => {
     const { top, bottom } = zonaVisible()
-    const recorte = window.innerHeight - (bottom - top)
-    if (recorte < 80) {
+    if (top === 0 && bottom === window.innerHeight) {
       for (const k of ['--vv-t', '--vv-b', '--vv-max']) el.style.removeProperty(k)
       return
     }
