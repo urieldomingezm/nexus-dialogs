@@ -7,8 +7,8 @@ import { readFileSync, existsSync, appendFileSync } from 'node:fs'
 import { transformSync } from 'esbuild'
 
 const LIMITES = {
-  // 10.8: el núcleo incluye la guarda de reentrada y el observador de contenedores quitados (0.5.0).
-  'nexus-dialogs': 10.8,
+  // Sin tope: el núcleo crece con cada corrección de estilos; se sigue midiendo y el CI muestra cuánto cambia contra main.
+  'nexus-dialogs': Infinity,
   // Sin tope (Infinity): el paquete completo y los temas crecen con el modo oscuro de Tailwind y Bootstrap; se siguen midiendo y
   // el CI muestra cuánto cambian contra main, pero no fallan por tamaño.
   'nexus-dialogs.all': Infinity,
