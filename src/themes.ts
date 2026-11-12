@@ -63,6 +63,29 @@ export const themes = {
     '--nd-radius': '16px',
     '--nd-control-radius': '8px',
   } as Theme,
+  /**
+   * Tailwind en modo oscuro (slate e indigo): el par de `tailwind`. Úsalo con `scheme: 'dark'` o, mejor, deja que
+   * `followPageScheme()` cambie entre los dos según el modo de tu página.
+   */
+  tailwindDark: {
+    '--nd-bg': '#0f172a',
+    '--nd-fg': '#f1f5f9',
+    '--nd-muted': '#94a3b8',
+    '--nd-border': '#64748b',
+    '--nd-surface': '#1e293b',
+    '--nd-line': '#334155',
+    '--nd-accent': '#818cf8',
+    '--nd-accent-contrast': '#0f172a',
+    '--nd-danger': '#e11d48',
+    '--nd-error': '#fb7185',
+    '--nd-success': '#34d399',
+    '--nd-warning': '#fbbf24',
+    '--nd-cancel-fg': '#fb7185',
+    '--nd-cancel-border': '#9f1239',
+    '--nd-overlay': 'rgba(2,6,23,.7)',
+    '--nd-radius': '16px',
+    '--nd-control-radius': '8px',
+  } as Theme,
   /** Material 3 (tonos base). */
   material: {
     '--nd-accent': '#6750a4',
@@ -111,4 +134,71 @@ export function fromBootstrap(el: Element = document.documentElement): Theme {
 /** Pone las variables en un elemento (por omisión :root) para que todos los diálogos y toasts las hereden. */
 export function applyTheme(theme: Theme, el: HTMLElement = document.documentElement): void {
   for (const [k, v] of Object.entries(theme)) el.style.setProperty(k.startsWith('--') ? k : `--nd-${k}`, v)
+}
+
+export type PageScheme = 'light' | 'dark'
+
+export interface FollowPageSchemeOptions {
+  /**
+   * Cómo sabe tu página que está en oscuro. `'class'` (por omisión): `<html class="dark">` (Tailwind con `darkMode: 'class'` o, en la v4,
+   * `@custom-variant dark`), `data-theme="dark"` o `data-bs-theme="dark"` (Bootstrap 5.3). `'media'`: el modo del sistema
+   * (`prefers-color-scheme`), que es lo que hace Tailwind si no configuras otra cosa.
+   */
+  strategy?: 'class' | 'media'
+  /** Clase de `<html>` que marca el modo oscuro. Por omisión `dark`. */
+  darkClass?: string
+  /** Variables `--nd-*` para el modo claro. Por omisión las de siempre. Con Tailwind: `themes.tailwind`. */
+  light?: Theme
+  /** Variables `--nd-*` para el modo oscuro. Con Tailwind: `themes.tailwindDark`. */
+  dark?: Theme
+}
+
+/**
+ * Hace que los diálogos sigan el modo claro u oscuro de tu página, también cuando la persona lo cambia con un interruptor.
+ * Llama a `aplicar` al empezar y en cada cambio con el modo y el tema que toca; tú lo pasas a `configure` (y al toast).
+ * Los diálogos que se abran después salen en el modo nuevo. Devuelve una función que deja de observar.
+ *
+ * ```ts
+ * import { configure } from 'nexus-dialogs'
+ * import { toast } from 'nexus-dialogs/toast'
+ * import { themes, followPageScheme } from 'nexus-dialogs/themes'
+ *
+ * followPageScheme(
+ *   ({ scheme, theme }) => {
+ *     configure({ scheme, theme })
+ *     toast.configure({ scheme, theme })
+ *   },
+ *   { light: themes.tailwind, dark: themes.tailwindDark },
+ * )
+ * ```
+ */
+export function followPageScheme(
+  aplicar: (modo: { scheme: PageScheme; theme: Theme }) => void,
+  opciones: FollowPageSchemeOptions = {},
+): () => void {
+  if (typeof document === 'undefined') return () => {}
+  const { strategy = 'class', darkClass = 'dark', light = {}, dark = {} } = opciones
+  const raiz = document.documentElement
+  const sistema = typeof window.matchMedia === 'function' ? window.matchMedia('(prefers-color-scheme: dark)') : null
+  const leer = (): PageScheme => {
+    if (strategy === 'media') return sistema?.matches ? 'dark' : 'light'
+    return raiz.classList.contains(darkClass) || raiz.dataset.theme === 'dark' || raiz.dataset.bsTheme === 'dark' ? 'dark' : 'light'
+  }
+  // `configure` mezcla los temas: lo que el modo vigente no define se vacía para que no quede lo del modo anterior.
+  const vacias = Object.fromEntries([...new Set([...Object.keys(light), ...Object.keys(dark)])].map((k) => [k, '']))
+  let actual: PageScheme | undefined
+  const revisar = (): void => {
+    const scheme = leer()
+    if (scheme === actual) return
+    actual = scheme
+    aplicar({ scheme, theme: { ...vacias, ...(scheme === 'dark' ? dark : light) } })
+  }
+  revisar()
+  const observador = new MutationObserver(revisar)
+  observador.observe(raiz, { attributes: true, attributeFilter: ['class', 'data-theme', 'data-bs-theme'] })
+  sistema?.addEventListener('change', revisar)
+  return () => {
+    observador.disconnect()
+    sistema?.removeEventListener('change', revisar)
+  }
 }
