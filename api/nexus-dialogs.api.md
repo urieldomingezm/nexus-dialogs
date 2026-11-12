@@ -1094,6 +1094,8 @@ interface TimelineOptions {
     summary?: boolean | string;
     emptyDate?: string;
     label?: string;
+    scale?: 'sm' | 'md' | 'lg';
+    layout?: 'vertical' | 'horizontal';
 }
 
 interface TimelineProgress {
@@ -1146,6 +1148,8 @@ interface TabsOptions {
     initial?: string;
     label?: string;
     variant?: 'underline' | 'segmented';
+    scale?: 'sm' | 'md' | 'lg';
+    fill?: boolean;
     height?: 'stable' | 'auto';
     onChange?: (id: string, control: TabsControl) => void;
 }

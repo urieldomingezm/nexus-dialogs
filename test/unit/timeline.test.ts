@@ -92,6 +92,18 @@ describe('timeline()', () => {
   })
 })
 
+describe('tamaños y disposición de timeline()', () => {
+  const clase = (o: Partial<Parameters<typeof timeline>[0]>) => timeline({ steps: pasos, ...o }).el.className
+  it('md y vertical por omisión no agregan clases', () => {
+    expect(clase({})).toBe('tl-wrap')
+    expect(clase({ scale: 'md', layout: 'vertical' })).toBe('tl-wrap')
+  })
+  it('sm, lg y horizontal agregan su clase', () => {
+    expect(clase({ scale: 'sm' })).toBe('tl-wrap sc-sm')
+    expect(clase({ scale: 'lg', layout: 'horizontal' })).toBe('tl-wrap sc-lg h')
+  })
+})
+
 describe('timelineDialog()', () => {
   it('abre el diálogo con el seguimiento, la nota al pie y un botón «Cerrar»', async () => {
     const p = timelineDialog({ title: 'Ortega Vázquez Mariela', steps: pasos, footnote: 'Los estados salen de MiQP y NEO.' })
@@ -102,6 +114,22 @@ describe('timelineDialog()', () => {
     expect($$('.foot button').map((b) => b.textContent)).toEqual(['Cerrar'])
     boton('close').click()
     expect(await p).toMatchObject({ confirmed: true })
+  })
+
+  it('horizontal abre en xl por omisión; vertical en md; un size propio manda', async () => {
+    const w = () => (document.querySelector('[data-nexus-host]') as HTMLElement).style.getPropertyValue('--_w')
+    let p = timelineDialog({ title: 'A', steps: pasos, layout: 'horizontal' })
+    expect(w()).toBe('860px')
+    boton('close').click()
+    await p
+    p = timelineDialog({ title: 'B', steps: pasos })
+    expect(w()).toBe('480px')
+    boton('close').click()
+    await p
+    p = timelineDialog({ title: 'C', steps: pasos, layout: 'horizontal', size: 'lg' })
+    expect(w()).toBe('640px')
+    boton('close').click()
+    await p
   })
 
   it('onOpen recibe el control para actualizar etapas con el diálogo abierto', async () => {

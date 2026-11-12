@@ -157,6 +157,22 @@ describe('tabs()', () => {
   })
 })
 
+describe('tamaños de tabs()', () => {
+  const clases = (o: Parameters<typeof tabs>[0]) => tabs(o).el.className
+  it('md por omisión no agrega clase; sm y lg sí', () => {
+    expect(clases({ tabs: dos })).toBe('tabs nofill')
+    expect(clases({ tabs: dos, scale: 'md' })).toBe('tabs nofill')
+    expect(clases({ tabs: dos, scale: 'sm' })).toContain('sc-sm')
+    expect(clases({ tabs: dos, scale: 'lg' })).toContain('sc-lg')
+  })
+  it('fill: por omisión solo en segmented; se puede forzar en un sentido u otro', () => {
+    expect(clases({ tabs: dos })).toContain('nofill')
+    expect(clases({ tabs: dos, variant: 'segmented' })).toMatch(/ fill$/)
+    expect(clases({ tabs: dos, fill: true })).toMatch(/ fill$/)
+    expect(clases({ tabs: dos, variant: 'segmented', fill: false })).toContain('nofill')
+  })
+})
+
 describe('tabsDialog()', () => {
   it('abre el diálogo con las pestañas, un botón «Cerrar» y el foco en la pestaña activa', async () => {
     const p = tabsDialog({ title: 'Mariela Ortega', tabs: dos, header: 'Citado' })
@@ -190,6 +206,14 @@ describe('tabsDialog()', () => {
     })
     expect(visto).toBeTruthy()
     expect((control as { current: string }).current).toBe('a')
+    boton('close').click()
+    await p
+  })
+
+  it('scale y fill llegan al diálogo', async () => {
+    const p = tabsDialog({ title: 'X', tabs: dos, scale: 'lg', fill: true })
+    expect($('.tabs').className).toContain('sc-lg')
+    expect($('.tabs').className).toMatch(/ fill$/)
     boton('close').click()
     await p
   })

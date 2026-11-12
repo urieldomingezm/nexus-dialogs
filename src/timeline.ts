@@ -65,6 +65,16 @@ export interface TimelineOptions {
   emptyDate?: string
   /** Nombre accesible de la lista. Por omisión, el título del diálogo. */
   label?: string
+  /**
+   * Tamaño: `sm` (marcador de 24 px), `md` (32 px, por omisión) o `lg` (40 px). No cambia el ancho del diálogo: ese es `size`.
+   * Para medidas propias: `--nd-tl-marker`, `--nd-tl-title` y `--nd-tl-text` (con `theme`).
+   */
+  scale?: 'sm' | 'md' | 'lg'
+  /**
+   * `vertical` (por omisión) o `horizontal`: las etapas en una fila, con el estado debajo. La horizontal se ve cuando el
+   * contenedor mide al menos 36 rem; en uno más angosto (celular, panel lateral) vuelve sola a vertical.
+   */
+  layout?: 'vertical' | 'horizontal'
 }
 
 export interface TimelineProgress {
@@ -81,25 +91,29 @@ export interface TimelineControl {
 }
 
 const CSS = `
+.tl-wrap{container-type:inline-size;--m0:32px;--ft:15px;--fd:14px}
+.tl-wrap.sc-sm{--m0:24px;--ft:14px;--fd:13px}
+.tl-wrap.sc-lg{--m0:40px;--ft:17px;--fd:15px}
 .tl-wrap:focus-visible{outline:none;box-shadow:0 0 0 4px var(--_focus);border-radius:8px}
 .tl-sum{margin:0 0 20px}
 .tl-sum p{margin:0 0 8px;font-size:13px;color:var(--_subtle);font-variant-numeric:tabular-nums}
 .tl-bar{height:8px;border-radius:4px;background:var(--_line);overflow:hidden}
 .tl-bar div{height:100%;border-radius:4px;background:var(--_success);transition:width .25s}
 .tl{list-style:none;margin:0;padding:0}
-.tl>li{position:relative;display:grid;grid-template-columns:32px minmax(0,1fr);column-gap:14px;padding-bottom:20px}
+.tl{--m:var(--nd-tl-marker,var(--m0))}
+.tl>li{position:relative;display:grid;grid-template-columns:var(--m) minmax(0,1fr);column-gap:14px;padding-bottom:20px}
 .tl>li:last-child{padding-bottom:0}
-.tl>li:not(:last-child)::before{content:'';position:absolute;inset-inline-start:15px;top:32px;bottom:2px;width:2px;background:var(--_line)}
+.tl>li:not(:last-child)::before{content:'';position:absolute;inset-inline-start:calc(var(--m) / 2 - 1px);top:calc(var(--m) + 2px);bottom:2px;width:2px;background:var(--_line)}
 .tl>li.done:not(:last-child)::before{background:var(--_success)}
-.tl-mark{grid-row:1/3;display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;
-  border:2px solid var(--c);color:var(--c);background:var(--_bg);font:600 13px var(--_font);font-variant-numeric:tabular-nums}
+.tl-mark{grid-row:1/3;display:flex;align-items:center;justify-content:center;width:var(--m);height:var(--m);border-radius:50%;
+  border:2px solid var(--c);color:var(--c);background:var(--_bg);font:600 calc(var(--m) * .4) var(--_font);font-variant-numeric:tabular-nums}
 .tl>li.done .tl-mark{background:var(--c);color:var(--_bg)}
 .tl>li.current .tl-mark{box-shadow:0 0 0 4px color-mix(in srgb,var(--c) 18%,transparent)}
 .tl>li.skipped .tl-mark{border-style:dashed}
-.tl-mark svg{width:16px;height:16px}
-.tl h3{margin:4px 0 2px;font:600 15px/1.3 var(--_font);color:var(--_fg)}
+.tl-mark svg{width:50%;height:50%}
+.tl h3{margin:4px 0 2px;font:600 var(--nd-tl-title,var(--ft))/1.3 var(--_font);color:var(--_fg)}
 .tl>li.skipped h3{text-decoration:line-through;color:var(--_muted)}
-.tl-desc{margin:0;font-size:14px;line-height:1.4;color:var(--_muted)}
+.tl-desc{margin:0;font-size:var(--nd-tl-text,var(--fd));line-height:1.4;color:var(--_muted)}
 .tl-meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-top:6px;font-size:13px;color:var(--_subtle)}
 .tl-meta:empty{display:none}
 .tl-chip{padding:1px 10px;border-radius:999px;font-weight:600;font-size:12px;background:color-mix(in srgb,var(--c) 12%,var(--_bg));color:color-mix(in srgb,var(--c) 70%,var(--_fg))}
@@ -107,6 +121,12 @@ const CSS = `
 .tl>li.done{--c:var(--_success)}
 .tl>li.current{--c:var(--_accent)}
 .tl>li.error{--c:var(--_error)}
+@container (min-width:36rem){
+.h .tl{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:16px}
+.h .tl>li{display:block;padding:0}
+.h .tl-mark{margin-bottom:10px}
+.h .tl>li:not(:last-child)::before{inset-inline-start:calc(var(--m) + 8px);inset-inline-end:-8px;top:calc(var(--m) / 2 - 1px);bottom:auto;width:auto;height:2px}
+}
 `
 
 const PALOMA =
@@ -136,7 +156,12 @@ export function timeline(o: TimelineOptions): TimelineControl {
   // Región con nombre y enfocable: si el contenido es más alto que la pantalla, el teclado puede desplazarlo.
   const raiz = h(
     'div',
-    { class: 'tl-wrap', role: 'region', 'aria-label': o.label, tabindex: '0' },
+    {
+      class: `tl-wrap${o.scale && o.scale !== 'md' ? ` sc-${o.scale}` : ''}${o.layout === 'horizontal' ? ' h' : ''}`,
+      role: 'region',
+      'aria-label': o.label,
+      tabindex: '0',
+    },
     o.summary === false ? null : resumen,
     lista,
   )
@@ -202,15 +227,15 @@ export interface TimelineDialogOptions<T = unknown> extends TimelineOptions, Omi
 
 /** Un diálogo con el seguimiento. Por omisión lleva un solo botón «Cerrar». Usa `footnote` para la nota al pie. */
 export function timelineDialog<T = unknown>(o: TimelineDialogOptions<T>): Promise<DialogResult<T>> {
-  const { steps, summary, emptyDate, label, onOpen, ...resto } = o
+  const { steps, summary, emptyDate, label, scale, layout, onOpen, ...resto } = o
   let control!: TimelineControl
   return openDialog<T>({
     role: 'dialog',
-    size: 'md',
+    size: layout === 'horizontal' ? 'xl' : 'md', // la fila de etapas necesita ancho
     ...resto,
     moduleCss: CSS,
     buttons: o.buttons ?? [{ id: 'close', role: 'confirm', text: labels().close }],
-    render: () => (control = timeline({ steps, summary, emptyDate, label: label ?? o.title })).el,
+    render: () => (control = timeline({ steps, summary, emptyDate, label: label ?? o.title, scale, layout })).el,
     onOpen: (ctx) => onOpen?.(ctx, control),
   } as Parameters<typeof openDialog<T>>[0])
 }
