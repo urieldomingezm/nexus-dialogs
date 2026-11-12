@@ -316,3 +316,50 @@ test.describe('Sitio de documentación', () => {
     }
   })
 })
+
+// Animaciones decorativas: se prueban con el movimiento permitido (el resto de las pruebas lo reduce).
+test.describe('Sitio: animaciones', () => {
+  test.use({ reducedMotion: 'no-preference' })
+
+  test('portada: las partículas corren, y al ir hacia abajo las secciones aparecen', async ({ page }) => {
+    const errores = []
+    page.on('pageerror', (e) => errores.push(e.message))
+    await page.goto(SITIO + 'index.html')
+    const lienzo = page.locator('.hero canvas.particulas')
+    await expect(lienzo).toHaveAttribute('aria-hidden', 'true')
+    // El lienzo se va pintando: dos fotos separadas no pueden ser iguales.
+    const foto = () => lienzo.evaluate((c) => c.toDataURL())
+    const a = await foto()
+    await page.waitForTimeout(400)
+    expect(await foto()).not.toBe(a)
+    // Lo que empieza fuera de pantalla entra al hacer scroll.
+    const bloque = page.locator('section.bloque').first()
+    await expect(bloque).toHaveClass(/revela/)
+    await bloque.scrollIntoViewIfNeeded()
+    await expect(bloque).toHaveClass(/visto/)
+    await expect(bloque).toHaveCSS('opacity', '1')
+    // Sin desborde horizontal por el lienzo.
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+    expect(errores).toEqual([])
+  })
+
+  test('confirmar un ejemplo lanza chispas que se quitan solas y no bloquean clics', async ({ page }) => {
+    await page.goto(SITIO + 'ejemplos.html#confirmar')
+    await page.locator('#ej-confirmar button', { hasText: 'Probar' }).click()
+    await page.locator('dialog[data-nexus-dialog]').last().locator('button[data-role=confirm]').click()
+    const chispas = page.locator('canvas.chispas')
+    await expect(chispas).toHaveCount(1)
+    await expect(chispas).toHaveCSS('pointer-events', 'none')
+    await expect(chispas).toHaveCount(0, { timeout: 4000 })
+  })
+
+  test('con movimiento reducido no hay chispas ni partículas animadas', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await page.goto(SITIO + 'index.html')
+    await expect(page.locator('section.bloque.revela')).toHaveCount(0)
+    const lienzo = page.locator('.hero canvas.particulas')
+    const a = await lienzo.evaluate((c) => c.toDataURL())
+    await page.waitForTimeout(300)
+    expect(await lienzo.evaluate((c) => c.toDataURL())).toBe(a)
+  })
+})

@@ -1505,3 +1505,50 @@ input[type='checkbox'] {
     padding-left: var(--space-lg);
   }
 }
+
+/* ── Animaciones decorativas (ver animaciones.ts) ───────────────────────── */
+.hero:not(.chico) {
+  position: relative;
+  isolation: isolate;
+}
+.particulas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+  /* Se desvanece hacia los bordes: no se ve el corte de la portada. */
+  mask-image: radial-gradient(ellipse at center, #000 35%, transparent 75%);
+}
+.chispas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .revela {
+    opacity: 0;
+    transform: translateY(14px);
+    transition:
+      opacity var(--dur-long) var(--ease-out) var(--retraso, 0ms),
+      transform var(--dur-long) var(--ease-out) var(--retraso, 0ms);
+  }
+  .revela.visto {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media print {
+  .particulas,
+  .chispas {
+    display: none;
+  }
+  .revela {
+    opacity: 1;
+    transform: none;
+  }
+}

@@ -1,6 +1,7 @@
 // Galería de ejemplos: lee site/src/ejemplos-def.ts como texto (para mostrar el código tal cual) y como módulo (para ejecutarlo).
 import './comun'
 import { decorarCodigo } from './comun'
+import { chispas, fueConfirmado } from './animaciones'
 import fuente from './ejemplos-def.ts?raw'
 import * as funciones from './ejemplos-def'
 
@@ -83,6 +84,7 @@ function tarjeta(e: Ejemplo): HTMLElement {
     boton.setAttribute('aria-busy', 'true')
     try {
       const res = await (funciones as unknown as Record<string, () => unknown>)[e.funcion]()
+      if (fueConfirmado(res)) chispas(boton)
       salida.replaceChildren('Resultado:', el('pre', { 'data-lang': 'json' } as never, el('code', { class: 'language-json' }, mostrar(res))))
     } catch (err) {
       salida.replaceChildren(`Error: ${err instanceof Error ? err.message : String(err)}`)
