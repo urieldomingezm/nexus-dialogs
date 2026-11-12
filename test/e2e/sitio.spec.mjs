@@ -209,6 +209,19 @@ test.describe('Sitio de documentación', () => {
     await expect(page.locator('#mig-salida')).toContainText('API propia → true')
   })
 
+  test('páginas de texto: etiquetas para compartir, canónico y columna derecha en pantalla ancha', async ({ page }) => {
+    await page.setViewportSize({ width: 1500, height: 800 })
+    await page.goto(SITIO + 'arquitectura.html')
+    await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', /\/og\.png$/)
+    await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute('content', 'summary_large_image')
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', /arquitectura\.html$/)
+    const riel = page.locator('aside.riel')
+    await expect(riel).toBeVisible()
+    await expect(riel.getByRole('link', { name: 'Editar en GitHub' })).toHaveAttribute('href', /edit\/main\/docs\/arquitectura\.md$/)
+    await page.setViewportSize({ width: 390, height: 800 })
+    await expect(riel).toBeHidden()
+  })
+
   test('accesibilidad: las páginas no tienen violaciones de axe (WCAG 2.2 AA)', async ({ page, browserName }) => {
     // La entrada de la portada anima la opacidad: sin movimiento el contraste se mide en el estado final.
     await page.emulateMedia({ reducedMotion: 'reduce' })

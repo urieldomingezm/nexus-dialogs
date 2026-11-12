@@ -13,6 +13,9 @@ import { Marked } from 'marked'
 
 const REPO = 'https://github.com/urieldomingezm/nexus-dialogs'
 const NPM = 'https://www.npmjs.com/package/nexus-dialogs'
+// Dirección pública del sitio (GitHub Pages). Se usa para las etiquetas Open Graph, el sitemap y el canónico;
+// cámbiala con la variable SITE_URL si el sitio vive en otro dominio.
+const SITE = (process.env.SITE_URL || 'https://urieldomingezm.github.io/nexus-dialogs').replace(/\/$/, '')
 const leer = (ruta) => readFileSync(new URL(ruta, import.meta.url), 'utf8')
 const pkg = JSON.parse(leer('../package.json'))
 
@@ -137,23 +140,106 @@ const pie = () => `<footer class="pie">
   </nav>
 </footer>`
 
+const atributo = (html, rx) => html.match(rx)?.[1]
+
+/** Etiquetas para compartir el enlace (Open Graph y Twitter), canónico y color de la barra del navegador. */
+function metaSocial(html, pagina) {
+  const titulo = atributo(html, /<title>([\s\S]*?)<\/title>/)
+  const desc = atributo(html, /<meta name="description" content="([^"]*)"/)
+  if (!titulo || !desc) return ''
+  const url = `${SITE}/${pagina === 'index.html' ? '' : pagina}`
+  return `
+    <link rel="canonical" href="${url}" />
+    <meta name="theme-color" content="#f1ecf9" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#16111f" media="(prefers-color-scheme: dark)" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="nexus-dialogs" />
+    <meta property="og:locale" content="es_MX" />
+    <meta property="og:title" content="${titulo}" />
+    <meta property="og:description" content="${desc}" />
+    <meta property="og:url" content="${url}" />
+    <meta property="og:image" content="${SITE}/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="nexus-dialogs: diálogos, formularios y asistentes para sistemas de empresa" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="${titulo}" />
+    <meta name="twitter:description" content="${desc}" />
+    <meta name="twitter:image" content="${SITE}/og.png" />`
+}
+
+/** Columna derecha de las páginas de texto largo: dónde editar la página, versión y tamaño del núcleo. */
+function riel(html, pagina) {
+  const md = atributo(html, /<!--@md:([\w./-]+)-->/)
+  const origen = md ?? (html.includes('<!--@readme-->') ? 'README.md' : html.includes('<!--@api-->') ? null : `site/${pagina}`)
+  const nucleo = tamano('dist/nexus-dialogs.js')
+  return `<aside class="riel" aria-label="Sobre esta página">
+        <p class="riel-t">Esta página</p>
+        <ul>
+          ${origen ? `<li><a href="${REPO}/edit/main/${origen}" rel="noopener">Editar en GitHub</a></li>` : ''}
+          <li><a href="${REPO}/issues/new" rel="noopener">Reportar un problema</a></li>
+          <li><a href="${REPO}/blob/main/CHANGELOG.md" rel="noopener">Historial de cambios</a></li>
+        </ul>
+        <p class="riel-t">Versión</p>
+        <p class="riel-v">v${pkg.version}${nucleo === null ? '' : `<br />núcleo ${kb(nucleo)} gzip`}</p>
+      </aside>`
+}
+
 export function docsPlugin() {
-  return {
-    name: 'nexus-dialogs-docs',
-    transformIndexHtml: {
-      order: 'pre',
-      handler(html) {
-        if (!html.includes('<!--@')) return html
-        return html
-          .replace(/<!--@md:([\w./-]+)-->/g, (_, ruta) => mdHtml(ruta))
-          .replace('</head>', `    ${ICONO}\n  </head>`)
-          .replace(/<!--@cabecera:([\w-]+)-->/g, (_, id) => cabecera(id))
-          .replace(/<!--@pie-->/g, pie())
-          .replace(/<!--@readme-->/g, () => readmeHtml())
-          .replace(/<!--@api-->/g, () => apiHtml())
-          .replace(/<!--@version-->/g, pkg.version)
-          .replace(/<!--@tam:([\w.+-]+)-->/g, (_, a) => kb(a.split('+').map((x) => tamano(`dist/${x}.js`)).reduce((s, n) => (s === null || n === null ? null : s + n), 0)))
+  return [
+    {
+      name: 'nexus-dialogs-docs',
+      transformIndexHtml: {
+        order: 'pre',
+        handler(html, ctx) {
+          if (!html.includes('<!--@')) return html
+          const pagina = (ctx?.path ?? '/index.html').split('/').pop() || 'index.html'
+          const conRiel = html.includes('<main class="doc">')
+          let salida = html
+            .replace(/<!--@md:([\w./-]+)-->/g, (_, ruta) => mdHtml(ruta))
+            .replace('</head>', `    ${ICONO}${metaSocial(html, pagina)}\n  </head>`)
+            .replace(/<!--@cabecera:([\w-]+)-->/g, (_, id) => cabecera(id))
+            .replace(/<!--@pie-->/g, pie())
+            .replace(/<!--@readme-->/g, () => readmeHtml())
+            .replace(/<!--@api-->/g, () => apiHtml())
+            .replace(/<!--@version-->/g, pkg.version)
+            .replace(/<!--@tam:([\w.+-]+)-->/g, (_, a) => kb(a.split('+').map((x) => tamano(`dist/${x}.js`)).reduce((s, n) => (s === null || n === null ? null : s + n), 0)))
+          if (conRiel) {
+            salida = salida.replace('<main class="doc">', '<main class="doc con-riel">').replace('</article>', `</article>\n      ${riel(html, pagina)}`)
+          }
+          return salida
+        },
       },
     },
-  }
+    {
+      // Precarga las fuentes del texto (latín) para que no parpadee el cambio de tipografía.
+      name: 'nexus-dialogs-fuentes',
+      apply: 'build',
+      transformIndexHtml: {
+        order: 'post',
+        handler(_html, ctx) {
+          const fuentes = Object.keys(ctx?.bundle ?? {}).filter((f) => /(outfit|onest)-latin-wght-normal.*\.woff2$/.test(f))
+          return fuentes.map((f) => ({
+            tag: 'link',
+            attrs: { rel: 'preload', as: 'font', type: 'font/woff2', crossorigin: '', href: `./${f}` },
+            injectTo: 'head',
+          }))
+        },
+      },
+    },
+    {
+      // sitemap.xml y robots.txt con las páginas que salen en el build.
+      name: 'nexus-dialogs-sitemap',
+      apply: 'build',
+      enforce: 'post',
+      generateBundle(_o, bundle) {
+        const paginas = Object.keys(bundle).filter((f) => f.endsWith('.html')).sort()
+        if (!paginas.length) return
+        const fecha = new Date().toISOString().slice(0, 10)
+        const urls = paginas.map((f) => `  <url><loc>${SITE}/${f === 'index.html' ? '' : f}</loc><lastmod>${fecha}</lastmod></url>`).join('\n')
+        this.emitFile({ type: 'asset', fileName: 'sitemap.xml', source: `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n` })
+        this.emitFile({ type: 'asset', fileName: 'robots.txt', source: `User-agent: *\nAllow: /\n\nSitemap: ${SITE}/sitemap.xml\n` })
+      },
+    },
+  ]
 }
