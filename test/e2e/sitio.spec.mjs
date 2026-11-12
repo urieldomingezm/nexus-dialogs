@@ -20,6 +20,7 @@ const test = base.extend({
 test.describe('Sitio de documentación', () => {
   for (const [pagina, titulo] of [
     ['index.html', /nexus-dialogs/],
+    ['primeros-pasos.html', /Primeros pasos/],
     ['guia.html', /Guía/],
     ['ejemplos.html', /Ejemplos/],
     ['erp.html', /Mini ERP/],
@@ -221,12 +222,29 @@ test.describe('Sitio de documentación', () => {
     await page.goto(SITIO + 'arquitectura.html')
     await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', /\/og\.png$/)
     await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute('content', 'summary_large_image')
-    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', /arquitectura\.html$/)
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', /arquitectura$/)
     const riel = page.locator('aside.riel')
     await expect(riel).toBeVisible()
     await expect(riel.getByRole('link', { name: 'Editar en GitHub' })).toHaveAttribute('href', /edit\/main\/docs\/arquitectura\.md$/)
     await page.setViewportSize({ width: 390, height: 800 })
     await expect(riel).toBeHidden()
+  })
+
+  test('al ir a otra página aparece la barra de carga; un ancla de la misma página no la activa', async ({ page }) => {
+    await page.goto(SITIO + 'index.html')
+    const barra = page.locator('.carga-pagina')
+    await expect(barra).not.toHaveClass(/activa/)
+    await page.keyboard.press('Tab') // el enlace «Saltar al contenido» (ancla de la misma página)
+    await page.keyboard.press('Enter')
+    await expect(barra).not.toHaveClass(/activa/)
+    // Se anota cómo estaba la barra justo al salir de la página (después de ella ya no existe ese documento).
+    await page.evaluate(() =>
+      window.addEventListener('beforeunload', () => sessionStorage.setItem('barra', document.querySelector('.carga-pagina').className)),
+    )
+    await page.locator('header.cabecera nav a[href="guia.html"]').click()
+    await expect(page).toHaveURL(/guia\.html/)
+    expect(await page.evaluate(() => sessionStorage.getItem('barra'))).toContain('activa')
+    await expect(page.locator('.carga-pagina')).not.toHaveClass(/activa/)
   })
 
   test('accesibilidad: las páginas no tienen violaciones de axe (WCAG 2.2 AA)', async ({ page, browserName }) => {
@@ -237,6 +255,7 @@ test.describe('Sitio de documentación', () => {
     for (const p of [
       'index.html',
       'ejemplos.html',
+      'primeros-pasos.html',
       'guia.html',
       'erp.html',
       'migracion.html',

@@ -100,6 +100,7 @@ export default defineConfig(({ mode, command }) => {
   if (command === 'build' && mode === 'site') {
     const paginas = [
       'index',
+      'primeros-pasos',
       'guia',
       'ejemplos',
       'erp',

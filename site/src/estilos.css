@@ -1289,3 +1289,27 @@ input[type='checkbox'] {
     }
   }
 }
+
+/* Barra de carga al cambiar de página (ver comun.ts) */
+.carga-pagina {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 3px;
+  z-index: var(--z-toast);
+  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-text));
+  transform: scaleX(0);
+  transform-origin: left;
+  opacity: 0;
+  pointer-events: none;
+}
+.carga-pagina.activa {
+  opacity: 1;
+  transform: scaleX(0.85);
+  transition: transform 6s cubic-bezier(0.1, 0.8, 0.2, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .carga-pagina.activa {
+    transform: scaleX(1);
+    transition: none;
+  }
+}
