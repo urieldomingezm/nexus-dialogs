@@ -2,7 +2,10 @@ import { enDialogo, expect, test } from './utilidades.mjs'
 
 // Sin botones de pie, el contenido propio (por ejemplo un menú de acciones) no debe quedar pegado al borde inferior.
 test.describe('diálogo sin pie de botones', () => {
-  for (const [nombre, ancho] of [['escritorio', 1024], ['celular', 390]]) {
+  for (const [nombre, ancho] of [
+    ['escritorio', 1024],
+    ['celular', 390],
+  ]) {
     test(`deja aire debajo del contenido (${nombre})`, async ({ page: p }) => {
       await p.setViewportSize({ width: ancho, height: 780 })
       await p.goto('/test/paginas/swal.html')
