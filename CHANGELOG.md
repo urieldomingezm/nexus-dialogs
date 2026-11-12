@@ -4,6 +4,10 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ## [Sin publicar]
 
+### Corregido
+
+- Celulares con teclado en pantalla (Android Chrome): la hoja inferior se ajusta a la zona visible, así que los botones de acción quedan sobre el teclado, y las listas flotantes (combobox, select, calendario) se colocan pegadas al campo en vez de aparecer arriba de la pantalla. Usa `visualViewport`.
+
 ### Cambiado
 
 - Sitio de documentación: el menú se organiza en submenús (Empezar, Probar, Referencia, Migrar) con una línea que describe cada página, y el pie de página pasa a cuatro columnas de enlaces (Documentación, Referencia, Migración, Proyecto). En la portada, la cifra «0 dependencias» se cambia por las descargas semanales de npm.

@@ -2,7 +2,7 @@
 // Cada uno es una «fábrica» que devuelve un control propio; FieldSet (forms.ts) pone la etiqueta, la ayuda y el error.
 import { language } from 'nexus-dialogs'
 import type { DatePreset, Field, Option } from './forms'
-import { css, esRtl, h, svg, uid } from './core/dom'
+import { css, esRtl, h, svg, uid, zonaVisible } from './core/dom'
 import { businessDays, isBusinessDay, type BusinessDaysOptions } from './mx'
 
 /** Lo que FieldSet necesita de un control propio. */
@@ -213,17 +213,19 @@ function flotante(ancla: HTMLElement, el: HTMLElement) {
     const r = ancla.getBoundingClientRect()
     const caja = ancla.closest('.body')?.getBoundingClientRect()
     const alto = el.offsetHeight
-    const abajo = (caja?.bottom ?? window.innerHeight) - r.bottom
-    const arriba = r.top - (caja?.top ?? 0)
+    const vis = zonaVisible()
+    const abajo = Math.min(caja?.bottom ?? vis.bottom, vis.bottom) - r.bottom
+    const arriba = r.top - Math.max(caja?.top ?? 0, vis.top)
     const haciaArriba = abajo < alto + 8 && arriba > abajo
+    const tope = Math.max(120, (haciaArriba ? arriba : abajo) - 12)
     css(el, {
       position: 'fixed',
       margin: '0',
       left: `${r.left}px`,
       width: `${r.width}px`,
-      top: haciaArriba ? 'auto' : `${r.bottom + 6}px`,
-      bottom: haciaArriba ? `${window.innerHeight - r.top + 6}px` : 'auto',
-      'max-height': `${Math.max(120, (haciaArriba ? arriba : abajo) - 12)}px`,
+      top: haciaArriba ? `${Math.max(vis.top, r.top - 6 - Math.min(alto, tope))}px` : `${r.bottom + 6}px`,
+      bottom: 'auto',
+      'max-height': `${tope}px`,
     })
     el.classList.toggle('up', haciaArriba)
   }
@@ -238,6 +240,8 @@ function flotante(ancla: HTMLElement, el: HTMLElement) {
       colocar()
       ;(si ? window.addEventListener : window.removeEventListener).call(window, 'scroll', colocar, true)
       ;(si ? window.addEventListener : window.removeEventListener).call(window, 'resize', colocar)
+      const vv = window.visualViewport
+      if (vv) for (const ev of ['resize', 'scroll']) (si ? vv.addEventListener : vv.removeEventListener).call(vv, ev, colocar)
       return
     }
     if (si) {
