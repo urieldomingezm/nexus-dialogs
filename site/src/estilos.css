@@ -135,6 +135,12 @@ main {
 .menu-btn {
   display: none;
 }
+.herr .ico-enlace {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding-block: 0;
+}
 .herr {
   display: flex;
   gap: var(--space-2xs);
@@ -142,8 +148,9 @@ main {
 }
 .tema {
   min-width: 96px;
+  min-height: 38px;
   white-space: nowrap;
-  padding: var(--space-xs) var(--space-md);
+  padding: 0 var(--space-md);
   border: 0;
   border-radius: var(--radius-pill);
   background: transparent;
@@ -169,7 +176,7 @@ main {
   .marca {
     flex: 1;
   }
-  .ico-enlace {
+  .herr .ico-enlace {
     display: none;
   }
   .menu-btn {
@@ -1511,13 +1518,13 @@ input[type='checkbox'] {
   display: inline-flex;
   gap: var(--space-xs);
   align-items: center;
-  min-height: 44px;
+  min-height: 38px;
   padding: 0 var(--space-md);
   border: 0;
   border-radius: var(--radius-pill);
   background: transparent;
   box-shadow: inset 0 0 0 1.5px var(--color-rule-2);
-  color: var(--color-ink-2);
+  color: var(--color-ink);
   font: 500 var(--text-sm) / 1 var(--font-display);
   text-transform: lowercase;
   cursor: pointer;
@@ -1536,6 +1543,10 @@ kbd {
 @media (max-width: 960px) {
   .buscar-btn kbd {
     display: none;
+  }
+  .buscar-btn,
+  .tema {
+    min-height: 44px;
   }
 }
 dialog.buscador {
@@ -2103,5 +2114,28 @@ a.insignia:hover {
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
   .btn.primario:hover {
     background-image: radial-gradient(110px circle at var(--mx, 50%) var(--my, 50%), oklch(100% 0 0 / 0.3), transparent 70%);
+  }
+}
+
+/* Celular angosto: «buscar» queda como lupa (el texto sigue para lectores de pantalla) y la marca no se parte en dos líneas. */
+@media (max-width: 520px) {
+  .marca {
+    white-space: nowrap;
+  }
+  .buscar-btn {
+    justify-content: center;
+    min-width: 44px;
+    padding: 0;
+  }
+  .buscar-btn span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .tema {
+    min-width: 0;
   }
 }
