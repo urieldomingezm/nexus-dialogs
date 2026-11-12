@@ -128,7 +128,7 @@ const pie = () => `<footer class="pie">
   <nav aria-label="Pie de página">
     <a href="${REPO}" rel="noopener">Código</a>
     <a href="${NPM}" rel="noopener">npm</a>
-    <a href="${REPO}/blob/main/CHANGELOG.md" rel="noopener">Cambios</a>
+    <a href="novedades.html">Novedades</a>
     <a href="arquitectura.html">Arquitectura</a>
     <a href="seguridad.html">Seguridad</a>
     <a href="limitaciones.html">Limitaciones</a>

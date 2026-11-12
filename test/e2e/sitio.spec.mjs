@@ -28,6 +28,7 @@ test.describe('Sitio de documentación', () => {
     ['seguridad.html', /Seguridad/],
     ['arquitectura.html', /Arquitectura/],
     ['limitaciones.html', /Limitaciones/],
+    ['novedades.html', /Novedades/],
     ['swal-compat.html', /SweetAlert2/],
     ['contratos.html', /Contratos/],
     ['api.html', /API/],
@@ -36,9 +37,15 @@ test.describe('Sitio de documentación', () => {
       await page.goto(SITIO + pagina)
       await expect(page).toHaveTitle(titulo)
       await expect(page.locator('header.cabecera nav a[aria-current="page"]')).toHaveCount(
-        ['accesibilidad.html', 'seguridad.html', 'arquitectura.html', 'limitaciones.html', 'swal-compat.html', 'contratos.html'].includes(
-          pagina,
-        )
+        [
+          'accesibilidad.html',
+          'seguridad.html',
+          'arquitectura.html',
+          'limitaciones.html',
+          'novedades.html',
+          'swal-compat.html',
+          'contratos.html',
+        ].includes(pagina)
           ? 0
           : 1,
       )
@@ -237,6 +244,7 @@ test.describe('Sitio de documentación', () => {
       'seguridad.html',
       'arquitectura.html',
       'limitaciones.html',
+      'novedades.html',
       'swal-compat.html',
       'contratos.html',
     ]) {
