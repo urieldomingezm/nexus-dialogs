@@ -6,6 +6,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ### Añadido
 
+- Sitio de documentación: sección «Míralo en acción» con una pantalla de muestra animada (borrado y formulario) y un selector de apariencia (Nexus, Material, Bootstrap, Tailwind, Oscuro) que también cambia los diálogos y toasts reales de la página; cifras de la portada que cuentan hasta su valor; buscador con `/` o `Ctrl`/`⌘`+`K` (páginas, encabezados y ejemplos) y botón para volver arriba.
 - Sitio de documentación: partículas conectadas en la portada, aparición suave de las secciones al hacer scroll, chispas al confirmar un ejemplo, un texto que se escribe solo y una leve inclinación 3D de las tarjetas con el mouse. Son decorativas, no usan dependencias, se detienen con la pestaña oculta o fuera de pantalla, usan menos partículas en celular y se apagan con «reducir movimiento».
 
 ## [0.5.4] - 2026-11-12

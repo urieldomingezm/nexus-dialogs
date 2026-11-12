@@ -3,6 +3,7 @@ import './estilos.css'
 import { configure } from 'nexus-dialogs'
 import { toast } from 'nexus-dialogs/toast'
 import './animaciones'
+import './buscador'
 
 // ── Tema (automático, claro u oscuro) ───────────────────────────────────────
 type Tema = 'auto' | 'claro' | 'oscuro'

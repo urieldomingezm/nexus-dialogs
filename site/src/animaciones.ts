@@ -336,9 +336,83 @@ function inclinar(): void {
   addEventListener('blur', quitar)
 }
 
+// ── Cifras que cuentan hasta su valor ────────────────────────────────────────
+/** Pone `texto` en `el` contando desde cero cuando entra en pantalla («1,234», «10.8 KB»). Sin número o con «reducir movimiento», lo pone directo. */
+export function animarNumero(el: HTMLElement, texto: string): void {
+  const m = /^(\D*)(\d[\d.,]*)(.*)$/.exec(texto)
+  if (!m || sinMovimiento.matches || typeof IntersectionObserver === 'undefined') {
+    el.textContent = texto
+    return
+  }
+  const [, antes, num, despues] = m
+  const decimales = /\.(\d+)$/.exec(num)?.[1].length ?? 0
+  const valor = parseFloat(num.replace(/,/g, ''))
+  const miles = /,\d{3}/.test(num)
+  const formato = new Intl.NumberFormat('es-MX', { minimumFractionDigits: decimales, maximumFractionDigits: decimales, useGrouping: miles })
+  el.style.minWidth = `${el.getBoundingClientRect().width}px` // el ancho final desde el principio: no baila el diseño
+  el.textContent = `${antes}${formato.format(0)}${despues}`
+  const io = new IntersectionObserver((es) => {
+    if (!es[0]?.isIntersecting) return
+    io.disconnect()
+    const inicio = performance.now()
+    const DURACION = 1200
+    const cuadro = (ahora: number): void => {
+      const k = Math.min((ahora - inicio) / DURACION, 1)
+      const v = valor * (1 - Math.pow(1 - k, 3)) // frena al llegar
+      el.textContent = `${antes}${formato.format(k === 1 ? valor : v)}${despues}`
+      if (k < 1) requestAnimationFrame(cuadro)
+    }
+    requestAnimationFrame(cuadro)
+  })
+  io.observe(el)
+}
+
+function cifras(): void {
+  for (const el of document.querySelectorAll<HTMLElement>('.datos-fila strong')) {
+    const t = el.textContent?.trim() ?? ''
+    if (/^\D*\d/.test(t)) animarNumero(el, t)
+  }
+}
+
+// ── Volver arriba ────────────────────────────────────────────────────────────
+function volverArriba(): void {
+  const b = document.createElement('button')
+  b.type = 'button'
+  b.className = 'arriba'
+  b.hidden = true
+  b.setAttribute('aria-label', 'Volver arriba')
+  b.innerHTML =
+    '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M12 19V5M5 12l7-7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+  document.body.appendChild(b)
+  let espera = 0
+  const ver = (): void => {
+    espera = 0
+    b.hidden = scrollY < 700
+  }
+  addEventListener(
+    'scroll',
+    () => {
+      if (!espera) espera = requestAnimationFrame(ver)
+    },
+    { passive: true },
+  )
+  b.addEventListener('click', () => {
+    scrollTo({ top: 0, behavior: sinMovimiento.matches ? 'auto' : 'smooth' })
+    // El botón se esconde al llegar: el foco pasa al contenido para no perderse.
+    const main = document.querySelector<HTMLElement>('main')
+    if (main) {
+      main.tabIndex = -1
+      main.focus({ preventScroll: true })
+    }
+  })
+  ver()
+}
+
 // ── Arranque ─────────────────────────────────────────────────────────────────
 const hero = document.querySelector<HTMLElement>('.hero:not(.chico)')
 if (hero) particulas(hero)
 aparecer()
 escribir()
 inclinar()
+cifras()
+volverArriba()

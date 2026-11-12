@@ -2,7 +2,8 @@ import './comun'
 import { confirmDelete } from 'nexus-dialogs/patterns'
 import { form } from 'nexus-dialogs/forms'
 import { toast } from 'nexus-dialogs/toast'
-import { chispas } from './animaciones'
+import { chispas, animarNumero } from './animaciones'
+import './demo'
 
 const $ = (id: string) => document.getElementById(id)!
 
@@ -11,7 +12,7 @@ void (async () => {
   try {
     const r = await fetch('https://api.npmjs.org/downloads/point/last-week/nexus-dialogs')
     const { downloads } = (await r.json()) as { downloads?: number }
-    if (typeof downloads === 'number') $('n-descargas').textContent = new Intl.NumberFormat('es-MX').format(downloads)
+    if (typeof downloads === 'number') animarNumero($('n-descargas'), new Intl.NumberFormat('es-MX').format(downloads))
   } catch {
     /* sin red o npm no responde: se queda el guion */
   }
