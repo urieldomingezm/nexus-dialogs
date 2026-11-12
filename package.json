@@ -1,6 +1,6 @@
 {
   "name": "nexus-dialogs",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Modals, alerts, confirmations, forms, wizards, toasts and drawers built on the native <dialog>: accessible, isolated with Shadow DOM, promise-based and dependency-free.",
   "license": "MIT",
   "author": "Angel Uriel Domínguez Medina (DevMedina) (https://devmedina.is-a.dev/)",

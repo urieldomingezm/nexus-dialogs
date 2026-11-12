@@ -4,6 +4,8 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ## [Sin publicar]
 
+## [0.5.0] - 2026-11-12
+
 ### Corregido
 
 - `loading` (pantalla de espera): el indicador al girar creaba una barra de desplazamiento y quedaba pegado y cortado abajo. Ahora tiene espacio por debajo y el cuerpo no se desplaza.
