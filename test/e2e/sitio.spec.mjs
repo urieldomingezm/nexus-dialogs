@@ -11,6 +11,9 @@ const test = base.extend({
     const errores = []
     page.on('pageerror', (e) => errores.push(e.message))
     page.on('console', (m) => m.type() === 'error' && errores.push(m.text()))
+    await page.route('https://api.npmjs.org/**', (r) =>
+      r.fulfill({ json: { downloads: 1234, package: 'nexus-dialogs' }, headers: { 'access-control-allow-origin': '*' } }),
+    )
     await page.emulateMedia({ reducedMotion: 'reduce' })
     await use(page)
     expect(errores, 'errores en la consola').toEqual([])
@@ -38,19 +41,7 @@ test.describe('Sitio de documentación', () => {
     test(`${pagina}: carga, sin marcadores sin resolver ni errores`, async ({ pagina: page }) => {
       await page.goto(SITIO + pagina)
       await expect(page).toHaveTitle(titulo)
-      await expect(page.locator('header.cabecera nav a[aria-current="page"]')).toHaveCount(
-        [
-          'accesibilidad.html',
-          'seguridad.html',
-          'arquitectura.html',
-          'limitaciones.html',
-          'novedades.html',
-          'swal-compat.html',
-          'contratos.html',
-        ].includes(pagina)
-          ? 0
-          : 1,
-      )
+      await expect(page.locator('header.cabecera nav a[aria-current="page"]')).toHaveCount(1)
       expect(await page.content()).not.toContain('<!--@')
       await expect(page.locator('footer.pie')).toContainText('MIT')
     })
@@ -63,9 +54,45 @@ test.describe('Sitio de documentación', () => {
     await expect(page.locator('#menu-principal')).toBeHidden()
     await boton.click()
     await expect(boton).toHaveAttribute('aria-expanded', 'true')
+    await page.locator('header.cabecera').getByRole('button', { name: 'Probar' }).click()
     await expect(page.locator('#menu-principal a', { hasText: 'Ejemplos' })).toBeVisible()
-    await page.keyboard.press('Escape')
+    await page.keyboard.press('Escape') // el primer Esc cierra el submenú
+    await expect(page.locator('#menu-principal a', { hasText: 'Ejemplos' })).toBeHidden()
+    await page.keyboard.press('Escape') // el segundo cierra el menú
     await expect(page.locator('#menu-principal')).toBeHidden()
+  })
+
+  test('escritorio: los submenús abren con clic, uno a la vez, y se cierran con Esc o fuera', async ({ pagina: page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 })
+    await page.goto(SITIO + 'ejemplos.html')
+    const probar = page.locator('header.cabecera').getByRole('button', { name: 'Probar' })
+    const empezar = page.locator('header.cabecera').getByRole('button', { name: 'Empezar' })
+    await expect(page.locator('.grupo.activo')).toHaveClass(/activo/)
+    await expect(page.locator('#sm-2 a')).toHaveCount(3)
+    await expect(page.locator('#sm-2')).toBeHidden()
+    await probar.click()
+    await expect(page.locator('#sm-2')).toBeVisible()
+    await empezar.click()
+    await expect(probar).toHaveAttribute('aria-expanded', 'false')
+    await expect(page.locator('#sm-1')).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(page.locator('#sm-1')).toBeHidden()
+    await expect(empezar).toBeFocused()
+    await probar.click()
+    await page.mouse.click(1200, 600) // fuera del submenú, que queda a la izquierda
+    await expect(page.locator('#sm-2')).toBeHidden()
+  })
+
+  test('pie: columnas de enlaces y firma', async ({ pagina: page }) => {
+    await page.goto(SITIO + 'index.html')
+    for (const c of ['Documentación', 'Referencia', 'Migración', 'Proyecto'])
+      await expect(page.locator(`footer.pie nav[aria-label="${c}"]`)).toBeVisible()
+    await expect(page.locator('footer.pie')).toContainText('DevMedina')
+  })
+
+  test('portada: muestra las descargas semanales de npm', async ({ pagina: page }) => {
+    await page.goto(SITIO + 'index.html')
+    await expect(page.locator('#n-descargas')).toHaveText(/1[.,\s]?234/)
   })
 
   test('portada: el botón Ejecutar abre la receta de borrar', async ({ pagina: page }) => {
@@ -242,6 +269,7 @@ test.describe('Sitio de documentación', () => {
     await page.evaluate(() =>
       window.addEventListener('beforeunload', () => sessionStorage.setItem('barra', document.querySelector('.carga-pagina').className)),
     )
+    await page.locator('header.cabecera').getByRole('button', { name: 'Empezar' }).click()
     await page.locator('header.cabecera nav a[href="guia.html"]').click()
     await expect(page).toHaveURL(/guia\.html/)
     expect(await page.evaluate(() => sessionStorage.getItem('barra'))).toContain('activa')

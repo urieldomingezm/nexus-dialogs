@@ -150,13 +150,32 @@ function menuMovil(): void {
   const cab = document.querySelector<HTMLElement>('.cabecera')
   const btn = cab?.querySelector<HTMLButtonElement>('.menu-btn')
   if (!cab || !btn) return
+  const grupos = [...cab.querySelectorAll<HTMLButtonElement>('.grupo-btn')]
+  const cerrarGrupos = (menos?: HTMLButtonElement) => grupos.forEach((g) => g !== menos && g.setAttribute('aria-expanded', 'false'))
   const poner = (abierto: boolean) => {
     cab.classList.toggle('abierto', abierto)
     btn.setAttribute('aria-expanded', String(abierto))
+    if (!abierto) cerrarGrupos()
   }
   btn.addEventListener('click', () => poner(btn.getAttribute('aria-expanded') !== 'true'))
+  // Submenús: se abren con clic o Enter, uno a la vez; Esc o un clic fuera los cierra.
+  for (const g of grupos) {
+    g.addEventListener('click', () => {
+      const abrir = g.getAttribute('aria-expanded') !== 'true'
+      cerrarGrupos(g)
+      g.setAttribute('aria-expanded', String(abrir))
+    })
+  }
+  document.addEventListener('click', (e) => {
+    if (!(e.target as Element).closest('.grupo')) cerrarGrupos()
+  })
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && cab.classList.contains('abierto')) {
+    if (e.key !== 'Escape') return
+    const abierto = grupos.find((g) => g.getAttribute('aria-expanded') === 'true')
+    if (abierto) {
+      cerrarGrupos()
+      abierto.focus()
+    } else if (cab.classList.contains('abierto')) {
       poner(false)
       btn.focus()
     }
