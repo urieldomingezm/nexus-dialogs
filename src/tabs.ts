@@ -59,6 +59,13 @@ export interface TabsOptions {
   /** `underline` (línea bajo la activa, por omisión) o `segmented` (control con la activa rellena). */
   variant?: 'underline' | 'segmented'
   /**
+   * Tamaño de las pestañas: `sm` (34 px), `md` (42 px, por omisión) o `lg` (50 px). No cambia el ancho del diálogo: ese es `size`.
+   * Para medidas propias usa las variables `--nd-tab-height`, `--nd-tab-font-size` y `--nd-tab-padding` (con `theme`).
+   */
+  scale?: 'sm' | 'md' | 'lg'
+  /** Las pestañas se reparten todo el ancho por igual. Por omisión solo en `segmented`. */
+  fill?: boolean
+  /**
    * `stable` (por omisión): todas las pestañas ocupan el mismo lugar y el conjunto mide lo que la más alta.
    * `auto`: mide lo que la pestaña activa.
    */
@@ -81,21 +88,27 @@ export interface TabsControl {
 }
 
 const CSS = `
-.tabs{min-width:0}
+.tabs{min-width:0;container-type:inline-size;--tab-h:42px;--tab-fs:14px;--tab-px:14px}
+.tabs.sc-sm{--tab-h:34px;--tab-fs:13px;--tab-px:10px}
+.tabs.sc-lg{--tab-h:50px;--tab-fs:16px;--tab-px:18px}
 .tabs-bar{position:sticky;top:0;z-index:2;background:var(--_bg);box-shadow:0 -20px 0 var(--_bg)}
 .tabs-list{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--_line)}
 .tabs-list::-webkit-scrollbar{display:none}
-.tab{flex:none;display:inline-flex;align-items:center;gap:6px;height:42px;padding:0 14px;margin-bottom:-1px;border:0;border-bottom:2px solid transparent;
-  background:none;color:var(--_muted);font:600 14px var(--_font);cursor:pointer;white-space:nowrap}
+.tab{flex:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;height:var(--nd-tab-height,var(--tab-h));padding:0 var(--nd-tab-padding,var(--tab-px));margin-bottom:-1px;border:0;border-bottom:2px solid transparent;
+  background:none;color:var(--_muted);font:600 var(--nd-tab-font-size,var(--tab-fs)) var(--_font);cursor:pointer;white-space:nowrap}
+.fill .tab{flex:1 0 0;min-width:max-content}
 .tab:hover:not([aria-disabled=true]){color:var(--_fg)}
-.tab[aria-selected=true]{color:var(--_accent);border-bottom-color:var(--_accent)}
+.tab[aria-selected=true]{color:color-mix(in srgb,var(--_accent) 65%,var(--_fg));border-bottom-color:var(--_accent)}
 .tab[aria-disabled=true]{opacity:.45;cursor:not-allowed}
 .tab:focus-visible{outline:none;box-shadow:0 0 0 4px var(--_focus);border-radius:8px}
-.tab-badge{padding:0 7px;border-radius:999px;background:color-mix(in srgb,var(--_accent) 14%,var(--_bg));color:var(--_accent);font-size:12px;line-height:18px;font-variant-numeric:tabular-nums}
+.tab-badge{padding:0 7px;border-radius:999px;background:color-mix(in srgb,var(--_accent) 14%,var(--_bg));color:color-mix(in srgb,var(--_accent) 65%,var(--_fg));font-size:12px;line-height:18px;font-variant-numeric:tabular-nums}
 .tab-badge[hidden]{display:none}
 
 .seg .tabs-list{padding:4px;gap:4px;border:1px solid var(--_line);border-radius:999px;background:var(--_surface)}
-.seg .tab{flex:1 1 0;justify-content:center;height:36px;margin:0;border:0;border-radius:999px}
+.seg .tab{flex:1 1 0;height:calc(var(--nd-tab-height,var(--tab-h)) - 6px);margin:0;border:0;border-radius:999px}
+.seg.nofill .tab{flex:none}
+/* Contenedor angosto (celular, panel lateral): pestañas más compactas y la lista se desplaza en vez de encogerlas. */
+@container (max-width:420px){.tab{padding:0 calc(var(--nd-tab-padding,var(--tab-px)) - 3px)}}
 .seg .tab[aria-selected=true]{background:var(--_accent);color:var(--_accent-fg)}
 .seg .tab[aria-selected=true] .tab-badge{background:color-mix(in srgb,var(--_accent-fg) 24%,transparent);color:var(--_accent-fg)}
 
@@ -121,7 +134,11 @@ export function tabs(o: TabsOptions, ctx?: DialogContext): TabsControl {
   const paneles = h('div', { class: 'tabs-panels' })
   const raiz = h(
     'div',
-    { class: `tabs${o.variant === 'segmented' ? ' seg' : ''}${o.height === 'auto' ? ' auto' : ''}` },
+    {
+      class: `tabs${o.variant === 'segmented' ? ' seg' : ''}${o.height === 'auto' ? ' auto' : ''}${o.scale && o.scale !== 'md' ? ` sc-${o.scale}` : ''}${
+        (o.fill ?? o.variant === 'segmented') ? ' fill' : ' nofill'
+      }`,
+    },
     h('div', { class: 'tabs-bar' }, lista),
     paneles,
   )
@@ -293,7 +310,7 @@ export interface TabsDialogOptions<T = unknown> extends TabsOptions, Omit<Dialog
 
 /** Un diálogo con pestañas. Por omisión lleva un solo botón «Cerrar»; pasa `buttons` para otra cosa. */
 export function tabsDialog<T = unknown>(o: TabsDialogOptions<T>): Promise<DialogResult<T>> {
-  const { tabs: especs, initial, label, variant, height, onChange, header, onOpen, ...resto } = o
+  const { tabs: especs, initial, label, variant, scale, fill, height, onChange, header, onOpen, ...resto } = o
   let control!: TabsControl
   return openDialog<T>({
     role: 'dialog',
@@ -303,7 +320,7 @@ export function tabsDialog<T = unknown>(o: TabsDialogOptions<T>): Promise<Dialog
     ...resto,
     moduleCss: CSS,
     render: (ctx) => {
-      control = tabs({ tabs: especs, initial, label: label ?? o.title, variant, height, onChange }, ctx)
+      control = tabs({ tabs: especs, initial, label: label ?? o.title, variant, scale, fill, height, onChange }, ctx)
       const cabecera = h('div', { class: 'tabs-head' }, header)
       return h('div', null, cabecera, control.el)
     },

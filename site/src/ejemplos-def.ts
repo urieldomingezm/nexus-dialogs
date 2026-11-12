@@ -684,6 +684,51 @@ export async function seguimiento() {
 }
 
 /* @ejemplo
+ * id: pestanas-compactas
+ * grupo: Datos
+ * titulo: Pestañas compactas
+ * desc: `scale: 'sm' | 'md' | 'lg'` cambia el tamaño de las pestañas sin tocar el ancho del diálogo (ese es `size`). `fill` las reparte todo el ancho; en un contenedor angosto la lista se desplaza. Medidas propias con las variables `--nd-tab-height`, `--nd-tab-font-size` y `--nd-tab-padding`.
+ * import: import { tabsDialog } from 'nexus-dialogs/tabs'
+ */
+export async function pestanasCompactas() {
+  const r = await tabsDialog({
+    title: 'Resultado de la cita',
+    size: 'sm', // ancho del diálogo: sm 400 px, md 480, lg 640, xl 860 o un número
+    scale: 'sm', // tamaño de las pestañas
+    fill: true,
+    tabs: [
+      { id: 'resultado', label: 'Resultado', content: 'Apto, con observaciones.' },
+      { id: 'notas', label: 'Notas', badge: 2, content: 'Entrevista con buen perfil; falta confirmar horario.' },
+      { id: 'historial', label: 'Historial', content: 'Sin movimientos anteriores.' },
+    ],
+  })
+  return r
+}
+
+/* @ejemplo
+ * id: seguimiento-horizontal
+ * grupo: Datos
+ * titulo: Seguimiento en una fila
+ * desc: `layout: 'horizontal'` pone las etapas en una fila con el estado debajo (el diálogo se abre en `xl`). Si el contenedor es angosto, como un celular, vuelve solo a vertical. `scale` cambia el tamaño de los marcadores y del texto.
+ * import: import { timelineDialog } from 'nexus-dialogs/timeline'
+ */
+export async function seguimientoHorizontal() {
+  const r = await timelineDialog({
+    title: 'Seguimiento de contratación',
+    layout: 'horizontal',
+    scale: 'sm',
+    steps: [
+      { id: 'cita', title: 'Cita', description: 'Asistió.', date: '13/11/2026', status: 'done' },
+      { id: 'docs', title: 'Documentos', description: 'Recibidos.', date: '14/11/2026', status: 'done' },
+      { id: 'ap', title: 'Revisión AP', description: 'En revisión.', status: 'current' },
+      { id: 'alta', title: 'Alta', description: 'Pendiente de aprobación.', status: 'pending' },
+      { id: 'ingreso', title: 'Ingreso', description: 'Sin fecha.', status: 'pending' },
+    ],
+  })
+  return r
+}
+
+/* @ejemplo
  * id: exportar
  * grupo: Datos
  * titulo: Exportar a Excel

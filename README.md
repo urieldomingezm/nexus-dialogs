@@ -760,6 +760,27 @@ El detalle de un candidato, la ficha de un empleado, una encuesta con varias sec
 
 Para ponerlas dentro de otro diálogo (`dialog.open` con `render`, un `form`…): `const t = tabs({ tabs: [...] })` devuelve `{ el, current, select(id), panel(id), setBadge(id, n), setDisabled(id, bool) }`; inserta `t.el` y agrega `styles: TABS_CSS` al diálogo.
 
+### Tamaños y diseño adaptable
+
+Hay dos cosas que se pueden configurar, y no se confunden: el **ancho del diálogo** (`size`) y el **tamaño del contenido** (`scale`).
+
+| Opción | Valores | Qué cambia |
+|---|---|---|
+| `size` (diálogo) | `sm` 400 px, `md` 480, `lg` 640, `xl` 860 o un número | El ancho. En celular el diálogo central se vuelve hoja inferior |
+| `scale` en `tabs` | `sm` 34 px, `md` 42 (por omisión), `lg` 50 | Alto y letra de las pestañas |
+| `scale` en `timeline` | `sm` marcador de 24 px, `md` 32 (por omisión), `lg` 40 | Marcador y letra de las etapas |
+| `fill` en `tabs` | `true` / `false` | Las pestañas se reparten todo el ancho (por omisión, solo en `segmented`) |
+| `layout` en `timeline` | `vertical` (por omisión) / `horizontal` | Etapas en columna o en una fila (abre en `xl`) |
+
+Se adaptan al **ancho del contenedor**, no al de la pantalla: sirven igual en un diálogo, un panel lateral o una hoja inferior. Las pestañas se compactan y la lista se desplaza si no caben; el seguimiento `horizontal` vuelve solo a vertical cuando el contenedor mide menos de 36 rem.
+
+Para medidas propias, variables CSS con `theme` (o en tu hoja): `--nd-tab-height`, `--nd-tab-font-size`, `--nd-tab-padding`, `--nd-tl-marker`, `--nd-tl-title` y `--nd-tl-text`.
+
+```ts
+await tabsDialog({ title: 'Resultado', size: 'sm', scale: 'sm', fill: true, tabs, theme: { '--nd-tab-height': '38px' } })
+await timelineDialog({ title: 'Contratación', layout: 'horizontal', scale: 'lg', steps })
+```
+
 ### Seguimiento por etapas
 
 ```ts
