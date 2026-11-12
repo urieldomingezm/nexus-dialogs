@@ -13,6 +13,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ### Corregido
 
+- Sitio de documentación: en la cabecera, «buscar», «github», «npm» y «tema» ahora miden lo mismo y quedan alineados; en celular angosto «buscar» pasa a ser una lupa y el nombre de la marca ya no se parte en dos líneas.
 - Sitio de documentación: en «Míralo en acción», al elegir otra escena (Borrar, Formulario, Aprobar) esta se reproduce sola, con el cursor escribiendo y pulsando, y al terminar queda lista para usarse. Antes solo se abría quieta.
 - Sitio de documentación: el buscador, la demo y las animaciones comunes no llegaban a la web publicada, porque el build descartaba los archivos que solo se importan por su efecto (`sideEffects: false`). Ahora se conservan, y el CI revisa el sitio construido (`scripts/revisar-sitio.mjs`).
 
