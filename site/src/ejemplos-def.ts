@@ -9,6 +9,7 @@ import { isRFC, isCURP, isCLABE, businessDays, mexicanHolidays } from 'nexus-dia
 import { importData, exportData } from 'nexus-dialogs/import'
 import { pickRows } from 'nexus-dialogs/table'
 import { tabsDialog } from 'nexus-dialogs/tabs'
+import { timelineDialog } from 'nexus-dialogs/timeline'
 import { plantillas, sinResolvers } from 'nexus-dialogs/rrhh'
 import { themes } from 'nexus-dialogs/themes'
 
@@ -655,6 +656,29 @@ export async function pestanas() {
         },
       },
     ],
+  })
+  return r
+}
+
+/* @ejemplo
+ * id: seguimiento
+ * grupo: Datos
+ * titulo: Seguimiento por etapas
+ * desc: El avance de un candidato: cada etapa dice su estado con texto (no solo con color), arriba va «0 de 6 etapas completadas» con su barra de progreso y la etapa en curso se anuncia como paso actual.
+ * import: import { timelineDialog } from 'nexus-dialogs/timeline'
+ */
+export async function seguimiento() {
+  const r = await timelineDialog({
+    title: 'Ortega Vázquez Mariela Berenice',
+    steps: [
+      { id: 'cita', title: 'Cita', description: 'Cita registrada; falta confirmar asistencia.', date: '13/11/2026', status: 'current' },
+      { id: 'neo', title: 'Enlace NEO', description: 'Sin liga de documentos registrada.', status: 'pending' },
+      { id: 'docs', title: 'Documentos', description: 'Sin expediente recibido todavía.', status: 'pending' },
+      { id: 'ap', title: 'Revisión AP', description: 'Pendiente de recibir documentos.', status: 'pending' },
+      { id: 'contrato', title: 'Contratado', description: 'Pendiente de aprobación y confirmación del alta.', status: 'pending' },
+      { id: 'ingreso', title: 'Ingreso y capacitación', description: 'Sin dato de ingreso o capacitación.', status: 'pending' },
+    ],
+    footnote: 'Los estados se muestran con base en registros de MiQP, NEO y la reserva de ingreso.',
   })
   return r
 }

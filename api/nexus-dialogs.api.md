@@ -1068,6 +1068,50 @@ function toCSV<R>(rows: R[], columns: ExportColumn<R>[], separador?: string): st
 function toXLSX<R>(rows: R[], o: ExportOptions<R>): Promise<Blob>;
 ```
 
+## `nexus-dialogs/timeline`
+
+```ts
+type StepStatus = 'done' | 'current' | 'pending' | 'error' | 'skipped';
+
+function timeline(o: TimelineOptions): TimelineControl;
+
+const TIMELINE_CSS: string;
+
+interface TimelineControl {
+    readonly el: HTMLElement;
+    progress(): TimelineProgress;
+    setStatus(id: string, status: StepStatus, extra?: Partial<Pick<TimelineStep, 'date' | 'description' | 'statusLabel'>>): boolean;
+}
+
+function timelineDialog<T = unknown>(o: TimelineDialogOptions<T>): Promise<DialogResult<T>>;
+
+interface TimelineDialogOptions<T = unknown> extends TimelineOptions, Omit<DialogOptions<T>, 'html' | 'onOpen'> {
+    onOpen?: (ctx: DialogContext, control: TimelineControl) => void;
+}
+
+interface TimelineOptions {
+    steps: TimelineStep[];
+    summary?: boolean | string;
+    emptyDate?: string;
+    label?: string;
+}
+
+interface TimelineProgress {
+    done: number;
+    total: number;
+    percent: number;
+}
+
+interface TimelineStep {
+    id: string;
+    title: string;
+    description?: string;
+    date?: string | Date | null;
+    status: StepStatus;
+    statusLabel?: string;
+}
+```
+
 ## `nexus-dialogs/tabs`
 
 ```ts

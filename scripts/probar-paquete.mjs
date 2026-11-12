@@ -32,6 +32,7 @@ const ENTRADAS = [
   'nexus-dialogs/import',
   'nexus-dialogs/table',
   'nexus-dialogs/tabs',
+  'nexus-dialogs/timeline',
   'nexus-dialogs/sepomex',
   'nexus-dialogs/rrhh',
 ]
@@ -86,6 +87,7 @@ import { injectDialog, injectForm, provideNexusDialogs } from 'nexus-dialogs/ang
 import { importData, parseCSV, exportData, type ImportColumn } from 'nexus-dialogs/import'
 import { pickRows } from 'nexus-dialogs/table'
 import { tabs, tabsDialog, type TabSpec } from 'nexus-dialogs/tabs'
+import { timeline, timelineDialog, type TimelineStep } from 'nexus-dialogs/timeline'
 import { sepomexLookup } from 'nexus-dialogs/sepomex'
 import { plantillas, sinResolvers } from 'nexus-dialogs/rrhh'
 configure({ lang: 'es', theme: themes.bootstrap, scheme: 'auto' })
@@ -116,6 +118,8 @@ async function uso() {
   pk.value?.map((x) => x.nombre)
   const pestanas: TabSpec[] = [{ id: 'a', label: 'A', content: 'x' }, { id: 'b', label: 'B', badge: 2, content: async () => document.createElement('p') }]
   await tabsDialog({ title: 'Detalle', tabs: pestanas, variant: 'segmented' }); void tabs({ tabs: pestanas }).current
+  const etapas: TimelineStep[] = [{ id: 'cita', title: 'Cita', date: new Date(), status: 'current' }, { id: 'docs', title: 'Documentos', status: 'pending' }]
+  await timelineDialog({ title: 'Seguimiento', steps: etapas, footnote: 'Nota' }); const avance: number = timeline({ steps: etapas }).progress().percent; void avance
   await formFromJSON(sinResolvers(plantillas.vacaciones))
   await exportData([{ a: 1 }], { columns: [{ key: 'a', label: 'A' }], format: 'csv' })
   void businessDays('2026-01-01', '2026-01-31'); void mexicanHolidays(2026)
