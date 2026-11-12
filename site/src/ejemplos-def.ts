@@ -8,6 +8,7 @@ import { confirmDelete, unsavedChanges, sessionTimeout, approval, bulkAction, ch
 import { isRFC, isCURP, isCLABE, businessDays, mexicanHolidays } from 'nexus-dialogs/mx'
 import { importData, exportData } from 'nexus-dialogs/import'
 import { pickRows } from 'nexus-dialogs/table'
+import { tabsDialog } from 'nexus-dialogs/tabs'
 import { plantillas, sinResolvers } from 'nexus-dialogs/rrhh'
 import { themes } from 'nexus-dialogs/themes'
 
@@ -601,6 +602,61 @@ export async function tabla() {
     max: 30,
   })
   return r.confirmed ? { elegidos: (r.value ?? []).length } : r
+}
+
+/* @ejemplo
+ * id: pestanas
+ * grupo: Datos
+ * titulo: Detalle con pestañas
+ * desc: La ficha de un candidato en «Datos generales» y «Cita y entrevista». Mide lo que la pestaña más alta, así no brinca; la lista de pestañas se queda fija al bajar. Flechas, Inicio y Fin cambian de pestaña.
+ * import: import { tabsDialog } from 'nexus-dialogs/tabs'
+ */
+export async function pestanas() {
+  const fila = (etiqueta: string, valor: string) => {
+    const d = document.createElement('div')
+    d.style.cssText = 'padding:10px 0;border-bottom:1px solid rgba(127,127,127,.25)'
+    const k = document.createElement('small')
+    k.style.cssText = 'display:block;font-size:12px;opacity:.65;text-transform:uppercase;letter-spacing:.03em'
+    k.textContent = etiqueta
+    d.append(k, valor)
+    return d
+  }
+  const hoja = (...filas: HTMLElement[]) => {
+    const c = document.createElement('div')
+    c.append(...filas)
+    return c
+  }
+  const r = await tabsDialog({
+    title: 'Mariela Berenice Ortega Vazquez',
+    header: 'Citado · Repartidor Auto Propio, San Luis Potosí',
+    variant: 'segmented',
+    tabs: [
+      {
+        id: 'general',
+        label: 'Datos generales',
+        content: () =>
+          hoja(
+            fila('Folio', '53270'),
+            fila('Plaza', 'San Luis Potosí'),
+            fila('Vacante', 'Repartidor Auto Propio - 100% Comisiones'),
+            fila('Teléfono', '5214448000160'),
+            fila('Medio de reclutamiento', 'WhatsApp bot'),
+            fila('Ejecutivo', 'Alondra Escobedo Vidales'),
+          ),
+      },
+      {
+        id: 'cita',
+        label: 'Cita y entrevista',
+        badge: 1,
+        // Se arma al abrir la pestaña; puede ser async (aquí, la consulta a tu API).
+        content: async () => {
+          await new Promise((ok) => setTimeout(ok, 300))
+          return hoja(fila('Fecha', '13/11/2026'), fila('Hora', '9:00 AM'), fila('Medio', 'Videollamada'))
+        },
+      },
+    ],
+  })
+  return r
 }
 
 /* @ejemplo

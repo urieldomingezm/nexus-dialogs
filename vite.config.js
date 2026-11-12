@@ -12,7 +12,7 @@ const src = (f) => fileURLToPath(new URL(`./src/${f}`, import.meta.url))
 const ALIAS = { 'nexus-dialogs/toast': src('toast.ts'), 'nexus-dialogs/forms': src('forms.ts'), 'nexus-dialogs': src('index.ts') }
 // El sitio de documentación y las páginas de prueba usan todas las rutas desde el código fuente.
 const ALIAS_TODAS = Object.fromEntries([
-  ...['patterns', 'mx', 'themes', 'import', 'table', 'sepomex', 'rrhh', 'swal'].map((m) => [`nexus-dialogs/${m}`, src(`${m}.ts`)]),
+  ...['patterns', 'mx', 'themes', 'import', 'table', 'tabs', 'sepomex', 'rrhh', 'swal'].map((m) => [`nexus-dialogs/${m}`, src(`${m}.ts`)]),
   ...Object.entries(ALIAS),
 ])
 
@@ -63,6 +63,7 @@ const LIBS = {
   },
   import: { entry: 'src/import.ts', name: 'NexusDialogsImport', fileName: 'import', formats: ['es', 'cjs'], external: ['nexus-dialogs'] },
   table: { entry: 'src/table.ts', name: 'NexusDialogsTable', fileName: 'table', formats: ['es', 'cjs'], external: ['nexus-dialogs'] },
+  tabs: { entry: 'src/tabs.ts', name: 'NexusDialogsTabs', fileName: 'tabs', formats: ['es', 'cjs'], external: ['nexus-dialogs'] },
   sepomex: { entry: 'src/sepomex.ts', name: 'NexusDialogsSepomex', fileName: 'sepomex', formats: ['es', 'cjs'], external: [] },
   rrhh: { entry: 'src/rrhh.ts', name: 'NexusDialogsRRHH', fileName: 'rrhh', formats: ['es', 'cjs'], external: [] },
   swalglobal: { entry: 'src/swal-global.ts', name: 'Swal', fileName: 'nexus-dialogs.swal', formats: ['iife'], external: [] },

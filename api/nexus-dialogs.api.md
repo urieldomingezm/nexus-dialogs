@@ -1068,6 +1068,54 @@ function toCSV<R>(rows: R[], columns: ExportColumn<R>[], separador?: string): st
 function toXLSX<R>(rows: R[], o: ExportOptions<R>): Promise<Blob>;
 ```
 
+## `nexus-dialogs/tabs`
+
+```ts
+interface TabInfo {
+    id: string;
+    panel: HTMLElement;
+    ctx?: DialogContext;
+}
+
+function tabs(o: TabsOptions, ctx?: DialogContext): TabsControl;
+
+const TABS_CSS: string;
+
+interface TabsControl {
+    readonly el: HTMLElement;
+    readonly current: string;
+    select(id: string, focus?: boolean): boolean;
+    panel(id: string): HTMLElement | null;
+    setBadge(id: string, badge: string | number | null): void;
+    setDisabled(id: string, disabled: boolean): void;
+}
+
+function tabsDialog<T = unknown>(o: TabsDialogOptions<T>): Promise<DialogResult<T>>;
+
+interface TabsDialogOptions<T = unknown> extends TabsOptions, Omit<DialogOptions<T>, 'html' | 'onOpen'> {
+    header?: string | Node;
+    onOpen?: (ctx: DialogContext, control: TabsControl) => void;
+}
+
+interface TabsOptions {
+    tabs: TabSpec[];
+    initial?: string;
+    label?: string;
+    variant?: 'underline' | 'segmented';
+    height?: 'stable' | 'auto';
+    onChange?: (id: string, control: TabsControl) => void;
+}
+
+interface TabSpec {
+    id: string;
+    label: string;
+    content?: Contenido | ((info: TabInfo) => Contenido | Promise<Contenido>);
+    html?: string;
+    badge?: string | number;
+    disabled?: boolean;
+}
+```
+
 ## `nexus-dialogs/table`
 
 ```ts

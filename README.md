@@ -56,6 +56,7 @@ npm i nexus-dialogs
 | `nexus-dialogs` | **Núcleo**: `dialog.alert / confirm / prompt / open`, `configure` |
 | `nexus-dialogs/forms` | `form()` y `wizard()` |
 | `nexus-dialogs/toast` | `toast()` con cola |
+| `nexus-dialogs/tabs` | Pestañas accesibles, sueltas o dentro de un diálogo (`tabsDialog`) |
 | `nexus-dialogs/themes` | Temas listos (Bootstrap, Tailwind, Material, oscuro) |
 | `nexus-dialogs/patterns` | Recetas en una línea: borrar, cambios sin guardar, sesión, aprobaciones, acciones masivas… |
 | `nexus-dialogs/mx` | Validadores de RFC, CURP, NSS, CLABE y código postal (también en Node) |
@@ -733,6 +734,30 @@ if (r.confirmed) agregar(r.value)
 Búsqueda sin acentos, páginas, «seleccionar todos los de esta página», clic en cualquier parte de la fila y la selección se conserva al buscar o cambiar de página. `multiple: false` para elegir una sola. En celular la tabla se desplaza a lo ancho.
 
 Con `onExport` aparece «Exportar seleccionados: Excel · CSV» (o «Exportar todo» si no hay selección): `onExport: (rows, format) => exportData(rows, { columns, format, filename: 'empleados' })`.
+
+### Pestañas
+
+```ts
+import { tabsDialog } from 'nexus-dialogs/tabs'
+
+await tabsDialog({
+  title: 'Mariela Ortega Vázquez',
+  header: 'Citado · Repartidor Auto Propio', // texto o un nodo, sobre las pestañas
+  tabs: [
+    { id: 'general', label: 'Datos generales', content: () => tarjetaGeneral(candidato) },
+    { id: 'cita', label: 'Cita y entrevista', badge: 1, content: async () => tarjetaCita(await api.cita(id)) },
+  ],
+})
+```
+
+El detalle de un candidato, la ficha de un empleado, una encuesta con varias secciones. El contenido de cada pestaña es **texto, un nodo o una función** (se llama la primera vez que se abre la pestaña y puede ser `async`: mientras tanto sale «Cargando…», y si falla, un aviso). Para HTML en cadena usa `html: '…'`, que pasa por `sanitize` / `strictHtml` como el `html` de cualquier diálogo.
+
+- **Accesible**: `tablist` / `tab` / `tabpanel` enlazados; flechas (invertidas en RTL), Inicio y Fin; las pestañas deshabilitadas se saltan; el foco empieza en la activa.
+- **Altura estable** (`height: 'stable'`, por omisión): el diálogo mide lo que la pestaña más alta y no brinca al cambiar. Con `height: 'auto'` mide lo que la activa. Si el contenido es más alto que la pantalla, la lista de pestañas se queda fija arriba y solo se desplaza el contenido.
+- **Estilos**: `variant: 'underline'` (por omisión) o `'segmented'`. `badge` muestra un número o un texto corto junto a la etiqueta.
+- Por omisión un solo botón «Cerrar»; pasa `buttons` para otra cosa (por ejemplo, Guardar y Cancelar).
+
+Para ponerlas dentro de otro diálogo (`dialog.open` con `render`, un `form`…): `const t = tabs({ tabs: [...] })` devuelve `{ el, current, select(id), panel(id), setBadge(id, n), setDisabled(id, bool) }`; inserta `t.el` y agrega `styles: TABS_CSS` al diálogo.
 
 ### Exportar a Excel o CSV
 
