@@ -369,6 +369,23 @@ function volverArriba(): void {
   ver()
 }
 
+// ── Brillo que sigue al puntero en los botones principales ───────────────────
+/** Un resplandor suave bajo el puntero (solo con ratón y sin «reducir movimiento»); el CSS lo pinta con --mx y --my. */
+function brillo(): void {
+  if (sinMovimiento.matches || !matchMedia('(hover: hover) and (pointer: fine)').matches) return
+  document.addEventListener(
+    'pointermove',
+    (e) => {
+      const b = (e.target as Element).closest<HTMLElement>('.btn.primario')
+      if (!b) return
+      const r = b.getBoundingClientRect()
+      b.style.setProperty('--mx', `${e.clientX - r.left}px`)
+      b.style.setProperty('--my', `${e.clientY - r.top}px`)
+    },
+    { passive: true },
+  )
+}
+
 // ── Arranque ─────────────────────────────────────────────────────────────────
 const hero = document.querySelector<HTMLElement>('.hero:not(.chico)')
 if (hero) particulas(hero)
@@ -376,3 +393,4 @@ aparecer()
 escribir()
 cifras()
 volverArriba()
+brillo()

@@ -5,6 +5,7 @@ import { toast } from 'nexus-dialogs/toast'
 import { confirmDelete } from 'nexus-dialogs/patterns'
 import { themes, type Theme } from 'nexus-dialogs/themes'
 import { chispas } from './animaciones'
+import { decorarCodigo } from './comun'
 
 const $ = <T extends HTMLElement>(q: string) => document.querySelector<T>(q)
 const pantalla = $('.demo-pantalla')
@@ -80,22 +81,122 @@ const textoToast = avisoToast?.querySelector('span') ?? null
 const deshacer = avisoToast?.querySelector<HTMLButtonElement>('.demo-deshacer') ?? null
 const cursor = pantalla?.querySelector<HTMLElement>('.demo-cursor') ?? null
 
-type Escena = 'borrar' | 'formulario' | 'aprobar'
-const ESCENAS: Escena[] = ['borrar', 'formulario', 'aprobar']
+type Escena = 'borrar' | 'formulario' | 'aprobar' | 'vacaciones' | 'asistente' | 'importar' | 'descartar'
+const ESCENAS: Escena[] = ['borrar', 'formulario', 'aprobar', 'vacaciones', 'asistente', 'importar', 'descartar']
+
+// Estado de las escenas con varios pasos (se reinicia al abrir la escena).
+const datos = { paso: 1, nombre: '', puesto: 'Ventas', cargado: false }
+const PUESTOS = ['Ventas', 'Contabilidad', 'Operaciones']
+const FILAS = [
+  ['Laura Méndez', true],
+  ['Mario Ruiz', true],
+  ['Ana Soto', true],
+  ['Pedro Vega', false],
+] as const
+
+const botones = (cancelar: [string, string], principal: [string, string]): string =>
+  `<div class="demo-botones"><button type="button" class="demo-btn cancelar" data-accion="${cancelar[0]}">${cancelar[1]}</button><button type="button" class="demo-btn primario" data-accion="${principal[0]}">${principal[1]}</button></div>`
 
 // Plantillas propias de este archivo, sin datos de nadie.
-const HTML_ESCENA: Record<Escena, string> = {
-  borrar: `<p class="demo-titulo">¿Eliminar a Laura Méndez?</p>
+const HTML_ESCENA: Record<Escena, () => string> = {
+  borrar: () => `<p class="demo-titulo">¿Eliminar a Laura Méndez?</p>
 <p class="demo-texto">Se eliminará su registro. Esta acción no se puede deshacer.</p>
 <div class="demo-botones"><button type="button" class="demo-btn cancelar" data-accion="cancelar">Cancelar</button><button type="button" class="demo-btn peligro" data-accion="eliminar">Eliminar</button></div>`,
-  formulario: `<p class="demo-titulo">Nuevo gasto</p>
+  formulario: () => `<p class="demo-titulo">Nuevo gasto</p>
 <div class="demo-campo"><label class="demo-etiqueta" for="demo-rfc">RFC del proveedor</label><input class="demo-entrada" id="demo-rfc" autocomplete="off" spellcheck="false" aria-describedby="demo-rfc-e" /><span class="demo-error" id="demo-rfc-e"></span></div>
 <div class="demo-campo"><label class="demo-etiqueta" for="demo-importe">Importe</label><input class="demo-entrada" id="demo-importe" inputmode="decimal" autocomplete="off" aria-describedby="demo-importe-e" /><span class="demo-error" id="demo-importe-e"></span></div>
 <div class="demo-botones"><button type="button" class="demo-btn cancelar" data-accion="cancelar">Cancelar</button><button type="button" class="demo-btn primario" data-accion="guardar">Guardar</button></div>`,
-  aprobar: `<p class="demo-titulo">Solicitud de vacaciones</p>
+  aprobar: () => `<p class="demo-titulo">Solicitud de vacaciones</p>
 <p class="demo-texto">Laura Méndez pide 5 días hábiles, del 18 al 22 de diciembre.</p>
 <div class="demo-campo"><label class="demo-etiqueta" for="demo-motivo">Motivo (obligatorio al rechazar)</label><textarea class="demo-entrada" id="demo-motivo" rows="2" aria-describedby="demo-motivo-e"></textarea><span class="demo-error" id="demo-motivo-e"></span></div>
 <div class="demo-botones"><button type="button" class="demo-btn cancelar" data-accion="rechazar">Rechazar</button><button type="button" class="demo-btn primario" data-accion="aprobar">Aprobar</button></div>`,
+  vacaciones: () => `<p class="demo-titulo">Solicitar vacaciones</p>
+<div class="demo-fechas">
+<div class="demo-campo"><label class="demo-etiqueta" for="demo-desde">Desde</label><input class="demo-entrada" id="demo-desde" type="date" aria-describedby="demo-desde-e" /><span class="demo-error" id="demo-desde-e"></span></div>
+<div class="demo-campo"><label class="demo-etiqueta" for="demo-hasta">Hasta</label><input class="demo-entrada" id="demo-hasta" type="date" aria-describedby="demo-hasta-e" /><span class="demo-error" id="demo-hasta-e"></span></div>
+</div>
+<p class="demo-texto" id="demo-dias" role="status">Elige las fechas: se cuentan solo días hábiles (máximo 12).</p>
+${botones(['cancelar', 'Cancelar'], ['enviar', 'Enviar'])}`,
+  asistente: () => {
+    const p = datos.paso
+    const cabeza = `<p class="demo-titulo">Alta de empleado</p><p class="demo-texto" id="demo-paso">Paso ${p} de 3</p><div class="demo-progreso" aria-hidden="true"><i style="width:${Math.round((p / 3) * 100)}%"></i></div>`
+    if (p === 1)
+      return `${cabeza}<div class="demo-campo"><label class="demo-etiqueta" for="demo-nombre">Nombre completo</label><input class="demo-entrada" id="demo-nombre" autocomplete="off" value="${datos.nombre}" aria-describedby="demo-nombre-e" /><span class="demo-error" id="demo-nombre-e"></span></div>${botones(['cancelar', 'Cancelar'], ['siguiente', 'Siguiente'])}`
+    if (p === 2)
+      return `${cabeza}<div class="demo-campo"><label class="demo-etiqueta" for="demo-puesto">Área</label><select class="demo-entrada" id="demo-puesto">${PUESTOS.map((x) => `<option${x === datos.puesto ? ' selected' : ''}>${x}</option>`).join('')}</select></div>${botones(['atras', 'Atrás'], ['siguiente', 'Siguiente'])}`
+    return `${cabeza}<p class="demo-texto">Revisa antes de terminar:</p><dl class="demo-resumen"><div><dt>Nombre</dt><dd>${datos.nombre}</dd></div><div><dt>Área</dt><dd>${datos.puesto}</dd></div></dl>${botones(['atras', 'Atrás'], ['terminar', 'Dar de alta'])}`
+  },
+  importar: () => {
+    const ok = FILAS.filter((f) => f[1]).length
+    const vista = datos.cargado
+      ? `<ul class="demo-filas" aria-label="Vista previa del archivo">${FILAS.map((f) => `<li class="${f[1] ? 'bien' : 'mal'}"><span>${f[0]}</span><b>${f[1] ? 'Lista' : 'RFC no válido'}</b></li>`).join('')}</ul><p class="demo-texto">${ok} filas listas y 1 con error (se omitirá).</p>`
+      : `<button type="button" class="demo-btn demo-archivo" data-accion="cargar">Elegir empleados.csv</button><span class="demo-error" id="demo-archivo-e"></span>`
+    return `<p class="demo-titulo">Importar empleados</p>${vista}${botones(['cancelar', 'Cancelar'], ['importar', datos.cargado ? `Importar ${ok}` : 'Importar'])}`
+  },
+  descartar: () => `<p class="demo-titulo">¿Salir sin guardar?</p>
+<p class="demo-texto">Cambiaste el salario diario de $ 980.00 a $ 1,150.00. Si sales, se pierde.</p>
+<div class="demo-botones"><button type="button" class="demo-btn cancelar" data-accion="descartar">Descartar</button><button type="button" class="demo-btn primario" data-accion="seguir">Seguir editando</button></div>`,
+}
+
+// «Ver código»: lo que se escribe de verdad en la librería para cada escena.
+const CODIGO: Record<Escena, string> = {
+  borrar: `import { confirmDelete } from 'nexus-dialogs/patterns'
+
+if (await confirmDelete({ what: 'a Laura Méndez' })) {
+  // eliminar
+}`,
+  formulario: `import { form } from 'nexus-dialogs/forms'
+
+const r = await form({
+  title: 'Nuevo gasto',
+  fields: [
+    { name: 'rfc', label: 'RFC del proveedor', type: 'rfc', required: true },
+    { name: 'importe', label: 'Importe', type: 'money', required: true, min: 1 },
+  ],
+})
+if (r.confirmed) guardar(r.values)`,
+  aprobar: `import { approval } from 'nexus-dialogs/patterns'
+
+const r = await approval({
+  title: 'Vacaciones de Laura Méndez',
+  details: [{ label: 'Días hábiles', value: '5' }],
+  reasons: ['Cubre otro turno', 'Sin saldo'],
+})`,
+  vacaciones: `import { form } from 'nexus-dialogs/forms'
+
+const r = await form({
+  title: 'Solicitar vacaciones',
+  fields: [
+    { name: 'dias', label: 'Fechas', type: 'daterange',
+      calendar: true, businessDays: true, maxDays: 12, required: true },
+  ],
+})`,
+  asistente: `import { wizard } from 'nexus-dialogs/forms'
+
+const r = await wizard({
+  title: 'Alta de empleado',
+  review: true,
+  steps: [
+    { title: 'Datos', fields: [{ name: 'nombre', label: 'Nombre completo', required: true }] },
+    { title: 'Área', fields: [{ name: 'area', label: 'Área', type: 'select', options: ['Ventas', 'Contabilidad'] }] },
+  ],
+})`,
+  importar: `import { importData } from 'nexus-dialogs/import'
+
+const r = await importData({
+  title: 'Importar empleados',
+  columns: [
+    { name: 'nombre', label: 'Nombre completo', required: true },
+    { name: 'rfc', label: 'RFC', type: 'rfc', unique: true },
+  ],
+  onImport: (filas) => api.importar(filas),
+})`,
+  descartar: `import { unsavedChanges } from 'nexus-dialogs/patterns'
+
+const r = await unsavedChanges({
+  changes: [{ label: 'Salario diario', from: '$ 980.00', to: '$ 1,150.00' }],
+  onSave: () => guardar(),
+})`,
 }
 
 class Cancelado extends Error {}
@@ -143,10 +244,26 @@ function marcarEscena(): void {
     b.setAttribute('aria-pressed', String(b.dataset.escena === escenaActual))
 }
 
+const panelCodigo = document.querySelector<HTMLElement>('.demo-codigo pre')
+function mostrarCodigo(e: Escena): void {
+  if (!panelCodigo) return
+  panelCodigo.querySelector('button.copiar')?.remove()
+  panelCodigo.removeAttribute('data-listo')
+  const c = panelCodigo.querySelector('code')
+  if (c) c.textContent = CODIGO[e]
+  decorarCodigo(panelCodigo.parentElement!)
+}
+
+function pintar(): void {
+  if (dialogo) dialogo.innerHTML = HTML_ESCENA[escenaActual]()
+}
+
 function abrirEscena(e: Escena): void {
   if (!dialogo) return
+  if (e !== escenaActual) mostrarCodigo(e)
   escenaActual = e
-  dialogo.innerHTML = HTML_ESCENA[e]
+  Object.assign(datos, { paso: 1, nombre: '', puesto: 'Ventas', cargado: false })
+  pintar()
   dialogo.classList.remove('sale')
   dialogo.classList.add('entra')
   dialogo.removeAttribute('inert')
@@ -183,6 +300,29 @@ function valida(accion: string): boolean {
     if (!ok) campo('demo-motivo')?.focus({ preventScroll: true })
     return ok
   }
+  if (accion === 'enviar') {
+    const d = campo('demo-desde')?.value ?? ''
+    const h = campo('demo-hasta')?.value ?? ''
+    const dOk = d !== ''
+    const hOk = h !== '' && (!dOk || h >= d)
+    const largo = dOk && hOk && diasHabiles(d, h) > 12
+    error('demo-desde', dOk ? '' : 'Elige el primer día.')
+    error('demo-hasta', !h ? 'Elige el último día.' : !hOk ? 'No puede ser antes del primer día.' : largo ? 'Máximo 12 días hábiles.' : '')
+    ;(!dOk ? campo('demo-desde') : !hOk || largo ? campo('demo-hasta') : null)?.focus({ preventScroll: true })
+    return dOk && hOk && !largo
+  }
+  if (accion === 'siguiente' && datos.paso === 1) {
+    const ok = (campo('demo-nombre')?.value.trim() ?? '') !== ''
+    error('demo-nombre', ok ? '' : 'El nombre es obligatorio.')
+    if (!ok) campo('demo-nombre')?.focus({ preventScroll: true })
+    return ok
+  }
+  if (accion === 'importar' && !datos.cargado) {
+    const aviso = dialogo?.querySelector<HTMLElement>('#demo-archivo-e')
+    if (aviso) aviso.textContent = 'Primero elige un archivo.'
+    dialogo?.querySelector<HTMLElement>('[data-accion="cargar"]')?.focus({ preventScroll: true })
+    return false
+  }
   return true
 }
 
@@ -192,6 +332,29 @@ const MENSAJES: Record<string, string> = {
   guardar: 'Enviado a aprobación',
   aprobar: 'Solicitud aprobada',
   rechazar: 'Solicitud rechazada',
+  enviar: 'Solicitud de vacaciones enviada',
+  terminar: 'Empleado dado de alta',
+  importar: 'Se importaron 3 empleados',
+  descartar: 'Cambios descartados',
+  seguir: 'Sigues editando',
+}
+
+/** Días hábiles (lunes a viernes) entre dos fechas ISO, ambas incluidas. */
+function diasHabiles(desde: string, hasta: string): number {
+  const a = new Date(`${desde}T12:00:00`)
+  const b = new Date(`${hasta}T12:00:00`)
+  let n = 0
+  for (const d = new Date(a); d <= b; d.setDate(d.getDate() + 1)) if (d.getDay() % 6 !== 0) n++
+  return n
+}
+
+function actualizaDias(): void {
+  const t = dialogo?.querySelector('#demo-dias')
+  const d = campo('demo-desde')?.value
+  const h = campo('demo-hasta')?.value
+  if (!t || !d || !h || h < d) return
+  const n = diasHabiles(d, h)
+  t.textContent = `${n} ${n === 1 ? 'día hábil' : 'días hábiles'}${n > 12 ? ' (máximo 12)' : ''}`
 }
 
 /** Cierra el diálogo y avisa con el toast (con «Deshacer» si se eliminó). */
@@ -226,6 +389,30 @@ async function resolver(accion: string, token = ciclo): Promise<void> {
   }
 }
 
+/** Pasos que no cierran el diálogo: se vuelve a pintar con el estado nuevo. */
+const INTERNAS = ['siguiente', 'atras', 'cargar']
+
+function interna(accion: string): void {
+  if (datos.paso === 1) datos.nombre = campo('demo-nombre')?.value.trim() ?? datos.nombre
+  if (datos.paso === 2) datos.puesto = campo('demo-puesto')?.value ?? datos.puesto
+  if (accion === 'siguiente') datos.paso = Math.min(3, datos.paso + 1)
+  if (accion === 'atras') datos.paso = Math.max(1, datos.paso - 1)
+  if (accion === 'cargar') datos.cargado = true
+  pintar()
+  if (!automatico) dialogo?.querySelector<HTMLElement>('input, select, [data-accion="importar"]')?.focus({ preventScroll: true })
+}
+
+/** Valida y hace la acción: sigue en el mismo diálogo (pasos), o lo cierra con su aviso. Devuelve si se hizo algo. */
+async function accionar(accion: string, token = ciclo): Promise<boolean> {
+  if (!valida(accion)) return false
+  if (INTERNAS.includes(accion)) {
+    interna(accion)
+    return true
+  }
+  await resolver(accion, token)
+  return true
+}
+
 // ── Uso manual ───────────────────────────────────────────────────────────────
 function detener(): void {
   if (!automatico) return
@@ -238,27 +425,47 @@ function detener(): void {
 pantalla?.addEventListener('pointerdown', detener)
 pantalla?.addEventListener('keydown', detener)
 document.querySelectorAll('button[data-escena]').forEach((b) =>
-  b.addEventListener('click', () => {
-    detener()
-    abrirEscena((b as HTMLElement).dataset.escena as Escena)
-    avisoId++ // un aviso pendiente ya no aplica
-    avisoToast?.classList.remove('visible')
-    avisoToast?.setAttribute('inert', '')
-  }),
+  b.addEventListener('click', () => elegir((b as HTMLElement).dataset.escena as Escena)),
 )
 
 dialogo?.addEventListener('click', async (e) => {
   const boton = (e.target as Element).closest<HTMLButtonElement>('button[data-accion]')
   if (!boton) return
   const accion = boton.dataset.accion!
-  if (!valida(accion)) return
-  await resolver(accion)
+  await accionar(accion)
   if (!automatico && !dialogo.classList.contains('entra')) abrirEscena(escenaActual)
 })
 dialogo?.addEventListener('input', (e) => {
   const t = e.target as HTMLElement
+  if (t.id === 'demo-desde' || t.id === 'demo-hasta') actualizaDias()
   if (t.getAttribute('aria-invalid') === 'true') error(t.id, '')
 })
+
+/** Elegir una escena la abre y, si hay movimiento, la reproduce una vez (el cursor escribe y pulsa); al terminar queda lista para usarse. */
+function elegir(e: Escena): void {
+  for (const c of [...activos]) c() // corta lo que estuviera reproduciéndose
+  automatico = false
+  ciclo++
+  avisoId++ // un aviso pendiente ya no aplica
+  avisoToast?.classList.remove('visible')
+  avisoToast?.setAttribute('inert', '')
+  cursor?.classList.remove('visible')
+  abrirEscena(e)
+  if (sinMovimiento.matches) return
+  automatico = true
+  void (async (token: number) => {
+    try {
+      await esperar(token, 700)
+      await interpretar(e, token)
+      automatico = false
+      abrirEscena(e)
+    } catch (err) {
+      if (!(err instanceof Cancelado)) throw err
+      // Alguien la tomó a media reproducción: si el diálogo quedó cerrado, se vuelve a abrir.
+      if (dialogo && !dialogo.classList.contains('entra')) abrirEscena(escenaActual)
+    }
+  })(ciclo)
+}
 
 // ── La invitación: un cursor que recorre las escenas ─────────────────────────
 function moverCursor(objetivo: Element): void {
@@ -276,6 +483,15 @@ async function escribir(token: number, nodo: HTMLInputElement | HTMLTextAreaElem
   }
 }
 
+/** Pone un valor (como si se eligiera en el selector de fecha) y avisa para que se actualicen los días. */
+async function poner(token: number, id: string, valor: string): Promise<void> {
+  const nodo = campo(id)
+  if (!nodo) return
+  nodo.value = valor
+  nodo.dispatchEvent(new Event('input', { bubbles: true }))
+  await esperar(token, 200)
+}
+
 async function pulsar(token: number, accion: string): Promise<void> {
   const objetivo = dialogo?.querySelector(`[data-accion="${accion}"]`)
   if (!objetivo) return
@@ -284,7 +500,7 @@ async function pulsar(token: number, accion: string): Promise<void> {
   objetivo.classList.add('pulsa')
   await esperar(token, 220)
   objetivo.classList.remove('pulsa')
-  await resolver(accion, token)
+  await accionar(accion, token)
 }
 
 const GUION: Record<Escena, (t: number) => Promise<void>> = {
@@ -301,16 +517,46 @@ const GUION: Record<Escena, (t: number) => Promise<void>> = {
     await esperar(t, 400)
     await pulsar(t, 'aprobar')
   },
+  vacaciones: async (t) => {
+    await esperar(t, 300)
+    await poner(t, 'demo-desde', '2026-12-21')
+    await esperar(t, 500)
+    await poner(t, 'demo-hasta', '2026-12-30')
+    await esperar(t, 700)
+    await pulsar(t, 'enviar')
+  },
+  asistente: async (t) => {
+    await escribir(t, campo('demo-nombre'), 'Mario Ruiz')
+    await esperar(t, 400)
+    await pulsar(t, 'siguiente')
+    await esperar(t, 700)
+    await pulsar(t, 'siguiente')
+    await esperar(t, 900)
+    await pulsar(t, 'terminar')
+  },
+  importar: async (t) => {
+    await esperar(t, 300)
+    await pulsar(t, 'cargar')
+    await esperar(t, 1100)
+    await pulsar(t, 'importar')
+  },
+  descartar: (t) => pulsar(t, 'descartar'),
+}
+
+/** Una escena completa: el cursor aparece, hace el guion y se va. */
+async function interpretar(e: Escena, token: number): Promise<void> {
+  cursor?.classList.add('visible')
+  await esperar(token, 500)
+  await GUION[e](token)
+  cursor?.classList.remove('visible')
 }
 
 async function reproducir(token: number): Promise<void> {
   try {
     for (let i = 0; token === ciclo; i = (i + 1) % ESCENAS.length) {
       abrirEscena(ESCENAS[i])
-      cursor?.classList.add('visible')
-      await esperar(token, 1000)
-      await GUION[ESCENAS[i]](token)
-      cursor?.classList.remove('visible')
+      await esperar(token, 500)
+      await interpretar(ESCENAS[i], token)
       await esperar(token, 400)
     }
   } catch (e) {

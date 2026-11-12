@@ -8,9 +8,12 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 - Sitio de documentación: sección «Míralo en acción» con una maqueta que se puede usar (borrar con «Deshacer», formulario con validación y aprobar con motivo; un cursor la recorre sola hasta que alguien la toca) y un selector de apariencia (Nexus, Material, Bootstrap, Tailwind, Oscuro) que también cambia los diálogos y toasts reales de la página; cifras de la portada que cuentan hasta su valor; buscador con `/` o `Ctrl`/`⌘`+`K` (páginas, encabezados y ejemplos) y botón para volver arriba.
 - Sitio de documentación: partículas conectadas en la portada, aparición suave de las secciones al hacer scroll, chispas al confirmar un ejemplo y un texto que se escribe solo. Son decorativas, no usan dependencias, se detienen con la pestaña oculta o fuera de pantalla, usan menos partículas en celular y se apagan con «reducir movimiento».
+- Sitio de documentación: la maqueta suma las escenas Vacaciones (días hábiles en vivo), Asistente (pasos con «Atrás»), Importar y Sin guardar, y un «Ver código» que muestra el código real de la escena elegida.
+- Sitio de documentación: sección «Una pieza en lugar de varias», insignias de la portada (versión confirmada con npm, tamaño del núcleo, licencia y CI), esqueleto brillante mientras llegan las descargas, transición suave entre páginas (View Transitions) y un brillo que sigue al puntero en los botones principales. Todo se apaga con «reducir movimiento».
 
 ### Corregido
 
+- Sitio de documentación: en «Míralo en acción», al elegir otra escena (Borrar, Formulario, Aprobar) esta se reproduce sola, con el cursor escribiendo y pulsando, y al terminar queda lista para usarse. Antes solo se abría quieta.
 - Sitio de documentación: el buscador, la demo y las animaciones comunes no llegaban a la web publicada, porque el build descartaba los archivos que solo se importan por su efecto (`sideEffects: false`). Ahora se conservan, y el CI revisa el sitio construido (`scripts/revisar-sitio.mjs`).
 
 ## [0.5.4] - 2026-11-12

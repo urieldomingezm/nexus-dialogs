@@ -53,6 +53,10 @@ if (await confirmDelete({ what: 'a Laura Méndez' })) {
           <button type="button" class="chip" data-escena="borrar" aria-pressed="true">Borrar</button>
           <button type="button" class="chip" data-escena="formulario" aria-pressed="false">Formulario</button>
           <button type="button" class="chip" data-escena="aprobar" aria-pressed="false">Aprobar</button>
+          <button type="button" class="chip" data-escena="vacaciones" aria-pressed="false">Vacaciones</button>
+          <button type="button" class="chip" data-escena="asistente" aria-pressed="false">Asistente</button>
+          <button type="button" class="chip" data-escena="importar" aria-pressed="false">Importar</button>
+          <button type="button" class="chip" data-escena="descartar" aria-pressed="false">Sin guardar</button>
         </div>
         <div class="demo-controles demo-apariencia chips" role="group" aria-label="Apariencia de los diálogos">
           <button type="button" class="chip" data-apariencia="nexus" aria-pressed="true">Nexus</button>
@@ -62,6 +66,14 @@ if (await confirmDelete({ what: 'a Laura Méndez' })) {
           <button type="button" class="chip" data-apariencia="oscuro" aria-pressed="false">Oscuro</button>
           <button type="button" class="btn primario chico" id="b-demo">Abrir uno de verdad</button>
         </div>
+        <details class="demo-codigo">
+          <summary>Ver código</summary>
+          <pre data-lang="ts"><code>import { confirmDelete } from 'nexus-dialogs/patterns'
+
+if (await confirmDelete({ what: 'a Laura Méndez' })) {
+  // eliminar
+}</code></pre>
+        </details>
         <p id="demo-estado" class="sr-only" role="status"></p>
       </section>
 
@@ -81,6 +93,13 @@ if (await confirmDelete({ what: 'a Laura Méndez' })) {
         <span class="insignia">React</span>
         <span class="insignia">Angular</span>
         <span class="insignia">SweetAlert2</span>
+      </div>
+
+      <div class="insignias en-vivo" aria-label="Estado del proyecto">
+        <a class="insignia" href="https://www.npmjs.com/package/nexus-dialogs" rel="noopener">npm <b id="i-version">v<!--@version--></b></a>
+        <span class="insignia">núcleo <b><!--@tam:nexus-dialogs--></b> gzip</span>
+        <span class="insignia">licencia <b>MIT</b></span>
+        <a class="insignia" href="https://github.com/urieldomingezm/nexus-dialogs/actions/workflows/ci.yml" rel="noopener">CI <b>pruebas en cada cambio</b></a>
       </div>
 
       <section class="bloque" aria-labelledby="novedades">
@@ -117,6 +136,26 @@ if (await confirmDelete({ what: 'a Laura Méndez' })) {
           <div class="tarjeta"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg></span><h3>Hecho para RR. HH. y contabilidad</h3><p>RFC, CURP, NSS y CLABE con dígito verificador, importes en pesos, días hábiles y festivos, firma, domicilio por código postal.</p></div>
           <div class="tarjeta"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 14-5.3L20 9M20 4v5h-5M20 12a8 8 0 0 1-14 5.3L4 15M4 20v-5h5"/></svg></span><h3>Migra desde SweetAlert2</h3><p>Cambia el import y tu código sigue funcionando. <a href="guia.html#vienes-de-sweetalert2">Mira cómo migrar.</a></p></div>
         </div>
+      </section>
+
+      <section class="bloque" aria-labelledby="piezas">
+        <h2 id="piezas">Una pieza en lugar de varias</h2>
+        <p class="sub">Lo que en un sistema de empresa suele armarse juntando paquetes distintos, aquí viene en uno solo y sin dependencias.</p>
+        <div class="tabla">
+          <table>
+            <caption class="sr-only">Lo que sueles juntar de varios paquetes y dónde está en nexus-dialogs</caption>
+            <thead><tr><th scope="col">Lo que necesitas</th><th scope="col">Suele armarse con</th><th scope="col">En nexus-dialogs</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Confirmar, aprobar, avisar de cambios</th><td>Una librería de alertas o de modales</td><td><code>confirmDelete</code>, <code>approval</code>, <code>unsavedChanges</code></td></tr>
+              <tr><th scope="row">Formularios con validación</th><td>Una librería de formularios y otra de validación</td><td><code>form</code>, con RFC, CLABE y más ya validados</td></tr>
+              <tr><th scope="row">Fechas y días hábiles</th><td>Un componente de calendario aparte</td><td>El campo <code>daterange</code> con <code>businessDays</code></td></tr>
+              <tr><th scope="row">Importar y exportar Excel</th><td>Una utilidad más, con su propia interfaz</td><td><code>importData</code> y <code>exportData</code></td></tr>
+              <tr><th scope="row">Avisos que desaparecen</th><td>Una librería de toasts</td><td><code>toast</code>, con «Deshacer»</td></tr>
+              <tr><th scope="row">Accesibilidad</th><td>Revisar cada pieza por separado</td><td>Foco, teclado y objetivo WCAG 2.2 AA, con pruebas axe</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="sub">Cada pieza que sumas es otra versión que actualizar y otro estilo que igualar. Aquí es una, con un solo tema.</p>
       </section>
 
       <section class="bloque" aria-labelledby="rapido">
