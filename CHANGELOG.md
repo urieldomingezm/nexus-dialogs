@@ -4,6 +4,8 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ## [Sin publicar]
 
+## [0.5.3] - 2026-11-12
+
 ### Corregido
 
 - Celulares con teclado en pantalla (Android Chrome): la hoja inferior se ajusta a la zona visible, así que los botones de acción quedan sobre el teclado, y las listas flotantes (combobox, select, calendario) se colocan pegadas al campo en vez de aparecer arriba de la pantalla. Usa `visualViewport`.
