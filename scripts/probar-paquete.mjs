@@ -31,6 +31,7 @@ const ENTRADAS = [
   'nexus-dialogs/angular',
   'nexus-dialogs/import',
   'nexus-dialogs/table',
+  'nexus-dialogs/tabs',
   'nexus-dialogs/sepomex',
   'nexus-dialogs/rrhh',
 ]
@@ -84,6 +85,7 @@ import { useDialog as useDialogReact, useForm, NexusDialogsProvider } from 'nexu
 import { injectDialog, injectForm, provideNexusDialogs } from 'nexus-dialogs/angular'
 import { importData, parseCSV, exportData, type ImportColumn } from 'nexus-dialogs/import'
 import { pickRows } from 'nexus-dialogs/table'
+import { tabs, tabsDialog, type TabSpec } from 'nexus-dialogs/tabs'
 import { sepomexLookup } from 'nexus-dialogs/sepomex'
 import { plantillas, sinResolvers } from 'nexus-dialogs/rrhh'
 configure({ lang: 'es', theme: themes.bootstrap, scheme: 'auto' })
@@ -112,6 +114,8 @@ async function uso() {
   parseCSV('a,b')
   const pk = await pickRows<{ id: string; nombre: string }>({ rows: [{ id: '1', nombre: 'Ana' }], columns: [{ key: 'nombre', label: 'Nombre' }] })
   pk.value?.map((x) => x.nombre)
+  const pestanas: TabSpec[] = [{ id: 'a', label: 'A', content: 'x' }, { id: 'b', label: 'B', badge: 2, content: async () => document.createElement('p') }]
+  await tabsDialog({ title: 'Detalle', tabs: pestanas, variant: 'segmented' }); void tabs({ tabs: pestanas }).current
   await formFromJSON(sinResolvers(plantillas.vacaciones))
   await exportData([{ a: 1 }], { columns: [{ key: 'a', label: 'A' }], format: 'csv' })
   void businessDays('2026-01-01', '2026-01-31'); void mexicanHolidays(2026)

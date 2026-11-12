@@ -14,6 +14,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ### Agregado
 
+- **`nexus-dialogs/tabs`**: pestañas accesibles, sueltas (`tabs()`) o dentro de un diálogo (`tabsDialog()`). Contenido en texto, nodo o función (perezosa y `async`), insignias, `segmented` o `underline`, flechas/Inicio/Fin (RTL incluido), altura estable al cambiar de pestaña y lista fija al desplazar. Núcleo y demás subrutas sin cambios de tamaño; `tabs.js` pesa 2.8 KB min+gzip (límite 3 KB).
 - **`columns: 'auto'`** en `form`, `wizard` y `formFromJSON`: columnas responsive (2 en un teléfono, 3 en escritorio) con los campos largos a fila completa. `columns: 2` ahora se queda en dos columnas en un teléfono mientras quepan campos de ~9 rem. Variable `--nd-col-min`.
 
 ### Cambiado
