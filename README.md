@@ -366,6 +366,15 @@ Sin bundler, cambia el `<script>` de SweetAlert2 por este (define `window.Swal`)
 <script src="https://cdn.jsdelivr.net/npm/nexus-dialogs/dist/nexus-dialogs.swal.iife.js"></script>
 ```
 
+En este build no hay `import`, así que la configuración global se hace con `Swal.configure(…)`, el mismo objeto que `configure()` de `nexus-dialogs`:
+
+```html
+<script>
+  Swal.configure({ strictHtml: false }) // con HTML tuyo
+  // o, con datos de usuario: Swal.configure({ sanitize: (h) => DOMPurify.sanitize(h) })
+</script>
+```
+
 **Qué cubre**: `Swal.fire(título, html, icono)` y `Swal.fire({…})`, `Swal.mixin`, toasts (`toast: true`, `position`, `timer`), botones confirm/deny/cancel, `input` (text, email, password, number, tel, url, date, week, range, file, textarea, select, radio, checkbox) con `inputOptions`, `inputValidator`, `validationMessage`, `inputAutoTrim`, `inputAutoFocus` y `returnInputValueOnDeny`, `preConfirm`, `preDeny`, `timer` (con `stopTimer`, `resumeTimer`, `toggleTimer`, `increaseTimer`, `getTimerLeft`), `imageUrl`, `iconHtml`, `progressSteps`, `reverseButtons`, `allowEnterKey`, `draggable`, `template`, `theme` (light, dark y auto), `target`, los `aria-label` de los botones, los ganchos `willOpen`, `didOpen`, `willClose`, `didClose` y `didDestroy`, el resultado `{ isConfirmed, isDenied, isDismissed, value, dismiss }`, `Swal.DismissReason` y los métodos `close(resultado)`, `update` (título, texto, html, icono, imagen, pasos, pie y botones), `isVisible`, `showLoading`, `hideLoading`, `isLoading`, `getLoader` (con `loaderHtml`), `argsToParams`, `isValidParameter`, `isUpdatableParameter`, `bindClickHandler`, `showValidationMessage`, `resetValidationMessage`, `enableButtons`, `disableButtons`, `enableInput`, `disableInput`, los accesores (`getPopup`, `getContainer`, `getTitle`, `getHtmlContainer`, `getIcon`, `getImage`, `getInput`, `getActions`, `getFooter`, `getCloseButton`, `getTimerProgressBar`, `getProgressSteps`, `getFocusableElements`…) y `clickConfirm` y similares.
 
 **Qué cambia a propósito**:
@@ -374,7 +383,7 @@ Sin bundler, cambia el `<script>` de SweetAlert2 por este (define `window.Swal`)
 - El orden de los botones es siempre Cancelar, Denegar, Confirmar (la acción principal a la derecha).
 - Los textos por omisión salen en el idioma configurado («Aceptar», «Cancelar»).
 - Los toasts usan la cola de `nexus-dialogs/toast`; la posición es una sola para todos.
-- `footer` se muestra como texto plano (sin etiquetas). `html` también sale como texto por omisión (`strictHtml`, desde la 0.5.0): con contenido tuyo usa `configure({ strictHtml: false })`; con contenido de fuera, `configure({ sanitize })`.
+- `footer` se muestra como texto plano (sin etiquetas). `html` también sale como texto por omisión (`strictHtml`, desde la 0.5.0): con contenido tuyo usa `configure({ strictHtml: false })` (en el build sin bundler, `Swal.configure(…)`); con contenido de fuera, `configure({ sanitize })`.
 - El contenido vive dentro del Shadow DOM: en vez de `document.getElementById('x')` usa `Swal.getHtmlContainer().querySelector('#x')`. El «popup» que reciben los ganchos y devuelve `getPopup()` es el panel, así que `popup.querySelector(…)` funciona.
 - `theme` entiende `light`, `dark` y `auto`; `target` monta el diálogo en ese elemento pero sigue siendo modal; `reverseButtons: true` pone Confirmar primero; `template` no acepta `<swal-function-param>`.
 - Sin equivalente: `Swal.version`, `topLayer`, `showClass`/`hideClass` y `animation` (el movimiento sale del tema y respeta «reducir movimiento»).

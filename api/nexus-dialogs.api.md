@@ -789,6 +789,7 @@ const Swal: {
         SweetAlertIcon?
     ]) => Promise<SweetAlertResult>;
     mixin: (mas: SweetAlertOptions) => any;
+    configure: (c: GlobalConfig) => void;
     close: (resultado?: Partial<SweetAlertResult>) => void;
     isVisible: () => boolean;
     isLoading: () => boolean;
@@ -861,6 +862,7 @@ const Swal: {
         SweetAlertIcon?
     ]) => Promise<SweetAlertResult>;
     mixin: (mas: SweetAlertOptions) => any;
+    configure: (c: GlobalConfig) => void;
     close: (resultado?: Partial<SweetAlertResult>) => void;
     isVisible: () => boolean;
     isLoading: () => boolean;

@@ -4,6 +4,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ## [Sin publicar]
 
+### Corregido
+
+- **Build sin bundler (`nexus-dialogs.swal.iife.js`): el `html` salía siempre como texto.** Sin `configure` en el build, el empaquetador dejaba fijo el valor por omisión de `strictHtml` y `sanitize` nunca se consultaba, así que no había forma de mostrar HTML. Ahora `setHtml` respeta ambos, igual que `nexus-dialogs.all.iife.js`.
+
+### Agregado
+
+- **`Swal.configure(…)`** en `nexus-dialogs/swal` y en el build sin bundler: configuración global (`strictHtml`, `sanitize`, `theme`, `scheme`…) donde no hay `import`. Prueba en navegador sobre el archivo `swal.iife` compilado para que no vuelva a pasar.
+
 ## [0.5.0] - 2026-11-12
 
 ### Corregido

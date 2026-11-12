@@ -11,7 +11,8 @@
  * Cubre lo que más se usa: fire, mixin, toasts, inputs, preConfirm, timer y los métodos estáticos comunes.
  * Los colores (`confirmButtonColor`…) y `customClass` se ignoran a propósito: se aplica el estándar de botones.
  */
-import { dialog, INVALID, labels, openDialog, setHtml } from 'nexus-dialogs'
+import { configure, dialog, INVALID, labels, openDialog, setHtml } from 'nexus-dialogs'
+import type { GlobalConfig } from 'nexus-dialogs'
 import type { ButtonSpec, CloseReason, DialogContext, IconName } from 'nexus-dialogs'
 import { toast, type ToastPosition } from 'nexus-dialogs/toast'
 import { css, focusables, h, uid } from './core/dom'
@@ -765,6 +766,11 @@ function crear(defaults: SweetAlertOptions) {
     fire: (...args: [SweetAlertOptions] | [string?, string?, SweetAlertIcon?]): Promise<SweetAlertResult> => fireCon(defaults, args),
     /** Instancia con opciones por omisión: `const Toast = Swal.mixin({ toast: true, timer: 3000 })`. */
     mixin: (mas: SweetAlertOptions) => crear({ ...defaults, ...mas }),
+    /**
+     * Configuración global de nexus-dialogs (`strictHtml`, `sanitize`, `theme`, `scheme`…). Sirve en el build sin bundler, donde no hay otro
+     * modo de configurar: `Swal.configure({ strictHtml: false })` o `Swal.configure({ sanitize: (h) => DOMPurify.sanitize(h) })`.
+     */
+    configure: (c: GlobalConfig): void => configure(c),
     /** Cierra la alerta. Con un resultado, `fire()` resuelve con él: `Swal.close({ isConfirmed: true, value })`. */
     close: (resultado?: Partial<SweetAlertResult>) => {
       const e = actual()
