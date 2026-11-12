@@ -751,8 +751,8 @@ Con `onExport` aparece «Exportar seleccionados: Excel · CSV» (o «Exportar to
 import { tabsDialog } from 'nexus-dialogs/tabs'
 
 await tabsDialog({
-  title: 'Mariela Ortega Vázquez',
-  header: 'Citado · Repartidor Auto Propio', // texto o un nodo, sobre las pestañas
+  title: 'Ana Torres Reyes',
+  header: 'Citado · Auxiliar administrativo', // texto o un nodo, sobre las pestañas
   tabs: [
     { id: 'general', label: 'Datos generales', content: () => tarjetaGeneral(candidato) },
     { id: 'cita', label: 'Cita y entrevista', badge: 1, content: async () => tarjetaCita(await api.cita(id)) },
@@ -796,12 +796,12 @@ await timelineDialog({ title: 'Contratación', layout: 'horizontal', scale: 'lg'
 import { timelineDialog } from 'nexus-dialogs/timeline'
 
 await timelineDialog({
-  title: 'Ortega Vázquez Mariela Berenice',
+  title: 'Torres Reyes Ana Lucía',
   steps: [
     { id: 'cita', title: 'Cita', description: 'Cita registrada; falta confirmar asistencia.', date: '13/11/2026', status: 'current' },
     { id: 'docs', title: 'Documentos', description: 'Sin expediente recibido todavía.', status: 'pending' },
   ],
-  footnote: 'Los estados salen de los registros de MiQP y NEO.',
+  footnote: 'Los estados salen de los registros del sistema.',
 })
 ```
 

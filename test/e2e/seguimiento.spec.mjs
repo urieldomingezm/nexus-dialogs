@@ -7,7 +7,7 @@ const abrir = async (page) => {
   await page.goto('/site/ejemplos.html#seguimiento')
   await page.locator('#ej-seguimiento').getByRole('button', { name: 'Probar' }).click()
   const d = page.locator('dialog[data-nexus-dialog]')
-  await expect(d.getByRole('heading', { name: 'Ortega Vázquez Mariela Berenice' })).toBeVisible()
+  await expect(d.getByRole('heading', { name: 'Torres Reyes Ana Lucía' })).toBeVisible()
   return d
 }
 
@@ -20,7 +20,7 @@ test.describe('Seguimiento', () => {
     await expect(d.locator('li[aria-current="step"]')).toContainText('Cita')
     await expect(d.locator('li[aria-current="step"]')).toContainText('En curso')
     await expect(d.getByText('Pendiente', { exact: true })).toHaveCount(5)
-    await expect(d.getByText('Los estados se muestran con base en registros')).toBeVisible()
+    await expect(d.getByText('Los estados se muestran con base en los registros del sistema')).toBeVisible()
   })
 
   test('las etapas quedan en una columna ordenada (el marcador a la izquierda del texto)', async ({ page }) => {
@@ -28,7 +28,7 @@ test.describe('Seguimiento', () => {
     const marca = await d.locator('.tl-mark').first().boundingBox()
     const titulo = await d.getByRole('heading', { name: 'Cita', level: 3, exact: true }).boundingBox()
     expect(marca.x + marca.width).toBeLessThan(titulo.x)
-    const siguiente = await d.getByRole('heading', { name: 'Enlace NEO', exact: true }).boundingBox()
+    const siguiente = await d.getByRole('heading', { name: 'Enlace de documentos', exact: true }).boundingBox()
     expect(siguiente.y).toBeGreaterThan(titulo.y + 20)
   })
 

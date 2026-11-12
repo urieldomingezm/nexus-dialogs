@@ -5,7 +5,7 @@ import { $, $$, boton } from './utilidades'
 
 const pasos: TimelineStep[] = [
   { id: 'cita', title: 'Cita', description: 'Cita registrada; falta confirmar asistencia.', date: '13/11/2026', status: 'current' },
-  { id: 'neo', title: 'Enlace NEO', description: 'Sin liga de documentos registrada.', status: 'pending' },
+  { id: 'enlace', title: 'Enlace de documentos', description: 'Sin liga de documentos registrada.', status: 'pending' },
   { id: 'docs', title: 'Documentos', status: 'pending' },
 ]
 const textos = (el: Element, q: string) => [...el.querySelectorAll(q)].map((x) => x.textContent)
@@ -16,7 +16,7 @@ describe('timeline()', () => {
     const lis = [...t.el.querySelectorAll('ol > li')]
     expect(lis).toHaveLength(3)
     expect(t.el.querySelector('ol')!.getAttribute('role')).toBe('list')
-    expect(textos(t.el, 'h3')).toEqual(['Cita', 'Enlace NEO', 'Documentos'])
+    expect(textos(t.el, 'h3')).toEqual(['Cita', 'Enlace de documentos', 'Documentos'])
     expect(lis[0].querySelector('.tl-mark')!.textContent).toBe('1')
     expect(lis[0].querySelector('.tl-desc')!.textContent).toBe('Cita registrada; falta confirmar asistencia.')
     expect(lis[0].querySelector('.tl-meta')!.textContent).toBe('13/11/2026En curso')
@@ -54,7 +54,7 @@ describe('timeline()', () => {
     expect(li.querySelector('time')!.getAttribute('datetime')).toBe('2026-11-13')
     expect(li.querySelector('time')!.textContent).toBe('13/11/2026')
     expect(li.hasAttribute('aria-current')).toBe(false)
-    t.setStatus('neo', 'error', { statusLabel: 'Liga vencida' })
+    t.setStatus('enlace', 'error', { statusLabel: 'Liga vencida' })
     expect(t.el.querySelectorAll('ol > li')[1].querySelector('.tl-chip')!.textContent).toBe('Liga vencida')
     expect(t.setStatus('nada', 'done')).toBe(false)
   })
@@ -106,11 +106,11 @@ describe('tamaños y disposición de timeline()', () => {
 
 describe('timelineDialog()', () => {
   it('abre el diálogo con el seguimiento, la nota al pie y un botón «Cerrar»', async () => {
-    const p = timelineDialog({ title: 'Ortega Vázquez Mariela', steps: pasos, footnote: 'Los estados salen de MiQP y NEO.' })
-    expect($('.title').textContent).toBe('Ortega Vázquez Mariela')
-    expect($('ol[aria-label="Ortega Vázquez Mariela"]')).toBeTruthy()
+    const p = timelineDialog({ title: 'Torres Reyes Ana', steps: pasos, footnote: 'Los estados salen de los registros del sistema.' })
+    expect($('.title').textContent).toBe('Torres Reyes Ana')
+    expect($('ol[aria-label="Torres Reyes Ana"]')).toBeTruthy()
     expect($$('ol > li')).toHaveLength(3)
-    expect($('.note').textContent).toBe('Los estados salen de MiQP y NEO.')
+    expect($('.note').textContent).toBe('Los estados salen de los registros del sistema.')
     expect($$('.foot button').map((b) => b.textContent)).toEqual(['Cerrar'])
     boton('close').click()
     expect(await p).toMatchObject({ confirmed: true })
