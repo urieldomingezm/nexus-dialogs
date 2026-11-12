@@ -88,6 +88,9 @@ jobs:
       - run: npm ci
       - name: Instalar ${{ matrix.navegador }}
         run: npx playwright install --with-deps ${{ matrix.navegador }}
+      # Algunas pruebas (p. ej. iife-swal) cargan los archivos compilados de dist/, igual que en ci.yml.
+      - name: Compilar
+        run: npm run build
       - run: npx playwright test --project=${{ matrix.navegador }}
 
   publicar:
