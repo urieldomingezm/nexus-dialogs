@@ -121,6 +121,16 @@
         "default": "./dist/import.cjs"
       }
     },
+    "./timeline": {
+      "import": {
+        "types": "./dist/timeline.d.ts",
+        "default": "./dist/timeline.js"
+      },
+      "require": {
+        "types": "./dist/timeline.d.cts",
+        "default": "./dist/timeline.cjs"
+      }
+    },
     "./tabs": {
       "import": {
         "types": "./dist/tabs.d.ts",
@@ -214,6 +224,9 @@
       "tabs": [
         "./dist/tabs.d.ts"
       ],
+      "timeline": [
+        "./dist/timeline.d.ts"
+      ],
       "sepomex": [
         "./dist/sepomex.d.ts"
       ],
@@ -266,7 +279,7 @@
   },
   "scripts": {
     "dev": "vite --open /test/paginas/",
-    "build": "vite build --mode core && vite build --mode all && vite build --mode forms && vite build --mode toast && vite build --mode themes && vite build --mode patterns && vite build --mode mx && vite build --mode vue && vite build --mode react && vite build --mode angular && vite build --mode swal && vite build --mode swalglobal && vite build --mode import && vite build --mode table && vite build --mode tabs && vite build --mode sepomex && vite build --mode rrhh && tsc -p tsconfig.build.json && node scripts/tipos.mjs",
+    "build": "vite build --mode core && vite build --mode all && vite build --mode forms && vite build --mode toast && vite build --mode themes && vite build --mode patterns && vite build --mode mx && vite build --mode vue && vite build --mode react && vite build --mode angular && vite build --mode swal && vite build --mode swalglobal && vite build --mode import && vite build --mode table && vite build --mode tabs && vite build --mode timeline && vite build --mode sepomex && vite build --mode rrhh && tsc -p tsconfig.build.json && node scripts/tipos.mjs",
     "build:site": "vite build --mode site",
     "test": "npm run test:unit && npm run test:e2e",
     "test:unit": "vitest run",

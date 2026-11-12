@@ -57,6 +57,7 @@ npm i nexus-dialogs
 | `nexus-dialogs/forms` | `form()` y `wizard()` |
 | `nexus-dialogs/toast` | `toast()` con cola |
 | `nexus-dialogs/tabs` | Pestañas accesibles, sueltas o dentro de un diálogo (`tabsDialog`) |
+| `nexus-dialogs/timeline` | Seguimiento por etapas con estado, fecha y progreso (`timelineDialog`) |
 | `nexus-dialogs/themes` | Temas listos (Bootstrap, Tailwind, Material, oscuro) |
 | `nexus-dialogs/patterns` | Recetas en una línea: borrar, cambios sin guardar, sesión, aprobaciones, acciones masivas… |
 | `nexus-dialogs/mx` | Validadores de RFC, CURP, NSS, CLABE y código postal (también en Node) |
@@ -758,6 +759,25 @@ El detalle de un candidato, la ficha de un empleado, una encuesta con varias sec
 - Por omisión un solo botón «Cerrar»; pasa `buttons` para otra cosa (por ejemplo, Guardar y Cancelar).
 
 Para ponerlas dentro de otro diálogo (`dialog.open` con `render`, un `form`…): `const t = tabs({ tabs: [...] })` devuelve `{ el, current, select(id), panel(id), setBadge(id, n), setDisabled(id, bool) }`; inserta `t.el` y agrega `styles: TABS_CSS` al diálogo.
+
+### Seguimiento por etapas
+
+```ts
+import { timelineDialog } from 'nexus-dialogs/timeline'
+
+await timelineDialog({
+  title: 'Ortega Vázquez Mariela Berenice',
+  steps: [
+    { id: 'cita', title: 'Cita', description: 'Cita registrada; falta confirmar asistencia.', date: '13/11/2026', status: 'current' },
+    { id: 'docs', title: 'Documentos', description: 'Sin expediente recibido todavía.', status: 'pending' },
+  ],
+  footnote: 'Los estados salen de los registros de MiQP y NEO.',
+})
+```
+
+El avance de un candidato, un trámite o un pedido. Estados: `done`, `current`, `pending`, `error` y `skipped`. Cada etapa **dice su estado con texto** («Completada», «En curso», «Pendiente»…), no solo con color; `statusLabel` pone otro texto («Esperando al candidato»). Arriba va «2 de 6 etapas completadas · 33 %» con una barra de progreso (`progressbar`); las etapas `skipped` no cuentan. La etapa en curso se anuncia como paso actual (`aria-current="step"`). `date` acepta texto libre o una `Date` (se formatea según el idioma); sin fecha sale «Sin dato» (`emptyDate` lo cambia u oculta). `summary: false` quita el resumen; un texto lo reemplaza.
+
+Con el diálogo abierto, `onOpen: (ctx, t) => …` entrega el control: `t.setStatus('docs', 'done', { date: new Date() })` actualiza la etapa, el resumen y la barra; `t.progress()` devuelve `{ done, total, percent }`. Para ponerlo dentro de otro diálogo: `timeline({ steps })` y `styles: TIMELINE_CSS`.
 
 ### Exportar a Excel o CSV
 
