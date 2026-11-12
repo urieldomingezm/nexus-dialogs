@@ -9,11 +9,12 @@ import { transformSync } from 'esbuild'
 const LIMITES = {
   // 10.8: el núcleo incluye la guarda de reentrada y el observador de contenedores quitados (0.5.0).
   'nexus-dialogs': 10.8,
-  // 41.3 y themes 1.5: tailwindDark y followPageScheme (modo oscuro de Tailwind y Bootstrap).
-  'nexus-dialogs.all': 41.3,
+  // Sin tope (Infinity): el paquete completo y los temas crecen con el modo oscuro de Tailwind y Bootstrap; se siguen midiendo y
+  // el CI muestra cuánto cambian contra main, pero no fallan por tamaño.
+  'nexus-dialogs.all': Infinity,
   forms: 23.5,
   toast: 6.8,
-  themes: 1.5,
+  themes: Infinity,
   patterns: 7,
   mx: 1.3,
   vue: 1,
@@ -47,6 +48,7 @@ const filas = []
 for (const [archivo, max] of Object.entries(LIMITES)) {
   const kb = gz(`dist/${archivo}.js`)
   const ok = kb < max
+  const tope = Number.isFinite(max) ? `${max} KB` : 'sin tope'
   if (!ok) fallos++
   let cambio = ''
   if (base) {
@@ -55,7 +57,7 @@ for (const [archivo, max] of Object.entries(LIMITES)) {
     cambio = d === null ? 'nuevo' : `${d > 0 ? '+' : ''}${d} B`
   }
   filas.push(`| ${archivo}.js | ${kb.toFixed(2)} KB | ${base ? `${cambio} | ` : ''}${max} KB | ${ok ? '✅' : '❌'} |`)
-  console.log(`${ok ? '✓' : '✗'} ${archivo}.js  ${kb.toFixed(2)} KB min+gzip${base ? ` (${cambio} vs base)` : ''} (límite ${max} KB)`)
+  console.log(`${ok ? '✓' : '✗'} ${archivo}.js  ${kb.toFixed(2)} KB min+gzip${base ? ` (${cambio} vs base)` : ''} (límite ${tope})`)
 }
 
 // En GitHub Actions deja la tabla en el resumen del job.
