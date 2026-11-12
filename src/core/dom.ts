@@ -70,6 +70,37 @@ export function angosto(el: Element, clase = 'narrow'): () => void {
   return () => mq.removeEventListener?.('change', aplicar)
 }
 
+/** Zona visible real (descontando el teclado en pantalla). Android Chrome no cambia `innerHeight` al abrir el teclado: solo encoge `visualViewport`. */
+export function zonaVisible(): { top: number; bottom: number } {
+  const vv = typeof window !== 'undefined' ? window.visualViewport : null
+  if (!vv) return { top: 0, bottom: window.innerHeight }
+  return { top: vv.offsetTop, bottom: vv.offsetTop + vv.height }
+}
+
+/** Ajusta `el` a la zona visible mientras el teclado está abierto (variables --vv-t/--vv-b/--vv-max); sin teclado las quita. */
+export function seguirVisualViewport(el: HTMLElement): () => void {
+  const vv = typeof window !== 'undefined' ? window.visualViewport : null
+  if (!vv) return () => {}
+  const aplicar = () => {
+    const { top, bottom } = zonaVisible()
+    const recorte = window.innerHeight - (bottom - top)
+    if (recorte < 80) {
+      for (const k of ['--vv-t', '--vv-b', '--vv-max']) el.style.removeProperty(k)
+      return
+    }
+    el.style.setProperty('--vv-t', `${top}px`)
+    el.style.setProperty('--vv-b', `${window.innerHeight - bottom}px`)
+    el.style.setProperty('--vv-max', `${bottom - top - 32}px`)
+  }
+  aplicar()
+  vv.addEventListener('resize', aplicar)
+  vv.addEventListener('scroll', aplicar)
+  return () => {
+    vv.removeEventListener('resize', aplicar)
+    vv.removeEventListener('scroll', aplicar)
+  }
+}
+
 /** Estilos por CSSOM (permitido con CSP estricta, a diferencia del atributo `style`). */
 export function css<T extends HTMLElement>(el: T, props: Record<string, string>): T {
   for (const [k, v] of Object.entries(props)) el.style.setProperty(k, v)

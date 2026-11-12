@@ -55,8 +55,8 @@ export const CORE_CSS =
 :host{all:initial;position:fixed;inset:0;display:block;font:15px/1.5 var(--_font);color:var(--_fg);-webkit-font-smoothing:antialiased}
 *,*::before,*::after{box-sizing:border-box}
 .overlay{position:fixed;inset:0;background:var(--_overlay);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);opacity:0;transition:opacity .2s}
-.wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;pointer-events:none}
-.panel{pointer-events:auto;position:relative;width:min(var(--_w,480px),100%);max-height:calc(100dvh - 32px);display:flex;flex-direction:column;
+.wrap{position:fixed;inset:0;top:var(--vv-t,0);bottom:var(--vv-b,0);display:flex;align-items:center;justify-content:center;padding:16px;pointer-events:none}
+.panel{pointer-events:auto;position:relative;width:min(var(--_w,480px),100%);max-height:var(--vv-max,calc(100dvh - 32px));display:flex;flex-direction:column;
   background:var(--_bg);color:var(--_fg);border-radius:var(--_radius);box-shadow:var(--_shadow);border:1px solid var(--_edge);overflow:hidden;
   --_from:translateY(8px) scale(.98);opacity:0;transform:var(--_from);transition:opacity .2s,transform .2s cubic-bezier(.2,.8,.2,1)}
 [data-state=open] .overlay{opacity:1}
@@ -122,7 +122,7 @@ textarea.input{height:auto;min-height:96px;padding:10px 14px;resize:vertical;lin
 .p-right .panel,.p-left .panel{height:100dvh;max-height:none;border-radius:0;width:min(var(--_w,420px),100%);--_from:translateX(24px)}
 .p-left .panel{--_from:translateX(-24px)}
 .p-bottom .wrap{padding:0;align-items:flex-end}
-.p-bottom .panel,.narrow.p-center.sheet .panel{border-radius:24px 24px 0 0;--_from:translateY(24px);max-height:90dvh}
+.p-bottom .panel,.narrow.p-center.sheet .panel{border-radius:24px 24px 0 0;--_from:translateY(24px);max-height:min(90dvh,var(--vv-max,90dvh))}
 .p-bottom .panel{width:min(var(--_w,640px),100%)}
 .p-bottom .panel::before,.narrow.p-center.sheet .panel::before{content:"";display:block;flex:none;width:40px;height:5px;border-radius:3px;background:var(--_border);margin:10px auto 0}
 /* .narrow la pone el motor con matchMedia (max-width:560px): WebKit puede no reevaluar @media de hojas adoptadas al cambiar el tamaño. */

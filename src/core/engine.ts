@@ -3,7 +3,7 @@
 import { config, labels, setHtml } from '../config'
 import { CORE_CSS } from '../styles'
 import type { ButtonSpec, CloseReason, DialogContext, DialogOptions, DialogResult, Dismissible, TimerControl } from '../types'
-import { activeDeep, angosto, direccion, focusables, h, reducedMotion, uid } from './dom'
+import { activeDeep, angosto, seguirVisualViewport, direccion, focusables, h, reducedMotion, uid } from './dom'
 import { closeIcon, icon } from './icons'
 import { adopt, globalStyles } from './sheet'
 
@@ -169,6 +169,7 @@ export function openDialog<T = unknown>(opciones: EngineOptions<T>): Promise<Dia
   root.appendChild(raiz)
   dialog.appendChild(host)
   const soltarAngosto = angosto(raiz)
+  const soltarVisual = seguirVisualViewport(raiz)
 
   // ── Estado ────────────────────────────────────────────────────────────────
   let terminado = false
@@ -426,6 +427,7 @@ export function openDialog<T = unknown>(opciones: EngineOptions<T>): Promise<Dia
       console.error(e)
     }
     soltarAngosto()
+    soltarVisual()
     const i = pila.findIndex((a) => a.ctx === ctx)
     if (i >= 0) pila.splice(i, 1)
     vigilar()
