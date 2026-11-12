@@ -79,7 +79,7 @@ test.describe('Sitio de documentación', () => {
     await expect(page.locator('#sm-1')).toBeHidden()
     await expect(empezar).toBeFocused()
     await probar.click()
-    await page.locator('h1').click()
+    await page.mouse.click(1200, 600) // fuera del submenú, que queda a la izquierda
     await expect(page.locator('#sm-2')).toBeHidden()
   })
 
