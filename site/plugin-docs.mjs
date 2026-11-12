@@ -24,6 +24,7 @@ const MENU = [
   ['primeros-pasos', 'primeros-pasos.html', 'Primeros pasos'],
   ['guia', 'guia.html', 'Guía'],
   ['ejemplos', 'ejemplos.html', 'Ejemplos'],
+  ['pruebas', 'pruebas.html', 'Pruebas'],
   ['erp', 'erp.html', 'Mini ERP'],
   ['migracion', 'migracion.html', 'Migrar'],
   ['api', 'api.html', 'API'],

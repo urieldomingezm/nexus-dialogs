@@ -6,6 +6,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ### Agregado
 
+- Sitio de documentación: página **Pruebas** (mesa de pruebas). Se elige el tema (Nexus, Tailwind, Bootstrap, Material) y el modo (claro, oscuro, como el sistema), se abren los diálogos de verdad, se marca una lista de revisión que se guarda en el navegador y se copia un resumen (versión, navegador, apariencia) o se abre un reporte con esos datos ya llenos.
 - **Tailwind en modo oscuro**: `themes.tailwindDark`, el par oscuro de `themes.tailwind` (slate e indigo, con axe en verde), y `followPageScheme()` en `nexus-dialogs/themes`, que sigue el modo claro u oscuro de la página (`<html class="dark">` de Tailwind v3 y v4, `data-bs-theme` de Bootstrap 5.3, `data-theme`, o el modo del sistema con `strategy: 'media'`) y llama a tu `configure` en cada cambio. Sin dependencias.
 
 ### Cambiado
