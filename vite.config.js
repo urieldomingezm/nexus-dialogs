@@ -79,6 +79,22 @@ const LIBS = {
   swalglobal: { entry: 'src/swal-global.ts', name: 'Swal', fileName: 'nexus-dialogs.swal', formats: ['iife'], external: [] },
 }
 
+/**
+ * package.json dice `sideEffects: false` (cierto para la librería) y Vite se lo pasa a Rollup por cada archivo. El código propio del sitio
+ * se importa por su efecto (`import './buscador'`), así que se marca con efectos: si no, el build lo descarta y el buscador y la demo
+ * no existen en la web. Lo revisa scripts/revisar-sitio.mjs.
+ */
+function conEfectosDelSitio() {
+  return {
+    name: 'nexus-dialogs-sitio-con-efectos',
+    enforce: 'post',
+    transform(code, id) {
+      if (/[\\/]site[\\/]src[\\/][^?]+\.ts$/.test(id)) return { code, map: null, moduleSideEffects: true }
+      return null
+    },
+  }
+}
+
 export default defineConfig(({ mode, command }) => {
   const lib = LIBS[mode]
   if (command === 'build' && lib) {
@@ -119,13 +135,15 @@ export default defineConfig(({ mode, command }) => {
       root: 'site',
       base: './',
       define,
-      plugins: [docsPlugin()],
+      plugins: [docsPlugin(), conEfectosDelSitio()],
       resolve: { alias: ALIAS_TODAS },
       build: {
         outDir: '../site-dist',
         emptyOutDir: true,
         target: 'es2022',
-        rollupOptions: { input: Object.fromEntries(paginas.map((p) => [p, fileURLToPath(new URL(`./site/${p}.html`, import.meta.url))])) },
+        rollupOptions: {
+          input: Object.fromEntries(paginas.map((p) => [p, fileURLToPath(new URL(`./site/${p}.html`, import.meta.url))])),
+        },
       },
     }
   }

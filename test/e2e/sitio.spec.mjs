@@ -364,7 +364,7 @@ test.describe('Sitio: animaciones', () => {
   })
 })
 
-test.describe('Sitio: texto que se escribe e inclinación', () => {
+test.describe('Sitio: texto que se escribe', () => {
   test.use({ reducedMotion: 'no-preference' })
 
   test('portada: el texto cambia solo y los lectores de pantalla leen la lista fija', async ({ page }) => {
@@ -376,32 +376,13 @@ test.describe('Sitio: texto que se escribe e inclinación', () => {
     await expect(page.locator('.escribe .sr-only')).toContainText('importar desde Excel')
   })
 
-  test('las tarjetas se inclinan con el mouse y vuelven al salir', async ({ page }) => {
-    await page.goto(SITIO + 'index.html')
-    const tarjeta = page.locator('main .tarjeta').first()
-    await tarjeta.scrollIntoViewIfNeeded()
-    await expect(tarjeta).not.toHaveClass(/revela/)
-    const caja = await tarjeta.boundingBox()
-    await page.mouse.move(caja.x + 10, caja.y + 10)
-    await page.mouse.move(caja.x + caja.width - 10, caja.y + caja.height - 10)
-    await expect(tarjeta).toHaveClass(/inclina/)
-    expect(await tarjeta.evaluate((t) => getComputedStyle(t).transform)).not.toBe('none')
-    await page.mouse.move(2, 2)
-    await expect(tarjeta).not.toHaveClass(/inclina/)
-  })
-
-  test('con movimiento reducido el texto queda fijo y no hay inclinación', async ({ page }) => {
+  test('con movimiento reducido el texto queda fijo', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' })
     await page.goto(SITIO + 'index.html')
     const texto = page.locator('.escribe-txt')
     const primera = await texto.textContent()
     await page.waitForTimeout(2600)
     expect(await texto.textContent()).toBe(primera)
-    const tarjeta = page.locator('main .tarjeta').first()
-    const caja = await tarjeta.boundingBox()
-    await page.mouse.move(caja.x + 10, caja.y + 10)
-    await page.mouse.move(caja.x + caja.width - 10, caja.y + caja.height - 10)
-    await expect(tarjeta).not.toHaveClass(/inclina/)
   })
 })
 
@@ -420,21 +401,82 @@ test.describe('Sitio: demo, cifras, buscador y volver arriba', () => {
     await expect(page.locator('#n-descargas')).toHaveText('1,234')
   })
 
-  test('la demo repite el borrado y el formulario, y cada apariencia cambia sus colores y los diálogos de verdad', async ({ page }) => {
+  test('la demo se recorre sola hasta que alguien la toca, y entonces se detiene', async ({ page }) => {
     await npm(page)
     await page.goto(SITIO + 'index.html')
     const pantalla = page.locator('.demo-pantalla')
-    await expect(pantalla).toHaveAttribute('aria-hidden', 'true')
     await pantalla.scrollIntoViewIfNeeded()
     await expect(pantalla.locator('.demo-titulo')).toHaveText('Nuevo gasto', { timeout: 20000 })
-    await expect(pantalla.locator('[data-escribe="0"]')).toHaveText('XAXX010101000', { timeout: 10000 })
+    await expect(pantalla.locator('#demo-rfc')).toHaveValue('XAXX010101000', { timeout: 10000 })
+    await pantalla.locator('#demo-importe').click() // la toma: la animación se corta y queda en sus manos
+    await expect(pantalla.locator('.demo-cursor')).not.toHaveClass(/visible/)
+    await pantalla.locator('#demo-importe').fill('99')
+    await page.waitForTimeout(3500)
+    await expect(pantalla.locator('.demo-titulo')).toHaveText('Nuevo gasto')
+    await expect(pantalla.locator('#demo-importe')).toHaveValue('99')
+  })
+
+  test('la maqueta se puede usar: borrar con «Deshacer», formulario con validación y aprobar con motivo', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await page.goto(SITIO + 'index.html')
+    const pantalla = page.locator('.demo-pantalla')
+    const toast = pantalla.locator('.demo-toast')
+    await pantalla.scrollIntoViewIfNeeded()
+    // Borrar
+    await pantalla.getByRole('button', { name: 'Eliminar' }).click()
+    await expect(toast).toContainText('Laura Méndez eliminada')
+    await toast.getByRole('button', { name: 'Deshacer' }).click()
+    await expect(toast).toContainText('Cambio deshecho')
+    await expect(pantalla.getByRole('button', { name: 'Eliminar' })).toBeVisible({ timeout: 6000 }) // vuelve a abrirse
+    // Formulario: la validación avisa y no deja pasar
+    await page.locator('button[data-escena=formulario]').click()
+    await expect(pantalla.locator('.demo-titulo')).toHaveText('Nuevo gasto')
+    await pantalla.getByRole('button', { name: 'Guardar' }).click()
+    await expect(pantalla.locator('#demo-rfc-e')).toContainText('obligatorio')
+    await expect(pantalla.locator('#demo-rfc')).toHaveAttribute('aria-invalid', 'true')
+    await expect(toast).not.toHaveClass(/visible/)
+    await pantalla.locator('#demo-rfc').fill('no-es-rfc')
+    await pantalla.locator('#demo-importe').fill('150')
+    await pantalla.getByRole('button', { name: 'Guardar' }).click()
+    await expect(pantalla.locator('#demo-rfc-e')).toContainText('no es válido')
+    await pantalla.locator('#demo-rfc').fill('XAXX010101000')
+    await expect(pantalla.locator('#demo-rfc-e')).toBeHidden() // al corregir, el aviso se quita
+    await pantalla.getByRole('button', { name: 'Guardar' }).click()
+    await expect(toast).toContainText('Enviado a aprobación')
+    // Aprobar: rechazar pide el motivo
+    await page.locator('button[data-escena=aprobar]').click()
+    await pantalla.getByRole('button', { name: 'Rechazar' }).click()
+    await expect(pantalla.locator('#demo-motivo-e')).toContainText('motivo')
+    await pantalla.locator('#demo-motivo').fill('Fechas cubiertas')
+    await pantalla.getByRole('button', { name: 'Rechazar' }).click()
+    await expect(toast).toContainText('Solicitud rechazada')
+  })
+
+  test('la maqueta y sus avisos de error pasan axe, también con otra apariencia', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await page.goto(SITIO + 'index.html')
+    await page.locator('button[data-escena=formulario]').click()
+    await page.locator('.demo-pantalla').getByRole('button', { name: 'Guardar' }).click()
+    for (const apariencia of ['nexus', 'material', 'bootstrap', 'tailwind', 'oscuro']) {
+      await page.locator(`button[data-apariencia=${apariencia}]`).click()
+      const r = await new AxeBuilder({ page })
+        .include('.demo-pantalla')
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
+        .analyze()
+      expect(r.violations.map((v) => `${apariencia}: ${v.id}`)).toEqual([])
+    }
+  })
+
+  test('cada apariencia cambia los colores de la maqueta y los diálogos de verdad', async ({ page }) => {
+    await npm(page)
+    await page.goto(SITIO + 'index.html')
+    const pantalla = page.locator('.demo-pantalla')
     const chips = page.locator('.demo-controles button[data-apariencia]')
     await expect(chips.first()).toHaveAttribute('aria-pressed', 'true')
     await page.locator('button[data-apariencia=material]').click()
     await expect(page.locator('button[data-apariencia=material]')).toHaveAttribute('aria-pressed', 'true')
     await expect(chips.first()).toHaveAttribute('aria-pressed', 'false')
     expect(await pantalla.evaluate((p) => p.style.getPropertyValue('--nd-radius'))).toBe('28px')
-    // Los diálogos de verdad toman el mismo tema.
     await page.locator('#b-demo').click()
     const real = page.locator('[data-nexus-host]').last()
     await expect(real).toBeVisible()
@@ -442,15 +484,6 @@ test.describe('Sitio: demo, cifras, buscador y volver arriba', () => {
     await page.keyboard.press('Escape')
     await page.locator('button[data-apariencia=oscuro]').click()
     await expect(pantalla).toHaveClass(/oscuro/)
-  })
-
-  test('con movimiento reducido la demo queda en una imagen fija', async ({ page }) => {
-    await page.emulateMedia({ reducedMotion: 'reduce' })
-    await page.goto(SITIO + 'index.html')
-    await page.locator('.demo-pantalla').scrollIntoViewIfNeeded()
-    await page.waitForTimeout(1500)
-    await expect(page.locator('.demo-titulo')).toHaveText('¿Eliminar a Laura Méndez?')
-    await expect(page.locator('.demo-cursor')).not.toHaveClass(/visible/)
   })
 
   test('el buscador abre con «/» y con Ctrl+K, filtra, se mueve con flechas, abre con Enter y vuelve el foco', async ({ page }) => {

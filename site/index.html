@@ -37,19 +37,24 @@ if (await confirmDelete({ what: 'a Laura Méndez' })) {
 
       <section class="bloque demo" aria-labelledby="demo-t">
         <h2 id="demo-t">Míralo en acción</h2>
-        <p class="sub">Así se ven los diálogos con cada apariencia. Elige una: los diálogos de esta página cambian con ella.</p>
-        <div class="demo-pantalla" aria-hidden="true">
-          <div class="demo-fondo"><i></i><i></i><i></i><i></i><i></i></div>
-          <div class="demo-velo"></div>
-          <div class="demo-dialogo entra">
+        <p class="sub">Es una maqueta que puedes usar: escribe, pulsa y prueba la validación. Elige la escena y la apariencia; los diálogos de verdad de esta página cambian con la apariencia.</p>
+        <div class="demo-pantalla" role="group" aria-label="Diálogo de muestra">
+          <div class="demo-fondo" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="demo-velo" aria-hidden="true"></div>
+          <div class="demo-dialogo entra" role="group" aria-label="Diálogo de ejemplo">
             <p class="demo-titulo">¿Eliminar a Laura Méndez?</p>
             <p class="demo-texto">Se eliminará su registro. Esta acción no se puede deshacer.</p>
-            <div class="demo-botones"><span class="demo-btn cancelar">Cancelar</span><span class="demo-btn peligro" data-objetivo>Eliminar</span></div>
+            <div class="demo-botones"><button type="button" class="demo-btn cancelar" data-accion="cancelar">Cancelar</button><button type="button" class="demo-btn peligro" data-accion="eliminar">Eliminar</button></div>
           </div>
-          <div class="demo-toast"><span>Laura Méndez eliminada</span><b>Deshacer</b></div>
-          <span class="demo-cursor"></span>
+          <div class="demo-toast" role="status" inert><span></span><button type="button" class="demo-deshacer" hidden>Deshacer</button></div>
+          <span class="demo-cursor" aria-hidden="true"></span>
         </div>
-        <div class="demo-controles chips" role="group" aria-label="Apariencia de los diálogos">
+        <div class="demo-controles chips" role="group" aria-label="Escena">
+          <button type="button" class="chip" data-escena="borrar" aria-pressed="true">Borrar</button>
+          <button type="button" class="chip" data-escena="formulario" aria-pressed="false">Formulario</button>
+          <button type="button" class="chip" data-escena="aprobar" aria-pressed="false">Aprobar</button>
+        </div>
+        <div class="demo-controles demo-apariencia chips" role="group" aria-label="Apariencia de los diálogos">
           <button type="button" class="chip" data-apariencia="nexus" aria-pressed="true">Nexus</button>
           <button type="button" class="chip" data-apariencia="material" aria-pressed="false">Material</button>
           <button type="button" class="chip" data-apariencia="bootstrap" aria-pressed="false">Bootstrap</button>

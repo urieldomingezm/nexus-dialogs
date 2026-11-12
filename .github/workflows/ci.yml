@@ -40,6 +40,9 @@ jobs:
       - name: Sitio de documentación
         run: npm run build:site
 
+      - name: El sitio construido incluye su código (buscador, demo, animaciones)
+        run: node scripts/revisar-sitio.mjs
+
       - name: Tamaño (gzip)
         run: npm run size
 
