@@ -21,6 +21,35 @@ nexus-dialogs es una **biblioteca de interfaces transaccionales para aplicacione
 - **Angular, solo ESM y 16 o más.** React 18 o más; Vue 3.3 o más.
 - **Compatibilidad con SweetAlert2 parcial a propósito.** Ver la [matriz](https://urieldomingezm.github.io/nexus-dialogs/swal-compat.html).
 
+## Garantías por módulo
+
+Todo es 0.x: una versión menor puede traer cambios que rompen (siempre avisados en el CHANGELOG). Esta tabla dice qué tan asentado está cada módulo, no que esté validado por usuarios externos (ver arriba: aún no hay casos públicos en producción).
+
+- **Estable**: lleva tres o más versiones menores, su API está fijada en el reporte (`npm run api:check`) y en los contratos de tipos, y las pruebas unitarias y de navegador lo cubren.
+- **En maduración**: más reciente, con menos uso, o con una limitación que lo condiciona. Úsalo, pero lee su limitación y fija la versión.
+- **Parcial**: cubre una parte a propósito.
+
+| Módulo | Estado | Desde | Limitación principal |
+|---|---|---|---|
+| `nexus-dialogs` (núcleo) | Estable | 0.1.0 | Los diálogos se apilan, no se encolan; solo en el navegador |
+| `forms` | Estable | 0.1.0 | Borradores en `localStorage`; la subida de archivos no se puede cancelar |
+| `toast` | Estable | 0.1.0 | Una sola cola y una sola posición |
+| `themes` | Estable | 0.1.0 | Se personaliza con variables `--nd-*`, no con tu CSS (Shadow DOM) |
+| `patterns` | Estable | 0.1.0 | Textos en español e inglés; más idiomas con `labels` |
+| `mx` | Estable | 0.1.0 | El RFC no calcula la homoclave y nada consulta al SAT, IMSS ni bancos |
+| `vue` | En maduración | 0.3.0 | Vue 3.3 o más |
+| `react` | En maduración | 0.4.0 | React 18 o más |
+| `angular` | En maduración | 0.3.0 | Solo ESM y Angular 16 o más |
+| `swal` | Parcial | 0.3.0 | Compatible a propósito solo en parte: ver la [matriz](https://urieldomingezm.github.io/nexus-dialogs/swal-compat.html). El `html` sale como texto por omisión |
+| `import` (importar y exportar) | En maduración | 0.4.0 | Excel solo lo básico; la exportación no se ha abierto en Microsoft Excel, solo en LibreOffice |
+| `table` | En maduración | 0.4.0 | Elegir filas, no es una tabla de datos completa |
+| `rrhh` | En maduración | 0.4.0 | Plantillas en JSON que tú adaptas a tus reglas; hay que dar los `resolvers` |
+| `sepomex` | En maduración | 0.4.0 | Tú publicas los archivos JSON del catálogo |
+| `tabs` | En maduración | 0.5.0 | Nuevo: pestañas con contenido en texto, nodo o función |
+| `timeline` | En maduración | 0.5.0 | Nuevo: seguimiento por etapas |
+
+La accesibilidad tiene su propia nota: hay pruebas automáticas, pero los lectores de pantalla están pendientes de validar a mano (ver [Accesibilidad](https://urieldomingezm.github.io/nexus-dialogs/accesibilidad.html)).
+
 ## Navegadores
 
 | Navegador | Mínimo | Pruebas |

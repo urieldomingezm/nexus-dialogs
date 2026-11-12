@@ -33,7 +33,7 @@ Una receta como `confirmDelete` existe para escribir `if (await confirmDelete(..
 
 ## Otras convenciones
 
-- **Nunca rechazan** los diálogos ni las recetas: cancelar no es un error. Lo que sí propaga el error de tu código es `loading` (es tu tarea) y `readSpreadsheet` con un archivo ilegible (rechaza con un error).
+- **Nunca rechazan** los diálogos ni las recetas: cancelar no es un error. Lo que sí rechaza es `formFromJSON` con un tipo desconocido o un resolver que falta (error de quien arma el esquema; no abre nada), `loading`, que relanza el error de tu tarea, y `readSpreadsheet` con un archivo ilegible.
 - **`preConfirm` que lanza** no rechaza la promesa: muestra el error dentro del diálogo y lo deja abierto.
 - **`toast()`** devuelve un `string` (el id) para `toast.update` y `toast.dismiss`; `toast.promise` devuelve la promesa original.
 - **Funciones puras** (`isRFC`, `isCURP`, `businessDays`…) devuelven `boolean`, `number` o `string`, nunca lanzan por entradas raras.

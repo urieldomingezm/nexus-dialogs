@@ -21,12 +21,28 @@ const pkg = JSON.parse(leer('../package.json'))
 
 const MENU = [
   ['inicio', 'index.html', 'Inicio'],
+  ['primeros-pasos', 'primeros-pasos.html', 'Primeros pasos'],
   ['guia', 'guia.html', 'Guía'],
   ['ejemplos', 'ejemplos.html', 'Ejemplos'],
   ['erp', 'erp.html', 'Mini ERP'],
   ['migracion', 'migracion.html', 'Migrar'],
   ['api', 'api.html', 'API'],
 ]
+
+/** Dirección sin extensión: `ejemplos.html` → `ejemplos` y `index.html` → la raíz. GitHub Pages sirve `/ejemplos` con `ejemplos.html`. */
+const sinExtension = (f) => (f === 'index.html' ? '' : f.replace(/\.html$/, ''))
+
+/**
+ * Enlaces del sitio sin «.html» (solo en el build): `href="ejemplos.html#alerta"` → `href="ejemplos#alerta"`, `index.html` → `./`, y lo
+ * mismo con las direcciones absolutas del propio sitio que traen el README y los Markdown (esos siguen con `.html` en GitHub y npm,
+ * donde también funcionan). Las direcciones con `.html` viejas siguen abriendo: GitHub Pages sirve las dos.
+ */
+export function limpiarEnlaces(html, sitio = SITE) {
+  const base = sitio.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return html
+    .replace(/href="([\w-]+)\.html(#[^"]*)?"/g, (_, n, h = '') => `href="${n === 'index' ? './' : n}${h}"`)
+    .replace(new RegExp(`href="${base}/([\\w-]+)\\.html(#[^"]*)?"`, 'g'), (_, n, h = '') => `href="${sitio}/${n === 'index' ? '' : n}${h}"`)
+}
 
 const escapar = (t) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
@@ -147,7 +163,7 @@ function metaSocial(html, pagina) {
   const titulo = atributo(html, /<title>([\s\S]*?)<\/title>/)
   const desc = atributo(html, /<meta name="description" content="([^"]*)"/)
   if (!titulo || !desc) return ''
-  const url = `${SITE}/${pagina === 'index.html' ? '' : pagina}`
+  const url = `${SITE}/${sinExtension(pagina)}`
   return `
     <link rel="canonical" href="${url}" />
     <meta name="theme-color" content="#f1ecf9" media="(prefers-color-scheme: light)" />
@@ -212,6 +228,12 @@ export function docsPlugin() {
       },
     },
     {
+      // Enlaces sin «.html» en el sitio publicado (ver limpiarEnlaces).
+      name: 'nexus-dialogs-urls-limpias',
+      apply: 'build',
+      transformIndexHtml: { order: 'post', handler: (html) => limpiarEnlaces(html) },
+    },
+    {
       // Precarga las fuentes del texto (latín) para que no parpadee el cambio de tipografía.
       name: 'nexus-dialogs-fuentes',
       apply: 'build',
@@ -236,7 +258,7 @@ export function docsPlugin() {
         const paginas = Object.keys(bundle).filter((f) => f.endsWith('.html')).sort()
         if (!paginas.length) return
         const fecha = new Date().toISOString().slice(0, 10)
-        const urls = paginas.map((f) => `  <url><loc>${SITE}/${f === 'index.html' ? '' : f}</loc><lastmod>${fecha}</lastmod></url>`).join('\n')
+        const urls = paginas.map((f) => `  <url><loc>${SITE}/${sinExtension(f)}</loc><lastmod>${fecha}</lastmod></url>`).join('\n')
         this.emitFile({ type: 'asset', fileName: 'sitemap.xml', source: `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n` })
         this.emitFile({ type: 'asset', fileName: 'robots.txt', source: `User-agent: *\nAllow: /\n\nSitemap: ${SITE}/sitemap.xml\n` })
       },
