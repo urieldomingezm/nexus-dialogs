@@ -297,45 +297,6 @@ function escribir(): void {
   })
 }
 
-// ── Inclinación 3D de las tarjetas ───────────────────────────────────────────
-// Solo con mouse (hover y puntero fino). Las tarjetas anchas se inclinan menos para no marear.
-function inclinar(): void {
-  if (!matchMedia('(hover: hover) and (pointer: fine)').matches) return
-  let activa: HTMLElement | null = null
-  const quitar = (): void => {
-    if (!activa) return
-    activa.classList.remove('inclina')
-    activa.style.removeProperty('--rx')
-    activa.style.removeProperty('--ry')
-    activa = null
-  }
-  document.addEventListener(
-    'pointermove',
-    (e) => {
-      if (sinMovimiento.matches) return quitar()
-      if (e.buttons) return // seleccionando texto o arrastrando: no se mueve nada
-      const t = (e.target as Element).closest<HTMLElement>('main .tarjeta, main .ejemplo')
-      if (!t) return quitar()
-      if (t !== activa) {
-        quitar()
-        activa = t
-      }
-      const r = t.getBoundingClientRect()
-      const x = (e.clientX - r.left) / r.width - 0.5
-      const y = (e.clientY - r.top) / r.height - 0.5
-      const max = r.width > 600 || r.height > 400 ? 1.2 : 3
-      t.style.setProperty('--rx', `${(-y * max * 2).toFixed(2)}deg`)
-      t.style.setProperty('--ry', `${(x * max * 2).toFixed(2)}deg`)
-      t.classList.add('inclina')
-    },
-    { passive: true },
-  )
-  document.addEventListener('pointerout', (e) => {
-    if (!e.relatedTarget) quitar()
-  })
-  addEventListener('blur', quitar)
-}
-
 // ── Cifras que cuentan hasta su valor ────────────────────────────────────────
 /** Pone `texto` en `el` contando desde cero cuando entra en pantalla («1,234», «10.8 KB»). Sin número o con «reducir movimiento», lo pone directo. */
 export function animarNumero(el: HTMLElement, texto: string): void {
@@ -413,6 +374,5 @@ const hero = document.querySelector<HTMLElement>('.hero:not(.chico)')
 if (hero) particulas(hero)
 aparecer()
 escribir()
-inclinar()
 cifras()
 volverArriba()

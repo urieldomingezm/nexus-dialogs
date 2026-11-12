@@ -1655,6 +1655,7 @@ dialog.buscador::backdrop {
   --_accent: var(--nd-accent, #4263eb);
   --_accent-fg: var(--nd-accent-contrast, #fff);
   --_danger: var(--nd-danger, #d92d20);
+  --_error: var(--nd-error, #d92d20);
   --_cancel: var(--nd-cancel-fg, #b42318);
   --_cancel-borde: var(--nd-cancel-border, #fecdca);
   --_radio: var(--nd-radius, 20px);
@@ -1679,6 +1680,7 @@ dialog.buscador::backdrop {
   --_accent-fg: var(--nd-accent-contrast, #12142a);
   --_cancel: var(--nd-cancel-fg, #fda29b);
   --_cancel-borde: var(--nd-cancel-border, #7a271a);
+  --_error: var(--nd-error, #fda29b);
 }
 .demo-fondo {
   display: grid;
@@ -1721,6 +1723,7 @@ dialog.buscador::backdrop {
   opacity: 1;
 }
 .demo-dialogo.sale {
+  pointer-events: none;
   opacity: 0;
   transform: translate(-50%, -46%) scale(0.96);
 }
@@ -1745,12 +1748,42 @@ dialog.buscador::backdrop {
 }
 .demo-entrada {
   display: block;
+  width: 100%;
   min-height: 38px;
   padding: 9px 12px;
   border: 1px solid var(--_border);
   border-radius: var(--_radio-c);
   background: var(--_bg);
+  color: var(--_fg);
+  font: inherit;
   font-size: 0.9rem;
+  resize: none;
+}
+.demo-entrada[aria-invalid='true'] {
+  border-color: var(--_error);
+}
+.demo-entrada:focus-visible,
+.demo-btn:focus-visible,
+.demo-deshacer:focus-visible {
+  outline: 2px solid var(--_accent);
+  outline-offset: 2px;
+}
+.demo-error {
+  min-height: 1.1em;
+  color: var(--_error);
+  font-size: 0.78rem;
+}
+.demo-error:empty {
+  display: none;
+}
+.demo-deshacer {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--_accent);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
 }
 .demo-botones {
   display: flex;
@@ -1763,9 +1796,13 @@ dialog.buscador::backdrop {
   padding: 10px 16px;
   border: 1px solid var(--_border);
   border-radius: var(--_radio-c);
+  background: transparent;
+  color: var(--_fg);
+  font: inherit;
   font-size: 0.85rem;
   font-weight: 600;
   line-height: 1;
+  cursor: pointer;
 }
 .demo-btn.cancelar {
   color: var(--_cancel);
@@ -1797,12 +1834,12 @@ dialog.buscador::backdrop {
   opacity: 0;
   transform: translateY(12px);
 }
+.demo-toast:not(.visible) {
+  visibility: hidden;
+}
 .demo-toast.visible {
   opacity: 1;
   transform: none;
-}
-.demo-toast b {
-  color: var(--_accent);
 }
 .demo-cursor {
   position: absolute;
@@ -1928,26 +1965,6 @@ dialog.buscador::backdrop {
   }
 }
 
-/* Inclinación 3D al pasar el mouse: solo con mouse y con el movimiento permitido. */
-@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-  .tarjeta:not(.revela),
-  .ejemplo {
-    transition:
-      transform var(--dur-short) var(--ease-out),
-      box-shadow var(--dur-short) var(--ease-out),
-      background-color var(--dur-short) var(--ease-out);
-  }
-  .inclina {
-    transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
-    background: var(--color-paper-2);
-    border-color: transparent;
-    border-radius: 8px;
-    /* El primer anillo hace de «relleno» visual sin mover el diseño. */
-    box-shadow:
-      0 0 0 6px var(--color-paper-2),
-      0 18px 40px -18px oklch(0% 0 0 / 0.35);
-  }
-}
 @media print {
   .particulas,
   .chispas {
