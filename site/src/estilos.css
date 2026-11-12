@@ -1975,3 +1975,133 @@ dialog.buscador::backdrop {
     transform: none;
   }
 }
+
+/* ── Escenas nuevas de la maqueta, «Ver código» ─────────────────────────── */
+.demo-fechas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.demo-progreso {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--_border);
+  overflow: hidden;
+}
+.demo-progreso i {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--_accent);
+}
+.demo-resumen {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--_radio-c);
+  background: var(--_surface);
+  font-size: 0.85rem;
+}
+.demo-resumen div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.demo-resumen dt {
+  color: var(--_muted);
+}
+.demo-resumen dd {
+  margin: 0;
+  font-weight: 600;
+}
+.demo-filas {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.85rem;
+}
+.demo-filas li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: var(--_surface);
+}
+.demo-filas .mal b {
+  color: var(--_error);
+}
+.demo-filas b {
+  font-size: 0.78rem;
+}
+.demo-archivo {
+  justify-self: start;
+  padding: 14px 16px;
+  border-style: dashed;
+}
+.demo-codigo {
+  margin-top: var(--space-md);
+}
+.demo-codigo summary {
+  cursor: pointer;
+  font-weight: 600;
+  width: fit-content;
+}
+.demo-codigo pre {
+  margin-top: var(--space-sm);
+  overflow-x: auto;
+}
+@media (max-width: 640px) {
+  .demo-pantalla {
+    min-height: 420px;
+  }
+  .demo-fechas {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Esqueleto de la cifra, brillo en botones, insignias en vivo, transición entre páginas ── */
+.esqueleto {
+  display: inline-block;
+  min-width: 4ch;
+  border-radius: 8px;
+  background: var(--color-rule);
+  color: transparent;
+}
+.insignias.en-vivo .insignia {
+  text-transform: none;
+  text-decoration: none;
+}
+.insignias.en-vivo b {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+a.insignia:hover {
+  box-shadow: inset 0 0 0 1.5px var(--color-accent);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .esqueleto {
+    background: linear-gradient(100deg, var(--color-rule) 30%, var(--color-paper-3) 50%, var(--color-rule) 70%) 0 0 / 200% 100%;
+    animation: brilla 1.3s linear infinite;
+  }
+  @keyframes brilla {
+    to {
+      background-position: -200% 0;
+    }
+  }
+  @view-transition {
+    navigation: auto;
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 180ms;
+  }
+}
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .btn.primario:hover {
+    background-image: radial-gradient(110px circle at var(--mx, 50%) var(--my, 50%), oklch(100% 0 0 / 0.3), transparent 70%);
+  }
+}

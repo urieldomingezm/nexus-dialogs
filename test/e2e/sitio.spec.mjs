@@ -474,6 +474,131 @@ test.describe('Sitio: demo, cifras, buscador y volver arriba', () => {
     await expect(pantalla.locator('.demo-toast')).toContainText('Laura Méndez eliminada', { timeout: 8000 })
   })
 
+  test('escenas nuevas: vacaciones cuenta días hábiles y valida, y el asistente avanza y retrocede', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await page.goto(SITIO + 'index.html')
+    const pantalla = page.locator('.demo-pantalla')
+    const toast = pantalla.locator('.demo-toast')
+    await pantalla.scrollIntoViewIfNeeded()
+    // Vacaciones
+    await page.locator('button[data-escena=vacaciones]').click()
+    await pantalla.getByRole('button', { name: 'Enviar' }).click()
+    await expect(pantalla.locator('#demo-desde-e')).toContainText('primer día')
+    await pantalla.locator('#demo-desde').fill('2026-12-21')
+    await pantalla.locator('#demo-hasta').fill('2026-12-18')
+    await pantalla.getByRole('button', { name: 'Enviar' }).click()
+    await expect(pantalla.locator('#demo-hasta-e')).toContainText('antes')
+    await pantalla.locator('#demo-hasta').fill('2027-01-29')
+    await expect(pantalla.locator('#demo-dias')).toContainText('máximo 12')
+    await pantalla.getByRole('button', { name: 'Enviar' }).click()
+    await expect(pantalla.locator('#demo-hasta-e')).toContainText('Máximo 12')
+    await pantalla.locator('#demo-hasta').fill('2026-12-30')
+    await expect(pantalla.locator('#demo-dias')).toHaveText('8 días hábiles')
+    await pantalla.getByRole('button', { name: 'Enviar' }).click()
+    await expect(toast).toContainText('vacaciones enviada')
+    // Asistente: no pasa sin nombre, conserva lo escrito al ir y volver
+    await page.locator('button[data-escena=asistente]').click()
+    await pantalla.getByRole('button', { name: 'Siguiente' }).click()
+    await expect(pantalla.locator('#demo-nombre-e')).toContainText('obligatorio')
+    await pantalla.locator('#demo-nombre').fill('Mario Ruiz')
+    await pantalla.getByRole('button', { name: 'Siguiente' }).click()
+    await expect(pantalla.locator('#demo-paso')).toHaveText('Paso 2 de 3')
+    await pantalla.locator('#demo-puesto').selectOption('Contabilidad')
+    await pantalla.getByRole('button', { name: 'Siguiente' }).click()
+    await expect(pantalla.locator('.demo-resumen')).toContainText('Mario Ruiz')
+    await expect(pantalla.locator('.demo-resumen')).toContainText('Contabilidad')
+    await pantalla.getByRole('button', { name: 'Atrás' }).click()
+    await pantalla.getByRole('button', { name: 'Atrás' }).click()
+    await expect(pantalla.locator('#demo-nombre')).toHaveValue('Mario Ruiz')
+    await pantalla.getByRole('button', { name: 'Siguiente' }).click()
+    await pantalla.getByRole('button', { name: 'Siguiente' }).click()
+    await pantalla.getByRole('button', { name: 'Dar de alta' }).click()
+    await expect(toast).toContainText('dado de alta')
+  })
+
+  test('escenas nuevas: importar pide el archivo antes y descartar avisa; «Ver código» sigue a la escena', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await page.goto(SITIO + 'index.html')
+    const pantalla = page.locator('.demo-pantalla')
+    const toast = pantalla.locator('.demo-toast')
+    const codigo = page.locator('.demo-codigo')
+    await pantalla.scrollIntoViewIfNeeded()
+    await expect(codigo.locator('code')).toContainText('confirmDelete')
+    await codigo.locator('summary').click()
+    await page.locator('button[data-escena=importar]').click()
+    await expect(codigo.locator('code')).toContainText('importData')
+    await pantalla.getByRole('button', { name: 'Importar', exact: true }).click()
+    await expect(pantalla.locator('#demo-archivo-e')).toContainText('Primero elige')
+    await pantalla.getByRole('button', { name: 'Elegir empleados.csv' }).click()
+    await expect(pantalla.locator('.demo-filas')).toContainText('RFC no válido')
+    await pantalla.getByRole('button', { name: 'Importar 3' }).click()
+    await expect(toast).toContainText('Se importaron 3 empleados')
+    await page.locator('button[data-escena=descartar]').click()
+    await expect(codigo.locator('code')).toContainText('unsavedChanges')
+    await expect(codigo.locator('button.copiar')).toHaveCount(1)
+    await pantalla.getByRole('button', { name: 'Descartar' }).click()
+    await expect(toast).toContainText('Cambios descartados')
+  })
+
+  test('el asistente se reproduce solo al elegirlo y vuelve a quedar usable', async ({ page }) => {
+    await npm(page)
+    await page.goto(SITIO + 'index.html')
+    const pantalla = page.locator('.demo-pantalla')
+    await pantalla.scrollIntoViewIfNeeded()
+    await page.locator('button[data-escena=asistente]').click()
+    await expect(pantalla.locator('#demo-paso')).toHaveText('Paso 3 de 3', { timeout: 12000 })
+    await expect(pantalla.locator('.demo-toast')).toContainText('dado de alta', { timeout: 8000 })
+    await expect(pantalla.locator('#demo-paso')).toHaveText('Paso 1 de 3', { timeout: 8000 })
+    await expect(pantalla.locator('#demo-nombre')).toHaveValue('')
+  })
+
+  test('las escenas nuevas pasan axe, también en oscuro', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await page.goto(SITIO + 'index.html')
+    for (const apariencia of ['nexus', 'oscuro']) {
+      await page.locator(`button[data-apariencia=${apariencia}]`).click()
+      for (const escena of ['vacaciones', 'asistente', 'importar', 'descartar']) {
+        await page.locator(`button[data-escena=${escena}]`).click()
+        if (escena === 'asistente') await page.locator('.demo-pantalla').getByRole('button', { name: 'Siguiente' }).click()
+        if (escena === 'importar') await page.locator('.demo-pantalla').getByRole('button', { name: 'Elegir empleados.csv' }).click()
+        const r = await new AxeBuilder({ page })
+          .include('.demo-pantalla')
+          .include('.demo-codigo')
+          .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
+          .analyze()
+        expect(r.violations.map((v) => `${apariencia}/${escena}: ${v.id}`)).toEqual([])
+      }
+    }
+  })
+
+  test('portada: la insignia de versión se confirma con npm, la cifra muestra un esqueleto y existe la sección de piezas', async ({
+    page,
+  }) => {
+    await page.route('https://registry.npmjs.org/**', (r) =>
+      r.fulfill({ json: { version: '9.9.9' }, headers: { 'access-control-allow-origin': '*' } }),
+    )
+    await page.route('https://api.npmjs.org/**', async (r) => {
+      await new Promise((ok) => setTimeout(ok, 800))
+      await r.fulfill({ json: { downloads: 1234 }, headers: { 'access-control-allow-origin': '*' } })
+    })
+    await page.goto(SITIO + 'index.html')
+    await expect(page.locator('#n-descargas')).toHaveClass(/esqueleto/)
+    await expect(page.locator('#n-descargas')).not.toHaveClass(/esqueleto/)
+    await expect(page.locator('#i-version')).toHaveText('v9.9.9')
+    await expect(page.locator('.insignias.en-vivo')).toContainText('MIT')
+    await expect(page.getByRole('heading', { name: 'Una pieza en lugar de varias' })).toBeVisible()
+    await expect(page.locator('section[aria-labelledby=piezas] tbody tr')).toHaveCount(6)
+  })
+
+  test('sin respuesta de npm, la insignia conserva la versión de la construcción y el esqueleto se quita', async ({ page }) => {
+    await page.route('https://registry.npmjs.org/**', (r) => r.abort())
+    await page.route('https://api.npmjs.org/**', (r) => r.abort())
+    await page.goto(SITIO + 'index.html')
+    await expect(page.locator('#n-descargas')).not.toHaveClass(/esqueleto/)
+    await expect(page.locator('#i-version')).toHaveText(/^v\d+\.\d+\.\d+/)
+    await expect(page.locator('#i-version')).not.toHaveText('v9.9.9')
+  })
+
   test('la maqueta y sus avisos de error pasan axe, también con otra apariencia', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' })
     await page.goto(SITIO + 'index.html')
