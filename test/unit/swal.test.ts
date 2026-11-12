@@ -145,6 +145,30 @@ describe('adaptador de SweetAlert2', () => {
     expect((await p).dismiss).toBe('cancel')
   })
 
+  it('Swal.configure cambia strictHtml y sanitize (el build sin bundler no tiene otro modo)', async () => {
+    Swal.configure({ strictHtml: true })
+    let p = Swal.fire({ title: 'A', html: '<b>x</b>' })
+    await esperar()
+    expect($$('b')).toHaveLength(0)
+    expect(raiz().textContent).toContain('<b>x</b>')
+    boton('confirm').click()
+    await p
+    Swal.configure({ strictHtml: false })
+    p = Swal.fire({ title: 'B', html: '<b>x</b>' })
+    await esperar()
+    expect($('b').textContent).toBe('x')
+    boton('confirm').click()
+    await p
+    Swal.configure({ sanitize: (h) => h.replace(/<b>/g, '<i>').replace(/<\/b>/g, '</i>') })
+    p = Swal.fire({ title: 'C', html: '<b>x</b>' })
+    await esperar()
+    expect($$('b')).toHaveLength(0)
+    expect($('i').textContent).toBe('x')
+    boton('confirm').click()
+    await p
+    Swal.configure({ sanitize: null })
+  })
+
   it('mixin + toast va a los toasts de nexus-dialogs', async () => {
     const Toast = Swal.mixin({ toast: true, position: 'top-end', timer: 30, showConfirmButton: false })
     const p = Toast.fire({ icon: 'success', title: 'Guardado' })

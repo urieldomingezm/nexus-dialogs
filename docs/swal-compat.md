@@ -16,7 +16,7 @@ Qué parte de SweetAlert2 cubre `nexus-dialogs/swal` y qué no. La compatibilida
 | `title` | compatible |  |
 | `titleText` | compatible |  |
 | `text` | compatible |  |
-| `html` | parcial | Se muestra como texto por omisión (`strictHtml`); con contenido propio, `configure({ strictHtml: false })`. |
+| `html` | parcial | Se muestra como texto por omisión (`strictHtml`); con contenido propio, `configure({ strictHtml: false })` (sin bundler, `Swal.configure(…)`). |
 | `icon` | compatible |  |
 | `footer` | parcial | Se muestra como texto plano: las etiquetas se quitan. |
 | `toast` | parcial | Usa la cola de `nexus-dialogs/toast`; no admite todos los parámetros de un diálogo. |
