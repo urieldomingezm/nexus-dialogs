@@ -108,6 +108,7 @@ export default defineConfig(({ mode, command }) => {
       'seguridad',
       'arquitectura',
       'limitaciones',
+      'novedades',
       'swal-compat',
       'contratos',
       'api',

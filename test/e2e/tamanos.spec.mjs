@@ -76,6 +76,8 @@ for (const [id, titulo] of [
         await page.addInitScript((t) => localStorage.setItem('nd-tema', t), tema)
         await abrir(page, id, titulo)
         await page.addStyleTag({ content: '*, *::before, *::after { animation: none !important; transition: none !important }' })
+        // WebKit puede medir el contraste con la entrada del diálogo a medias: se espera a que no quede ninguna animación.
+        await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== 'running'))
         const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze()
         expect(r.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([])
       })
