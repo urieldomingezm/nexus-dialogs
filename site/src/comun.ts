@@ -166,6 +166,8 @@ function menuMovil(): void {
       const abrir = g.getAttribute('aria-expanded') !== 'true'
       cerrarGrupos(g)
       g.setAttribute('aria-expanded', String(abrir))
+      // El menú del teléfono se desplaza por dentro: deja a la vista el grupo que se abrió.
+      if (abrir) g.scrollIntoView({ block: 'nearest' })
     })
   }
   document.addEventListener('click', (e) => {

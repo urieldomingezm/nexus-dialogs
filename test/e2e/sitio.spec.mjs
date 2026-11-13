@@ -64,6 +64,76 @@ test.describe('Sitio de documentación', () => {
     await expect(page.locator('#menu-principal')).toBeHidden()
   })
 
+  for (const [ancho, alto] of [
+    [390, 844],
+    [360, 640],
+    [320, 568],
+  ]) {
+    test(`celular ${ancho}×${alto}: el menú abierto cabe en la pantalla, se desplaza y llega al último enlace`, async ({
+      pagina: page,
+    }) => {
+      await page.setViewportSize({ width: ancho, height: alto })
+      await page.goto(SITIO + 'index.html')
+      await page.locator('.menu-btn').click()
+      await page.locator('header.cabecera').getByRole('button', { name: 'Referencia' }).click() // el grupo más largo
+      const medidas = () =>
+        page.evaluate(() => {
+          const c = document.querySelector('header.cabecera').getBoundingClientRect()
+          const n = document.querySelector('#menu-principal')
+          return {
+            alto: Math.round(c.height),
+            arriba: Math.round(c.top),
+            nav: { cabe: n.scrollHeight <= n.clientHeight, tope: n.scrollTop },
+            ancho: document.documentElement.scrollWidth,
+          }
+        })
+      const m = await medidas()
+      expect(m.alto, 'la cabecera no pasa de la pantalla').toBeLessThanOrEqual(alto)
+      expect(m.ancho, 'sin desplazamiento horizontal').toBeLessThanOrEqual(ancho)
+      // El botón de cerrar y el buscador siguen a la vista aunque el menú sea largo.
+      await expect(page.locator('.menu-btn')).toBeInViewport()
+      await expect(page.locator('header.cabecera [data-buscar]')).toBeInViewport()
+      // Y el último enlace se alcanza desplazando el menú.
+      const npm = page.locator('#menu-principal a.solo-movil', { hasText: 'npm' })
+      await npm.scrollIntoViewIfNeeded()
+      await expect(npm).toBeInViewport({ ratio: 0.9 })
+      await expect(page.locator('.menu-btn')).toBeInViewport()
+    })
+  }
+
+  test('«Míralo en acción» sigue sola al cambiar de apariencia y tras elegir una escena', async ({ pagina: page }) => {
+    test.setTimeout(120_000)
+    await page.emulateMedia({ reducedMotion: 'no-preference' })
+    await page.setViewportSize({ width: 1280, height: 900 })
+    await page.goto(SITIO + 'index.html')
+    await page.locator('.demo-pantalla').evaluate((e) => (e.dataset.retoma = '2000'))
+    await page.locator('.demo-pantalla').scrollIntoViewIfNeeded()
+    const escena = () => page.locator('button[data-escena][aria-pressed=true]').getAttribute('data-escena')
+    const cambia = async (desde) => expect.poll(escena, { timeout: 30_000 }).not.toBe(desde)
+    await expect(page.locator('.demo-cursor')).toHaveClass(/visible/)
+    const antes = await escena()
+    await page.click('[data-apariencia=bootstrap]')
+    await expect(page.locator('[data-apariencia=bootstrap]')).toHaveAttribute('aria-pressed', 'true')
+    await cambia(antes) // no se detuvo: pasa a otra escena por su cuenta
+    // Elegir una escena la reproduce, queda lista para usarse y, sin tocarla, la invitación sigue con la que viene después.
+    await page.click('[data-escena=formulario]')
+    await cambia('formulario')
+    expect(await escena()).toBe('aprobar')
+  })
+
+  test('«Míralo en acción»: al usarla se queda quieta y, sin tocarla, retoma sola', async ({ pagina: page }) => {
+    test.setTimeout(90_000)
+    await page.emulateMedia({ reducedMotion: 'no-preference' })
+    await page.setViewportSize({ width: 1280, height: 900 })
+    await page.goto(SITIO + 'index.html')
+    await page.locator('.demo-pantalla').evaluate((e) => (e.dataset.retoma = '1500'))
+    await page.locator('.demo-pantalla').scrollIntoViewIfNeeded()
+    await expect(page.locator('.demo-cursor')).toHaveClass(/visible/)
+    await page.locator('.demo-pantalla').click({ position: { x: 24, y: 24 } })
+    await expect(page.locator('.demo-cursor')).not.toHaveClass(/visible/) // la tomó: se detiene
+    await expect(page.locator('.demo-cursor')).toHaveClass(/visible/, { timeout: 20_000 }) // y sin tocarla, retoma
+  })
+
   test('escritorio: los submenús abren con clic, uno a la vez, y se cierran con Esc o fuera', async ({ pagina: page }) => {
     await page.setViewportSize({ width: 1280, height: 800 })
     await page.goto(SITIO + 'ejemplos.html')
