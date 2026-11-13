@@ -6,6 +6,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ### Corregido
 
+- La barra de desplazamiento vertical del cuerpo de los modales y de la lista de los `select` con búsqueda (combobox) se ocultaba sola en macOS, iOS y Windows con barras flotantes, y era difícil usarla con el ratón. Ahora es una barra fija de 12 px, siempre visible (en Firefox, con `scrollbar-color`).
 - Las pruebas de React usaban `act` de `react`, que no existe antes de la 18.3; ahora también corren con 18.0 a 18.2.
 - Sitio de documentación, «Míralo en acción»: la demostración ya no se queda parada para siempre. Cambiar de apariencia no la afecta, elegir una escena la reproduce y la deja lista para usarse, y si nadie la toca durante 12 segundos sigue sola con la siguiente (lo mismo si alguien la usa y se va). En el teléfono, empezar a desplazar la página sobre la maqueta ya no la detiene: solo un toque completo, el teclado o escribir. En pantallas de menos de 400 px los submenús muestran solo el título.
 - Sitio de documentación en el teléfono: el menú abierto con un grupo desplegado medía más que la pantalla y los últimos enlaces (y el botón de cerrar) quedaban fuera de alcance. Ahora el menú nunca pasa de la altura de la pantalla, solo se desplazan los enlaces y el botón de cerrar y el buscador se quedan a la vista.

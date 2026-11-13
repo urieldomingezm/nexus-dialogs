@@ -1,6 +1,21 @@
 import { axe, boton, enDialogo, expect, resultado, test } from './utilidades.mjs'
 
 test.describe('campos avanzados', () => {
+  test('combobox: la barra de desplazamiento del modal y de la lista está siempre visible (no se oculta)', async ({ pagina: p }) => {
+    await p.click('#c-combo')
+    await p.keyboard.type('a')
+    await expect(enDialogo(p, '[role=option]').first()).toBeVisible()
+    // Con `::-webkit-scrollbar` los navegadores de WebKit/Chromium usan la barra clásica fija en lugar de la que se oculta sola.
+    const ancho = (q) =>
+      enDialogo(p, q)
+        .first()
+        .evaluate((e) => getComputedStyle(e, '::-webkit-scrollbar').width)
+    if (p.context().browser()?.browserType().name() !== 'firefox') {
+      expect(await ancho('.cb-list')).toBe('12px')
+      expect(await ancho('.body')).toBe('12px')
+    }
+  })
+
   test('combobox: teclado completo, Esc cierra solo la lista y axe', async ({ pagina: p }) => {
     await p.click('#c-combo')
     const cliente = enDialogo(p, '[role=combobox]').first()
