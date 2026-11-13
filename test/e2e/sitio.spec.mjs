@@ -64,6 +64,43 @@ test.describe('Sitio de documentación', () => {
     await expect(page.locator('#menu-principal')).toBeHidden()
   })
 
+  for (const [ancho, alto] of [
+    [390, 844],
+    [360, 640],
+    [320, 568],
+  ]) {
+    test(`celular ${ancho}×${alto}: el menú abierto cabe en la pantalla, se desplaza y llega al último enlace`, async ({
+      pagina: page,
+    }) => {
+      await page.setViewportSize({ width: ancho, height: alto })
+      await page.goto(SITIO + 'index.html')
+      await page.locator('.menu-btn').click()
+      await page.locator('header.cabecera').getByRole('button', { name: 'Referencia' }).click() // el grupo más largo
+      const medidas = () =>
+        page.evaluate(() => {
+          const c = document.querySelector('header.cabecera').getBoundingClientRect()
+          const n = document.querySelector('#menu-principal')
+          return {
+            alto: Math.round(c.height),
+            arriba: Math.round(c.top),
+            nav: { cabe: n.scrollHeight <= n.clientHeight, tope: n.scrollTop },
+            ancho: document.documentElement.scrollWidth,
+          }
+        })
+      const m = await medidas()
+      expect(m.alto, 'la cabecera no pasa de la pantalla').toBeLessThanOrEqual(alto)
+      expect(m.ancho, 'sin desplazamiento horizontal').toBeLessThanOrEqual(ancho)
+      // El botón de cerrar y el buscador siguen a la vista aunque el menú sea largo.
+      await expect(page.locator('.menu-btn')).toBeInViewport()
+      await expect(page.locator('header.cabecera [data-buscar]')).toBeInViewport()
+      // Y el último enlace se alcanza desplazando el menú.
+      const npm = page.locator('#menu-principal a.solo-movil', { hasText: 'npm' })
+      await npm.scrollIntoViewIfNeeded()
+      await expect(npm).toBeInViewport({ ratio: 0.9 })
+      await expect(page.locator('.menu-btn')).toBeInViewport()
+    })
+  }
+
   test('escritorio: los submenús abren con clic, uno a la vez, y se cierran con Esc o fuera', async ({ pagina: page }) => {
     await page.setViewportSize({ width: 1280, height: 800 })
     await page.goto(SITIO + 'ejemplos.html')
