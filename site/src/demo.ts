@@ -422,8 +422,29 @@ function detener(): void {
   for (const c of [...activos]) c()
 }
 
-pantalla?.addEventListener('pointerdown', detener)
-pantalla?.addEventListener('keydown', detener)
+// Quien usa la maqueta la tiene toda para él; si se va (sin tocarla unos segundos), la invitación sigue donde iba. Un toque que solo
+// empieza a desplazar la página en el teléfono no cuenta como usarla: solo el toque completo (clic), el ratón, el teclado y la escritura.
+let retoma = 0
+function armarRetoma(): void {
+  clearTimeout(retoma)
+  if (sinMovimiento.matches || !pantalla) return
+  retoma = window.setTimeout(() => {
+    const campoActivo = pantalla.contains(document.activeElement) && document.activeElement?.matches('input, textarea, select')
+    if (automatico) return
+    if (pausado() || campoActivo) return armarRetoma() // aún la está usando o no se ve: se vuelve a esperar
+    automatico = true
+    cursor?.classList.remove('visible')
+    void reproducir(++ciclo, (ESCENAS.indexOf(escenaActual) + 1) % ESCENAS.length)
+  }, Number(pantalla.dataset.retoma) || 12000)
+}
+const tocada = (): void => {
+  detener()
+  armarRetoma()
+}
+pantalla?.addEventListener('pointerdown', (e) => e.pointerType !== 'touch' && tocada())
+pantalla?.addEventListener('click', tocada)
+pantalla?.addEventListener('keydown', tocada)
+pantalla?.addEventListener('input', () => !automatico && armarRetoma())
 document.querySelectorAll('button[data-escena]').forEach((b) =>
   b.addEventListener('click', () => elegir((b as HTMLElement).dataset.escena as Escena)),
 )
@@ -451,14 +472,17 @@ function elegir(e: Escena): void {
   avisoToast?.setAttribute('inert', '')
   cursor?.classList.remove('visible')
   abrirEscena(e)
+  clearTimeout(retoma)
   if (sinMovimiento.matches) return
   automatico = true
   void (async (token: number) => {
     try {
       await esperar(token, 700)
       await interpretar(e, token)
+      // Terminó la que se pidió: queda lista para usarse y, si nadie la toca, la invitación sigue con la siguiente.
       automatico = false
       abrirEscena(e)
+      armarRetoma()
     } catch (err) {
       if (!(err instanceof Cancelado)) throw err
       // Alguien la tomó a media reproducción: si el diálogo quedó cerrado, se vuelve a abrir.
@@ -551,9 +575,9 @@ async function interpretar(e: Escena, token: number): Promise<void> {
   cursor?.classList.remove('visible')
 }
 
-async function reproducir(token: number): Promise<void> {
+async function reproducir(token: number, desde = 0): Promise<void> {
   try {
-    for (let i = 0; token === ciclo; i = (i + 1) % ESCENAS.length) {
+    for (let i = desde; token === ciclo; i = (i + 1) % ESCENAS.length) {
       abrirEscena(ESCENAS[i])
       await esperar(token, 500)
       await interpretar(ESCENAS[i], token)

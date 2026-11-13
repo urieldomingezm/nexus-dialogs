@@ -101,6 +101,39 @@ test.describe('Sitio de documentación', () => {
     })
   }
 
+  test('«Míralo en acción» sigue sola al cambiar de apariencia y tras elegir una escena', async ({ pagina: page }) => {
+    test.setTimeout(120_000)
+    await page.emulateMedia({ reducedMotion: 'no-preference' })
+    await page.setViewportSize({ width: 1280, height: 900 })
+    await page.goto(SITIO + 'index.html')
+    await page.locator('.demo-pantalla').evaluate((e) => (e.dataset.retoma = '2000'))
+    await page.locator('.demo-pantalla').scrollIntoViewIfNeeded()
+    const escena = () => page.locator('button[data-escena][aria-pressed=true]').getAttribute('data-escena')
+    const cambia = async (desde) => expect.poll(escena, { timeout: 30_000 }).not.toBe(desde)
+    await expect(page.locator('.demo-cursor')).toHaveClass(/visible/)
+    const antes = await escena()
+    await page.click('[data-apariencia=bootstrap]')
+    await expect(page.locator('[data-apariencia=bootstrap]')).toHaveAttribute('aria-pressed', 'true')
+    await cambia(antes) // no se detuvo: pasa a otra escena por su cuenta
+    // Elegir una escena la reproduce, queda lista para usarse y, sin tocarla, la invitación sigue con la que viene después.
+    await page.click('[data-escena=formulario]')
+    await cambia('formulario')
+    expect(await escena()).toBe('aprobar')
+  })
+
+  test('«Míralo en acción»: al usarla se queda quieta y, sin tocarla, retoma sola', async ({ pagina: page }) => {
+    test.setTimeout(90_000)
+    await page.emulateMedia({ reducedMotion: 'no-preference' })
+    await page.setViewportSize({ width: 1280, height: 900 })
+    await page.goto(SITIO + 'index.html')
+    await page.locator('.demo-pantalla').evaluate((e) => (e.dataset.retoma = '1500'))
+    await page.locator('.demo-pantalla').scrollIntoViewIfNeeded()
+    await expect(page.locator('.demo-cursor')).toHaveClass(/visible/)
+    await page.locator('.demo-pantalla').click({ position: { x: 5, y: 5 } })
+    await expect(page.locator('.demo-cursor')).not.toHaveClass(/visible/) // la tomó: se detiene
+    await expect(page.locator('.demo-cursor')).toHaveClass(/visible/, { timeout: 20_000 }) // y sin tocarla, retoma
+  })
+
   test('escritorio: los submenús abren con clic, uno a la vez, y se cierran con Esc o fuera', async ({ pagina: page }) => {
     await page.setViewportSize({ width: 1280, height: 800 })
     await page.goto(SITIO + 'ejemplos.html')

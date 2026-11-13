@@ -6,6 +6,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ### Corregido
 
+- Sitio de documentación, «Míralo en acción»: la demostración ya no se queda parada para siempre. Cambiar de apariencia no la afecta, elegir una escena la reproduce y la deja lista para usarse, y si nadie la toca durante 12 segundos sigue sola con la siguiente (lo mismo si alguien la usa y se va). En el teléfono, empezar a desplazar la página sobre la maqueta ya no la detiene: solo un toque completo, el teclado o escribir. En pantallas de menos de 400 px los submenús muestran solo el título.
 - Sitio de documentación en el teléfono: el menú abierto con un grupo desplegado medía más que la pantalla y los últimos enlaces (y el botón de cerrar) quedaban fuera de alcance. Ahora el menú nunca pasa de la altura de la pantalla, solo se desplazan los enlaces y el botón de cerrar y el buscador se quedan a la vista.
 
 ### Agregado

@@ -2225,3 +2225,10 @@ a.insignia:hover {
     flex-shrink: 0;
   }
 }
+
+/* Pantallas muy angostas: los submenús muestran solo el título, para que quepan más enlaces sin desplazar. */
+@media (max-width: 400px) {
+  .sm-desc {
+    display: none;
+  }
+}
