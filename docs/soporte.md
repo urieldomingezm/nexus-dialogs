@@ -51,8 +51,8 @@ Los tipos se incluyen y se revisan con `@arethetypeswrong` en cada cambio. Impor
 
 ## Versiones
 
-- **0.x (hoy).** Una versión menor (`0.5` → `0.6`) puede traer cambios que rompen. Siempre aparecen en el CHANGELOG bajo «Cambios que rompen», con cómo migrar. Fija la versión exacta (`"nexus-dialogs": "0.5.4"`) hasta que quieras actualizar.
-- **Desde la 1.0.** Solo una versión mayor rompe. Lo que se vaya a quitar se marca como obsoleto una versión menor antes.
+- **Desde la 1.0 (hoy).** Solo una versión mayor rompe. Lo que se vaya a quitar se marca como obsoleto una versión menor antes. Puedes usar `^1.0.0`.
+- **Antes (0.x).** Una versión menor podía traer cambios que rompen; aparecen en el CHANGELOG bajo «Cambios que rompen».
 - **Qué cuenta como romper:** quitar o renombrar una exportación pública, cambiar lo que devuelve una función ([contratos](https://urieldomingezm.github.io/nexus-dialogs/contratos.html)), cambiar un valor por omisión que altera el resultado y subir el mínimo de un navegador o de un framework.
 - **Qué no cuenta:** el aspecto exacto dentro de lo que pide el estándar de botones y la accesibilidad, correcciones de errores y de seguridad, y lo que no está en la API pública.
 - **Cómo se vigila:** `npm run api:check` falla si la API pública cambia sin actualizar su reporte, y `test/tipos/contratos.ts` fija lo que devuelve cada función.
@@ -63,7 +63,7 @@ Una sola persona mantiene la librería, así que esto es de buena fe, no un cont
 
 | | Qué esperar |
 |---|---|
-| **Vulnerabilidades** | Acuse en 7 días y primera valoración en 14 ([`SECURITY.md`](https://github.com/urieldomingezm/nexus-dialogs/blob/main/SECURITY.md)). Se corrige la última versión publicada (desde la 1.0, la última 1.x) |
+| **Vulnerabilidades** | Acuse en 7 días y primera valoración en 14 ([`SECURITY.md`](https://github.com/urieldomingezm/nexus-dialogs/blob/main/SECURITY.md)). Se corrige la última 1.x; las 0.x ya no reciben correcciones |
 | **Errores** | Se atienden en la última versión. Con un caso mínimo que lo reproduzca, la corrección es mucho más rápida |
 | **Accesibilidad** | Tiene prioridad sobre las funciones nuevas |
 | **Versiones anteriores** | No reciben correcciones; la actualización de una menor a la siguiente se acompaña con la guía de migración del CHANGELOG |

@@ -23,7 +23,7 @@ nexus-dialogs is a **library of transactional interfaces for business applicatio
 
 ## Guarantees by module
 
-Everything is 0.x: a minor version may bring breaking changes (always announced in the CHANGELOG). This table says how settled each module is, not that it has been validated by external users (see above: there are no public production cases yet).
+From 1.0, every module follows semantic versioning: only a major version breaks (see [Versions](https://urieldomingezm.github.io/nexus-dialogs/en/versiones)). This table says how settled each module is and which limitation conditions it, not that it has been validated by external users (see above: there are no public production cases yet).
 
 - **Stable**: it has three or more minor versions, its API is pinned in the report (`npm run api:check`) and in the type contracts, and unit and browser tests cover it.
 - **Maturing**: more recent, with less use, or with a limitation that conditions it. Use it, but read its limitation and pin the version.
@@ -64,12 +64,12 @@ The minimums come from the modal `<dialog>`, `color-mix()` and constructable sty
 
 The library follows [SemVer](https://semver.org/):
 
-- **0.x (today).** A minor version (`0.4` → `0.5`) may bring breaking changes. They **always** appear in the CHANGELOG under "Breaking changes", with how to migrate.
-- **From 1.0.** Only a major version breaks. Before removing something it is marked as deprecated a minor version earlier and announced in the CHANGELOG.
+- **From 1.0 (today).** Only a major version breaks. Before removing something it is marked as deprecated a minor version earlier and announced in the CHANGELOG.
+- **Before (0.x).** A minor version (`0.4` → `0.5`) could bring breaking changes; they appear in the CHANGELOG under "Breaking changes", with how to migrate.
 - **What counts as breaking:** removing or renaming a public export, changing what a function returns ([contracts](https://urieldomingezm.github.io/nexus-dialogs/en/contratos.html)), changing a default value that alters the result (for example, `strictHtml`), raising the minimum of a browser or framework.
 - **What does not count:** the exact look (colors, spacing) within what the button standard and accessibility ask for, bug and security fixes, and what is not in the public API (`api/nexus-dialogs.api.md`).
 - **How it is watched:** `npm run api:check` fails if the public API changes without updating its report, and `test/tipos/contratos.ts` pins what each function returns.
-- **Security fixes:** only in the latest published version. See `SECURITY.md`.
+- **Security fixes:** only in the latest published 1.x. See `SECURITY.md`.
 
 ## Test coverage
 
