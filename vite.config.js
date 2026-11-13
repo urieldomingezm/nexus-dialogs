@@ -12,7 +12,7 @@ const src = (f) => fileURLToPath(new URL(`./src/${f}`, import.meta.url))
 const ALIAS = { 'nexus-dialogs/toast': src('toast.ts'), 'nexus-dialogs/forms': src('forms.ts'), 'nexus-dialogs': src('index.ts') }
 // El sitio de documentación y las páginas de prueba usan todas las rutas desde el código fuente.
 const ALIAS_TODAS = Object.fromEntries([
-  ...['patterns', 'mx', 'themes', 'import', 'table', 'tabs', 'timeline', 'sepomex', 'rrhh', 'swal'].map((m) => [
+  ...['patterns', 'mx', 'themes', 'import', 'table', 'tabs', 'timeline', 'locales', 'sepomex', 'rrhh', 'swal'].map((m) => [
     `nexus-dialogs/${m}`,
     src(`${m}.ts`),
   ]),
@@ -25,7 +25,7 @@ const LIBS = {
   core: { entry: 'src/index.ts', name: 'NexusDialogs', fileName: 'nexus-dialogs', formats: ['es', 'umd'], external: [] },
   all: { entry: 'src/global.ts', name: 'NexusDialogs', fileName: 'nexus-dialogs.all', formats: ['es', 'iife'], external: [] },
   forms: { entry: 'src/forms.ts', name: 'NexusDialogsForms', fileName: 'forms', formats: ['es', 'cjs'], external: ['nexus-dialogs'] },
-  toast: { entry: 'src/toast.ts', name: 'NexusDialogsToast', fileName: 'toast', formats: ['es', 'cjs'], external: [] },
+  toast: { entry: 'src/toast.ts', name: 'NexusDialogsToast', fileName: 'toast', formats: ['es', 'cjs'], external: ['nexus-dialogs'] },
   themes: { entry: 'src/themes.ts', name: 'NexusDialogsThemes', fileName: 'themes', formats: ['es', 'umd'], external: [] },
   patterns: {
     entry: 'src/patterns.ts',
@@ -71,6 +71,13 @@ const LIBS = {
     entry: 'src/timeline.ts',
     name: 'NexusDialogsTimeline',
     fileName: 'timeline',
+    formats: ['es', 'cjs'],
+    external: ['nexus-dialogs'],
+  },
+  locales: {
+    entry: 'src/locales.ts',
+    name: 'NexusDialogsLocales',
+    fileName: 'locales',
     formats: ['es', 'cjs'],
     external: ['nexus-dialogs'],
   },
@@ -129,6 +136,7 @@ export default defineConfig(({ mode, command }) => {
       'limitaciones',
       'soporte',
       'versiones',
+      'plugins',
       'rendimiento',
       'novedades',
       'swal-compat',

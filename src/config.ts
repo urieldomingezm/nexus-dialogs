@@ -1,10 +1,13 @@
 import { setNonce } from './core/sheet'
-import { en, es } from './i18n'
+import { es, labelsFor } from './i18n'
 import type { DialogOptions, Labels, Scheme } from './types'
 
 export interface GlobalConfig {
-  /** Idioma de los textos de la librería. Por omisión 'es'. */
-  lang?: 'es' | 'en'
+  /**
+   * Idioma de los textos. Por omisión 'es'. Con 'en' o un idioma que hayas registrado (`registerLanguage`, o los de
+   * `nexus-dialogs/locales`); lo que no esté traducido se ve en inglés. Para seguir a la página: `lang: pageLanguage()`.
+   */
+  lang?: string
   /** Reemplaza textos sueltos (por ejemplo `{ cancel: 'Cerrar' }`). */
   labels?: Partial<Labels>
   /** Variables `--nd-*` para todos los diálogos (también puedes ponerlas en :root). */
@@ -48,8 +51,8 @@ const estado: Required<Omit<GlobalConfig, 'labels' | 'sanitize'>> & { labels: La
 /** Configuración global. Se puede llamar varias veces; cada llamada mezcla con lo anterior. */
 export function configure(c: GlobalConfig): void {
   if (c.lang) {
-    estado.lang = c.lang
-    estado.labels = { ...(c.lang === 'en' ? en : es) }
+    estado.lang = c.lang.split('-')[0].toLowerCase()
+    estado.labels = labelsFor(estado.lang)
   }
   if (c.labels) Object.assign(estado.labels, c.labels)
   if (c.theme) estado.theme = { ...estado.theme, ...c.theme }
@@ -74,5 +77,5 @@ export const setHtml = (el: Element, html: string): void => {
 
 export const config = (): Readonly<typeof estado> => estado
 export const labels = (): Labels => estado.labels
-/** Idioma configurado ('es' o 'en'). */
-export const language = (): 'es' | 'en' => estado.lang
+/** Idioma configurado ('es', 'en' o uno registrado). */
+export const language = (): string => estado.lang

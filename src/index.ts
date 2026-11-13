@@ -15,7 +15,9 @@ export { configure, labels, language, setHtml } from './config'
 export type { GlobalConfig } from './config'
 export { openDialog, closeDialog, INVALID } from './core/engine'
 export type { EngineOptions } from './core/engine'
-export { es, en } from './i18n'
+export { use, unuse, plugins } from './plugins'
+export type { Plugin, PluginApi } from './plugins'
+export { es, en, registerLanguage, labelsFor, pageLanguage } from './i18n'
 export type * from './types'
 
 /** Versión del paquete. */

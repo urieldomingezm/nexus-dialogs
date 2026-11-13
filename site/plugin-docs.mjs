@@ -45,6 +45,7 @@ const MENU = [
       ['api', 'api.html', 'API', 'Funciones, opciones y tipos'],
       ['contratos', 'contratos.html', 'Contratos', 'Qué promete cada función'],
       ['arquitectura', 'arquitectura.html', 'Arquitectura', 'Cómo está construida'],
+      ['plugins', 'plugins.html', 'Plugins e idiomas', 'Extender la librería'],
       ['limitaciones', 'limitaciones.html', 'Limitaciones', 'Lo que no hace'],
       ['soporte', 'soporte.html', 'Soporte', 'Navegadores, versiones y soporte'],
       ['rendimiento', 'rendimiento.html', 'Rendimiento', 'Tamaños, tiempos y cómo repetirlos'],
@@ -193,7 +194,7 @@ const pie = () => `<footer class="pie">
       <p>Diálogos, formularios y toasts para la web, sin dependencias.</p>
     </div>
     ${columna('Documentación', deMenu('primeros-pasos', 'guia', 'ejemplos', 'playground', 'pruebas', 'erp'))}
-    ${columna('Referencia', deMenu('api', 'contratos', 'arquitectura', 'limitaciones', 'soporte', 'rendimiento', 'seguridad', 'accesibilidad'))}
+    ${columna('Referencia', deMenu('api', 'contratos', 'arquitectura', 'plugins', 'limitaciones', 'soporte', 'rendimiento', 'seguridad', 'accesibilidad'))}
     ${columna('Migración', deMenu('migracion', 'swal-compat', 'versiones'))}
     ${columna('Proyecto', [[REPO, 'Código', true], [NPM, 'npm', true], ...deMenu('novedades'), [`${REPO}/issues`, 'Reportar un problema', true]])}
   </div>

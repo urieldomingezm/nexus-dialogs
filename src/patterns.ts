@@ -99,7 +99,7 @@ const EN: Textos = {
   choose: 'Continue',
 }
 const extra: Partial<Textos> = {}
-const T = (): Textos => ({ ...(language() === 'en' ? EN : ES), ...extra })
+const T = (): Textos => ({ ...(language() === 'es' ? ES : EN), ...extra })
 const f = (s: string, ...v: (string | number)[]) => s.replace(/\{(\d)\}/g, (_, i) => String(v[+i] ?? ''))
 
 /** Cambia textos de las recetas (por ejemplo `{ stay: 'Continuar aquí' }`). */

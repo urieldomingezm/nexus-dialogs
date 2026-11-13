@@ -99,7 +99,7 @@ const EN: Textos = {
   importing: 'Importing…',
   nothing: 'There are no valid rows to import.',
 }
-const T = (): Textos => (language() === 'en' ? EN : ES)
+const T = (): Textos => (language() === 'es' ? ES : EN)
 const f = (s: string, ...v: (string | number)[]) => s.replace(/\{(\d)\}/g, (_, i) => String(v[+i] ?? ''))
 const plano = (s: string) =>
   s

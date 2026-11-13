@@ -991,6 +991,18 @@ Español por omisión. Inglés con `configure({ lang: 'en' })` (y `toast.configu
 configure({ labels: { cancel: 'Cerrar', submit: 'Guardar cambios' } })
 ```
 
+Otros idiomas se registran; lo que no traduzcas se ve en inglés. Portugués (Brasil) y francés vienen listos en `nexus-dialogs/locales`:
+
+```ts
+import { registerLanguage, configure, pageLanguage } from 'nexus-dialogs'
+import { pt } from 'nexus-dialogs/locales'
+
+registerLanguage('pt', pt)
+configure({ lang: 'pt' })            // o { lang: pageLanguage() } para seguir a <html lang>
+```
+
+Detalle, plugins (`use`) y tipos de campo propios (`registerField`): [Plugins e idiomas](https://urieldomingezm.github.io/nexus-dialogs/plugins.html).
+
 ### Derecha a izquierda (RTL)
 
 Los diálogos y toasts siguen la dirección de tu página: con `<html dir="rtl">` todo se espeja (botón ×, orden de los botones, iconos, interruptores, calendario con las flechas invertidas, tablas y listas). También se puede fijar a mano:

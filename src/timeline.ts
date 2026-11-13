@@ -43,7 +43,7 @@ const EN = {
   sum: (n: number, t: number, p: number) => `${n} of ${t} ${t === 1 ? 'step' : 'steps'} completed · ${p}%`,
   loc: 'en-US',
 }
-const T = () => (language() === 'en' ? EN : ES)
+const T = () => (language() === 'es' ? ES : EN)
 
 export interface TimelineStep {
   /** Identificador estable (para `setStatus`). */
