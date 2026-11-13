@@ -62,7 +62,8 @@ function aplicarIdioma(l: string): void {
   configure({ lang: l })
   toast.configure({ lang: l })
   for (const b of document.querySelectorAll<HTMLButtonElement>('button[data-idioma]')) {
-    b.textContent = `Idioma: ${NOMBRE[l]}`
+    b.textContent = `Idioma: ${l.toUpperCase()}`
+    b.setAttribute('aria-label', `Idioma: ${l.toUpperCase()} (${NOMBRE[l]})`) // el nombre accesible completo contiene el texto visible
     b.dataset.idioma = l
   }
 }

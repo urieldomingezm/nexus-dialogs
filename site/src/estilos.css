@@ -161,9 +161,6 @@ main {
   cursor: pointer;
   transition: background-color var(--dur-micro) var(--ease-out);
 }
-.tema[data-idioma] {
-  min-width: 150px;
-}
 .tema:hover {
   background: var(--color-paper-2);
 }
@@ -1193,8 +1190,7 @@ input[type='checkbox'] {
     box-shadow: none;
     background: var(--color-paper-2);
   }
-  .tema,
-  .tema[data-idioma] {
+  .tema {
     min-width: 0;
     padding: var(--space-xs) var(--space-sm);
     box-shadow: none;
@@ -2191,8 +2187,7 @@ a.insignia:hover {
     clip-path: inset(50%);
     white-space: nowrap;
   }
-  .tema,
-  .tema[data-idioma] {
+  .tema {
     min-width: 0;
   }
 }
