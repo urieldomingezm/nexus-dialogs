@@ -14,6 +14,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 - `CONTRIBUTING.md` con la guía para contribuir, y plantilla de issue «Incompatibilidad».
 - Matriz de compatibilidad verificada: `compat/matriz.json` es la fuente única de los mínimos y de las versiones que se prueban. `npm run compat` regenera las tablas de `docs/soporte.md`, `npm run compat:check` comprueba `package.json`, el README y esas tablas, y CI instala Vue 3.3, React 18.0, Angular 16.0 y las últimas, y prueba el paquete en Node 18, 20, 22 y 24 (`npm run check:node`).
+- Sitio de documentación: selector de idioma en la cabecera, junto al del tema (Español, English, Português, Français). Cambia el idioma de los diálogos y avisos reales de las demostraciones, se recuerda entre visitas; los textos de la página siguen en español.
 - **Rendimiento repetible:** `npm run bench` mide el tamaño de cada archivo (gzip y brotli), lo que pesa usar solo una parte y los tiempos y la memoria en Chromium; `--write` actualiza la nueva página [Rendimiento](docs/rendimiento.md).
 - **Soporte:** página [Soporte](docs/soporte.md) con la matriz de navegadores función por función (qué pasa si falta una), frameworks, política de versiones y de soporte, y el caso de uso en producción.
 - **Ejemplos completos** en `examples/` (alta de empleado, cierre de quincena, importar empleados): se revisan como código y se ejecutan en un navegador en cada cambio.

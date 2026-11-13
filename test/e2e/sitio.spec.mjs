@@ -2,6 +2,7 @@
 import { readFileSync } from 'node:fs'
 import { test as base, expect } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
+import { enDialogo } from './utilidades.mjs'
 
 const SITIO = '/site/'
 const IDS = [...readFileSync('site/src/ejemplos-def.ts', 'utf8').matchAll(/^ \* id: (\S+)$/gm)].map((m) => m[1])
@@ -231,6 +232,23 @@ test.describe('Sitio de documentación', () => {
     await page.reload()
     await expect(page.locator('html')).toHaveAttribute('data-tema', 'oscuro')
     await expect(page.locator('button[data-tema]')).toHaveText('Tema: Oscuro')
+  })
+
+  test('idioma: cambia el idioma de los diálogos reales y se recuerda', async ({ pagina: page }) => {
+    await page.goto(SITIO + 'index.html')
+    const boton = page.locator('button[data-idioma]')
+    await expect(boton).toHaveText('Idioma: ES')
+    await expect(boton).toHaveAccessibleName('Idioma: ES (Español)')
+    await boton.click()
+    await expect(boton).toHaveText('Idioma: EN')
+    await boton.click()
+    await expect(boton).toHaveText('Idioma: PT')
+    await boton.click()
+    await expect(boton).toHaveText('Idioma: FR')
+    await page.reload()
+    await expect(page.locator('button[data-idioma]')).toHaveText('Idioma: FR')
+    await page.click('#b-hero')
+    await expect(enDialogo(page, 'button[data-id="cancel"]')).toHaveText('Annuler')
   })
 
   test('portada: los botones abren la librería de verdad', async ({ pagina: page }) => {
@@ -717,6 +735,8 @@ test.describe('Sitio: demo, cifras, buscador y volver arriba', () => {
     await page.locator('.demo-pantalla').getByRole('button', { name: 'Guardar' }).click()
     for (const apariencia of ['nexus', 'material', 'bootstrap', 'tailwind', 'oscuro']) {
       await page.locator(`button[data-apariencia=${apariencia}]`).click()
+      // Centrada: la cabecera fija no debe tapar parte de la maqueta cuando axe calcula el fondo de cada texto.
+      await page.locator('.demo-pantalla').evaluate((e) => e.scrollIntoView({ block: 'center' }))
       const r = await new AxeBuilder({ page })
         .include('.demo-pantalla')
         .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
