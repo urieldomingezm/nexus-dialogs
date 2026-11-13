@@ -85,6 +85,14 @@ test.describe('Sitio de documentación', () => {
     }
   }
 
+  test('la guía en inglés es el README en inglés, sin aviso, y sus anclas funcionan', async ({ page }) => {
+    await page.goto(SITIO + 'en/guia.html#vue-3')
+    await expect(page.locator('main .nota.aviso')).toHaveCount(0)
+    await expect(page.locator('#vue-3')).toBeVisible()
+    await expect(page.locator('h2[id="3-recipes-everyday-things-in-one-line"]')).toBeVisible()
+    await expect(page.locator('#contenido')).not.toHaveAttribute('lang', 'es')
+  })
+
   test('páginas sin traducir salen en español con un aviso y marcadas con su idioma', async ({ pagina: page }) => {
     await page.goto(SITIO + 'pt/novedades.html')
     await expect(page.locator('p.aviso')).toContainText('apenas em espanhol')

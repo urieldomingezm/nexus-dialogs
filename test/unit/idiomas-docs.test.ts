@@ -31,4 +31,23 @@ describe('documentación por idioma', () => {
       expect(tablas(t), `tablas de ${f}`).toBe(tablas(o))
     }
   })
+  it('README.en.md tiene las mismas secciones y bloques de código que README.md, y las anclas que usan las páginas en inglés existen', () => {
+    const es = leer('README.md')
+    const en = leer('README.en.md')
+    const cuenta = (md: string, re: RegExp) => (md.match(re) ?? []).length
+    expect(cuenta(en, /^#{2,3} /gm)).toBe(cuenta(es, /^#{2,3} /gm) + 0)
+    expect(cuenta(en, /^```\w*$/gm)).toBe(cuenta(es, /^```\w*$/gm))
+    const slug = (t: string) =>
+      t
+        .toLowerCase()
+        .replace(/<[^>]+>/g, '')
+        .replace(/[^\p{L}\p{N}\s-]/gu, '')
+        .trim()
+        .replace(/\s/g, '-')
+    const anclas = new Set([...en.matchAll(/^#{2,4} (.+)$/gm)].map((m) => slug(m[1])))
+    const fuentes = [...readdirSync('docs/en').map((f) => `docs/en/${f}`), 'site/en/index.html']
+    for (const f of fuentes)
+      for (const m of leer(f).matchAll(/guia\.html#([^)"\s]+)/g)) expect(anclas.has(decodeURIComponent(m[1])), `${f} → #${m[1]}`).toBe(true)
+    for (const m of en.matchAll(/\]\(#([^)]+)\)/g)) expect(anclas.has(m[1]), `README.en.md → #${m[1]}`).toBe(true)
+  })
 })
