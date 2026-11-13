@@ -7,7 +7,7 @@ nexus-dialogs es una **biblioteca de interfaces transaccionales para aplicacione
 ## Limitaciones conocidas
 
 - **Lectores de pantalla sin probar a mano.** Hay pruebas automáticas (axe, teclado, foco, zoom, contraste), pero NVDA, JAWS, VoiceOver y TalkBack están **pendientes**. Ver [Accesibilidad](https://urieldomingezm.github.io/nexus-dialogs/accesibilidad.html).
-- **Sin casos públicos en producción todavía.** La librería está pensada para sistemas reales y se está probando dentro de Nexus, pero aún no hay un caso externo que lo respalde.
+- **Sin casos públicos en producción todavía.** La librería está pensada para sistemas reales y se está probando dentro de Nexus; hay un caso interno de producción sin nombre, pero aún no hay un caso externo público que lo respalde. Ver [Soporte](https://urieldomingezm.github.io/nexus-dialogs/soporte.html#uso-en-producción).
 - **Los diálogos se apilan, no se encolan.** Dos `dialog.alert` seguidos se muestran uno encima de otro, no uno después de otro. Si necesitas una cola, espera la promesa del primero.
 - **Solo en el navegador.** Importar la librería en Node (SSR) funciona; abrir un diálogo ahí falla con un error explícito. Los validadores de `nexus-dialogs/mx` sí corren en Node.
 - **El contenido vive en un Shadow DOM.** Tu CSS no lo afecta (se personaliza con temas y variables `--nd-*`) y `document.querySelector` no lo ve. Playwright y Cypress lo atraviesan; Testing Library necesita `within(host.shadowRoot)`.
@@ -58,7 +58,7 @@ La accesibilidad tiene su propia nota: hay pruebas automáticas, pero los lector
 | Firefox | 113 | Firefox actual en cada cambio (axe no corre en Firefox por una limitación de la herramienta) |
 | Safari | 16.4 | WebKit actual en cada cambio |
 
-Los mínimos salen de `<dialog>` modal, `color-mix()` y las hojas de estilo construibles; sin estas últimas se usa un `<style>` de respaldo (con CSP estricta, necesita `configure({ nonce })`). No se prueban versiones viejas por separado. No hay soporte para Internet Explorer.
+Los mínimos salen de `<dialog>` modal, `color-mix()` y las hojas de estilo construibles; sin estas últimas se usa un `<style>` de respaldo (con CSP estricta, necesita `configure({ nonce })`). No se prueban versiones viejas por separado. No hay soporte para Internet Explorer. Qué función exige qué versión y la política de soporte: [Soporte](https://urieldomingezm.github.io/nexus-dialogs/soporte.html).
 
 ## Versiones y cambios que rompen
 

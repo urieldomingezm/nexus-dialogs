@@ -4,6 +4,13 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ## [Sin publicar]
 
+### Agregado
+
+- **Rendimiento repetible:** `npm run bench` mide el tamaño de cada archivo (gzip y brotli), lo que pesa usar solo una parte y los tiempos y la memoria en Chromium; `--write` actualiza la nueva página [Rendimiento](docs/rendimiento.md).
+- **Soporte:** página [Soporte](docs/soporte.md) con la matriz de navegadores función por función (qué pasa si falta una), frameworks, política de versiones y de soporte, y el caso de uso en producción.
+- **Ejemplos completos** en `examples/` (alta de empleado, cierre de quincena, importar empleados): se revisan como código y se ejecutan en un navegador en cada cambio.
+- **Accesibilidad:** pruebas del árbol de accesibilidad (lo que recibe un lector de pantalla) de los recorridos clave y un formulario de reporte «Prueba con lector de pantalla» para llenar la tabla de resultados.
+
 ### Añadido
 
 - Sitio de documentación: sección «Míralo en acción» con una maqueta que se puede usar (borrar con «Deshacer», formulario con validación y aprobar con motivo; un cursor la recorre sola hasta que alguien la toca) y un selector de apariencia (Nexus, Material, Bootstrap, Tailwind, Oscuro) que también cambia los diálogos y toasts reales de la página; cifras de la portada que cuentan hasta su valor; buscador con `/` o `Ctrl`/`⌘`+`K` (páginas, encabezados y ejemplos) y botón para volver arriba.

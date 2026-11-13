@@ -1,0 +1,57 @@
+name: Prueba con lector de pantalla
+description: Cuéntanos cómo se oyó un recorrido con NVDA, JAWS, VoiceOver o TalkBack, aunque todo haya salido bien.
+labels: [accesibilidad]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Las pruebas automáticas no sustituyen a una persona con un lector de pantalla. Con tu reporte se llena la tabla de resultados de [Accesibilidad](https://urieldomingezm.github.io/nexus-dialogs/accesibilidad.html).
+        El guion de siete recorridos está en esa misma página. Si encontraste un problema, descríbelo abajo: los de accesibilidad tienen prioridad.
+  - type: input
+    id: version
+    attributes:
+      label: Versión de nexus-dialogs
+      placeholder: '0.5.4'
+    validations:
+      required: true
+  - type: dropdown
+    id: lector
+    attributes:
+      label: Lector de pantalla
+      options: [NVDA, JAWS, Narrador, VoiceOver, TalkBack, Orca, Otro]
+    validations:
+      required: true
+  - type: input
+    id: version-lector
+    attributes:
+      label: Versión del lector y del sistema
+      placeholder: 'NVDA 2025.1 · Windows 11'
+    validations:
+      required: true
+  - type: input
+    id: navegador
+    attributes:
+      label: Navegador y versión
+      placeholder: 'Firefox 133'
+    validations:
+      required: true
+  - type: checkboxes
+    id: recorridos
+    attributes:
+      label: Recorridos que hiciste y salieron bien
+      description: Marca solo los que se anunciaron y se usaron sin problema.
+      options:
+        - label: 1. Alerta (`dialog.alert`)
+        - label: 2. Confirmación de peligro (`confirmDelete`)
+        - label: 3. Formulario con errores
+        - label: 4. Asistente (`wizard`)
+        - label: 5. Toast
+        - label: 6. Calendario
+        - label: 7. Importar archivo (`importData`)
+  - type: textarea
+    id: problemas
+    attributes:
+      label: Lo que no se anunció, se anunció mal o no se pudo usar
+      description: Qué dijo el lector (o qué no dijo), en qué recorrido y qué esperabas. Si no hubo problemas, escribe «Ninguno».
+    validations:
+      required: true
