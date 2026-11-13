@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Migrate from SweetAlert2 · nexus-dialogs</title>
+    <meta name="description" content="Guide to migrating from SweetAlert2 to nexus-dialogs: change the import and your code keeps working, or move to the native API with before-and-after examples, equivalences and a checklist." />
+  </head>
+  <body>
+    <a class="saltar" href="#migrar"><!--@t:saltar--></a>
+    <!--@cabecera:migracion-->
+    <main class="doc" id="migrar">
+      <aside class="lateral" data-toc aria-label="<!--@t:toc-->"></aside>
+      <article class="contenido" id="contenido">
+        <h1>Migrate from SweetAlert2</h1>
+        <p class="nota">Two paths: <strong>change only the import</strong> and migrate little by little, or go straight to the native API. You can mix both in the same project.</p>
+
+        <h2 id="camino-1">Path 1: change the import</h2>
+        <p>The <code>nexus-dialogs/swal</code> adapter accepts the code you already have: <code>Swal.fire</code>, <code>mixin</code>, toasts, inputs, <code>preConfirm</code>, steps, timers and the query methods. It applies the library’s <a href="guia.html#4-button-standard">button standard</a>.</p>
+<pre data-lang="ts"><code>// before
+import Swal from 'sweetalert2'
+// after
+import Swal from 'nexus-dialogs/swal'</code></pre>
+        <p>Without a bundler, replace the <code>&lt;script&gt;</code> with this one (it defines <code>window.Swal</code>):</p>
+<pre data-lang="html"><code>&lt;script src="https://cdn.jsdelivr.net/npm/nexus-dialogs/dist/nexus-dialogs.swal.iife.js"&gt;&lt;/script&gt;</code></pre>
+
+        <h2 id="camino-2">Path 2: the native API</h2>
+        <p>Shorter, with precise types and ready-made recipes (<code>confirmDelete</code>, <code>unsavedChanges</code>, <code>approval</code>, <code>bulkAction</code>…). Each example has both buttons: the first runs the SweetAlert2 code through the adapter, the second the native version.</p>
+        <output class="mig-salida" id="mig-salida" aria-live="polite">The result appears here.</output>
+        
+        <article class="mig" id="m-borrar">
+          <h3>Confirm a delete</h3>
+          <p>The most common case. The adapter turns the button red and puts focus on “Cancel” because the text says “delete”.</p>
+          <div class="mig-cols">
+            <div><h4>Before: SweetAlert2</h4><pre data-lang="ts"><code>const r = await Swal.fire({
+  title: 'Delete Laura Méndez?',
+  text: "You won't be able to revert this",
+  icon: 'warning',
+  showCancelButton: true,
+  confirmButtonText: 'Yes, delete',
+})
+if (r.isConfirmed) await remove(id)</code></pre></div>
+            <div><h4>After: native API</h4><pre data-lang="ts"><code>import { confirmDelete } from 'nexus-dialogs/patterns'
+
+if (await confirmDelete({ what: 'Laura Méndez' })) await remove(id)</code></pre></div>
+          </div>
+          <div class="acciones izq">
+            <button type="button" class="btn chico" data-mig="swal" data-id="borrar">Try with SweetAlert2</button>
+            <button type="button" class="btn chico primario" data-mig="nativa" data-id="borrar">Try the native API</button>
+          </div>
+        </article>
+        <article class="mig" id="m-exito">
+          <h3>Success notice that closes by itself</h3>
+          <p>The timer pauses with the mouse or focus over it, and “reduce motion” is respected.</p>
+          <div class="mig-cols">
+            <div><h4>Before: SweetAlert2</h4><pre data-lang="ts"><code>await Swal.fire({
+  icon: 'success',
+  title: 'Saved',
+  text: 'The changes are now in the system',
+  timer: 2500,
+  showConfirmButton: false,
+})</code></pre></div>
+            <div><h4>After: native API</h4><pre data-lang="ts"><code>import { dialog } from 'nexus-dialogs'
+
+await dialog.success({ title: 'Saved', text: 'The changes are now in the system', timer: 2500 })</code></pre></div>
+          </div>
+          <div class="acciones izq">
+            <button type="button" class="btn chico" data-mig="swal" data-id="exito">Try with SweetAlert2</button>
+            <button type="button" class="btn chico primario" data-mig="nativa" data-id="exito">Try the native API</button>
+          </div>
+        </article>
+        <article class="mig" id="m-input">
+          <h3>Ask for a value with validation</h3>
+          <p><code>inputValidator</code> becomes `validate`; the error stays tied to the field and is announced to screen readers.</p>
+          <div class="mig-cols">
+            <div><h4>Before: SweetAlert2</h4><pre data-lang="ts"><code>const { value: email } = await Swal.fire({
+  title: 'Customer email',
+  input: 'email',
+  inputValidator: (v) =&gt; (!v ? 'Enter an email' : undefined),
+})
+if (email) await send(email)</code></pre></div>
+            <div><h4>After: native API</h4><pre data-lang="ts"><code>import { form } from 'nexus-dialogs/forms'
+
+const r = await form({
+  title: 'Customer email',
+  fields: [{ name: 'email', label: 'Email', type: 'email', required: true }],
+})
+if (r.confirmed) await send(r.value.email)</code></pre></div>
+          </div>
+          <div class="acciones izq">
+            <button type="button" class="btn chico" data-mig="swal" data-id="input">Try with SweetAlert2</button>
+            <button type="button" class="btn chico primario" data-mig="nativa" data-id="input">Try the native API</button>
+          </div>
+        </article>
+        <article class="mig" id="m-formulario">
+          <h3>Form with several fields</h3>
+          <p>In SweetAlert2 it is built with HTML and <code>preConfirm</code> reading the DOM. Here the fields are data and validation goes per field.</p>
+          <div class="mig-cols">
+            <div><h4>Before: SweetAlert2</h4><pre data-lang="ts"><code>const { value } = await Swal.fire({
+  title: 'New expense',
+  html: '&lt;input id="rfc" class="swal2-input"&gt;&lt;input id="amount" class="swal2-input"&gt;',
+  focusConfirm: false,
+  preConfirm: () =&gt; ({
+    rfc: document.getElementById('rfc').value,
+    amount: document.getElementById('amount').value,
+  }),
+})</code></pre></div>
+            <div><h4>After: native API</h4><pre data-lang="ts"><code>import { form } from 'nexus-dialogs/forms'
+
+const r = await form({
+  title: 'New expense',
+  fields: [
+    { name: 'rfc', label: 'Supplier RFC', type: 'rfc', required: true },
+    { name: 'amount', label: 'Amount', type: 'money', required: true },
+  ],
+})</code></pre></div>
+          </div>
+          <div class="acciones izq">
+            <button type="button" class="btn chico" data-mig="swal" data-id="formulario">Try with SweetAlert2</button>
+            <button type="button" class="btn chico primario" data-mig="nativa" data-id="formulario">Try the native API</button>
+          </div>
+        </article>
+        <article class="mig" id="m-pasos">
+          <h3>Several steps</h3>
+          <p><code>progressSteps</code> and `Swal.mixin().queue` become a wizard with a final review and accessible progress.</p>
+          <div class="mig-cols">
+            <div><h4>Before: SweetAlert2</h4><pre data-lang="ts"><code>const Steps = Swal.mixin({ progressSteps: ['1', '2', '3'], confirmButtonText: 'Next' })
+await Steps.fire({ title: 'Details', currentProgressStep: 0 })
+await Steps.fire({ title: 'Position', currentProgressStep: 1 })
+await Steps.fire({ title: 'Benefits', currentProgressStep: 2 })</code></pre></div>
+            <div><h4>After: native API</h4><pre data-lang="ts"><code>import { wizard } from 'nexus-dialogs/forms'
+
+const r = await wizard({
+  title: 'New employee',
+  review: true,
+  steps: [
+    { title: 'Details', fields: [{ name: 'name', label: 'Name', required: true }] },
+    { title: 'Position', fields: [{ name: 'position', label: 'Position', required: true }] },
+    { title: 'Benefits', fields: [{ name: 'vouchers', label: 'Food vouchers', type: 'switch' }] },
+  ],
+})</code></pre></div>
+          </div>
+          <div class="acciones izq">
+            <button type="button" class="btn chico" data-mig="swal" data-id="pasos">Try with SweetAlert2</button>
+            <button type="button" class="btn chico primario" data-mig="nativa" data-id="pasos">Try the native API</button>
+          </div>
+        </article>
+        <article class="mig" id="m-toast">
+          <h3>Toast notice</h3>
+          <p>Toasts share a queue and are announced in a live region. They support an “Undo” action.</p>
+          <div class="mig-cols">
+            <div><h4>Before: SweetAlert2</h4><pre data-lang="ts"><code>Swal.fire({
+  toast: true,
+  position: 'top-end',
+  icon: 'success',
+  title: 'Employee saved',
+  timer: 3000,
+  showConfirmButton: false,
+})</code></pre></div>
+            <div><h4>After: native API</h4><pre data-lang="ts"><code>import { toast } from 'nexus-dialogs/toast'
+
+toast.success('Employee saved', { action: { label: 'Undo', onClick: undo } })</code></pre></div>
+          </div>
+          <div class="acciones izq">
+            <button type="button" class="btn chico" data-mig="swal" data-id="toast">Try with SweetAlert2</button>
+            <button type="button" class="btn chico primario" data-mig="nativa" data-id="toast">Try the native API</button>
+          </div>
+        </article>
+        <article class="mig" id="m-cargando">
+          <h3>Long operation with “Loading…”</h3>
+          <p>An async <code>preConfirm</code> shows “Processing…”; if the promise fails, the error appears inside the dialog and it does not close.</p>
+          <div class="mig-cols">
+            <div><h4>Before: SweetAlert2</h4><pre data-lang="ts"><code>const r = await Swal.fire({
+  title: 'Send to be stamped?',
+  showCancelButton: true,
+  showLoaderOnConfirm: true,
+  preConfirm: () =&gt; stamp().catch((e) =&gt; Swal.showValidationMessage(e.message)),
+})</code></pre></div>
+            <div><h4>After: native API</h4><pre data-lang="ts"><code>import { dialog } from 'nexus-dialogs'
+
+const r = await dialog.confirm({
+  title: 'Send to be stamped?',
+  preConfirm: () =&gt; stamp(), // if it throws, the error is shown and the dialog stays open
+})</code></pre></div>
+          </div>
+          <div class="acciones izq">
+            <button type="button" class="btn chico" data-mig="swal" data-id="cargando">Try with SweetAlert2</button>
+            <button type="button" class="btn chico primario" data-mig="nativa" data-id="cargando">Try the native API</button>
+          </div>
+        </article>
+
+        <h2 id="equivalencias">Equivalences</h2>
+        <div class="tabla"><table>
+          <thead><tr><th>SweetAlert2</th><th>nexus-dialogs</th></tr></thead>
+          <tbody>
+            <tr><td><code>Swal.fire({ icon, title, text })</code></td><td><code>dialog.success / error / warning / info</code></td></tr>
+            <tr><td><code>showCancelButton</code> + <code>isConfirmed</code></td><td><code>dialog.confirm(…)</code> → <code>r.confirmed</code></td></tr>
+            <tr><td><code>input</code> + <code>inputValidator</code></td><td><code>form({ fields })</code> with <code>required</code>, <code>validate</code></td></tr>
+            <tr><td><code>html</code> + <code>preConfirm</code> reading the DOM</td><td><code>form</code>, data in <code>r.value</code></td></tr>
+            <tr><td><code>progressSteps</code> / <code>queue</code></td><td><code>wizard({ steps, review })</code></td></tr>
+            <tr><td><code>toast: true</code></td><td><code>toast.success / error / info</code></td></tr>
+            <tr><td><code>showLoaderOnConfirm</code> + <code>preConfirm</code></td><td>async <code>preConfirm</code> (shows “Processing…”)</td></tr>
+            <tr><td><code>timer</code>, <code>timerProgressBar</code></td><td><code>timer</code> (pauses with mouse or focus)</td></tr>
+            <tr><td><code>result.isDismissed</code>, <code>dismiss</code></td><td><code>r.reason</code> (<code>cancel</code>, <code>escape</code>, <code>backdrop</code>, <code>timer</code>, <code>program</code>)</td></tr>
+            <tr><td><code>Swal.close()</code></td><td><code>dialog.close()</code> / <code>dialog.closeAll()</code></td></tr>
+            <tr><td><code>Swal.mixin(defaults)</code></td><td><code>configure({ defaults })</code></td></tr>
+            <tr><td><code>theme</code>, <code>customClass</code></td><td><code>configure({ theme, scheme })</code> and <code>--nd-*</code> variables</td></tr>
+          </tbody>
+        </table></div>
+
+        <h2 id="que-cambia">What changes on purpose</h2>
+        <ul>
+          <li><strong>Buttons</strong>: Cancel, Deny, Confirm, in that order; a confirmation that says “delete” or “remove” switches to danger by itself, with focus on Cancel.</li>
+          <li><strong>Colors and classes</strong>: <code>confirmButtonColor</code> and <code>customClass</code> are ignored; colors come from the theme.</li>
+          <li><strong>The content lives in a Shadow DOM</strong>: instead of <code>document.getElementById('x')</code> use <code>Swal.getHtmlContainer().querySelector('#x')</code>. Your CSS no longer breaks it.</li>
+          <li><strong><code>html</code> is shown as text</strong> (since 0.5.0): SweetAlert2 interprets it; here you need <code>configure({ strictHtml: false })</code> if it is your own content, or <code>configure({ sanitize })</code> if it is not. It is the only line that usually needs adding when migrating.</li>
+          <li><strong>Language</strong>: default texts come out in the configured language (“OK”, “Cancel”).</li>
+          <li><strong>No equivalent</strong>: <code>Swal.version</code>, <code>topLayer</code>, <code>showClass</code> / <code>hideClass</code> and <code>animation</code>.</li>
+        </ul>
+
+        <h2 id="diferencias">Behavior differences worth reviewing</h2>
+        <p>A compatible API doesn’t mean everything is interchangeable. These are the differences that affect code that already works.</p>
+        <div class="tabla"><table>
+            <thead><tr><th scope="col">With SweetAlert2</th><th scope="col">With <code>nexus-dialogs/swal</code></th><th scope="col">What to do</th></tr></thead>
+            <tbody>
+              <tr><td><code>footer</code> accepts HTML</td><td>The footer is shown as <strong>plain text</strong> (tags are stripped).</td><td>Put the link or formatting inside <code>html</code>.</td></tr>
+              <tr><td>An <code>html</code> string is interpreted</td><td>It is shown as <strong>text</strong> by default (<code>strictHtml</code>). See <a href="seguridad.html">Security</a>.</td><td><code>configure({ strictHtml: false })</code> with your own content, or <code>configure({ sanitize })</code> if it is not.</td></tr>
+              <tr><td>The content is in the <code>document</code></td><td>It is inside a Shadow DOM: <code>document.getElementById</code> does not find it.</td><td>Use <code>Swal.getHtmlContainer().querySelector(…)</code>.</td></tr>
+              <tr><td>Page CSS (Bootstrap, <code>.swal2-*</code>) changes its look</td><td>The page CSS no longer gets in; the look comes from the theme.</td><td>Use <code>configure({ theme })</code> or a ready-made theme.</td></tr>
+              <tr><td><code>confirmButtonColor</code>, <code>customClass</code>, <code>background</code>, <code>backdrop</code>…</td><td>They are accepted and ignored.</td><td>Remove those options; one color per intent.</td></tr>
+              <tr><td>Order and focus of free buttons</td><td>Always Cancel, Deny, Confirm; a “delete” button switches to danger by itself and focus starts on Cancel.</td><td>Review the deletes; force with <code>danger: true</code> or <code>reverseButtons</code>.</td></tr>
+              <tr><td>Default texts in English</td><td>They come out in the configured language.</td><td><code>configure({ lang })</code> or <code>labels</code>.</td></tr>
+              <tr><td>Toasts with their own positions and stacking</td><td>They use the <code>nexus-dialogs/toast</code> queue, a single position for all.</td><td>Check where you expected to see them.</td></tr>
+              <tr><td><code>showClass</code>, <code>hideClass</code>, <code>animation</code>, <code>topLayer</code>, <code>Swal.version</code></td><td>They don’t exist.</td><td>Motion comes from the theme and respects “reduce motion”.</td></tr>
+              <tr><td><code>template</code> with <code>&lt;swal-function-param&gt;</code></td><td>It is not accepted.</td><td>Pass the function through the options.</td></tr>
+            </tbody>
+        </table></div>
+
+        <h2 id="lista">Checklist</h2>
+        <ol>
+          <li>Install <code>nexus-dialogs</code> and change the import (or the <code>&lt;script&gt;</code>).</li>
+          <li>If you use <code>html</code>, add <code>configure({ strictHtml: false })</code> once (your own content) or <code>configure({ sanitize })</code> (outside content).</li>
+          <li>Search your code for <code>document.getElementById</code> or <code>querySelector</code> inside <code>html:</code> and <code>didOpen</code>; replace them with <code>Swal.getHtmlContainer()</code>.</li>
+          <li>Remove <code>customClass</code> and <code>confirmButtonColor</code>; set a theme once with <code>configure</code>.</li>
+          <li>Review the delete dialogs: focus now starts on “Cancel”.</li>
+          <li>Migrate first what repeats the most (delete, save, forms) to the recipes and to <code>form</code>.</li>
+          <li>Test with the keyboard: Tab, Esc and focus returning to the button that opened the dialog.</li>
+        </ol>
+        <p class="nota">Missing something? The full list of what the adapter covers is in the <a href="guia.html#coming-from-sweetalert2">Guide</a>.</p>
+      </article>
+    </main>
+    <!--@pie-->
+    <script type="module" src="../src/migracion.ts"></script>
+  </body>
+</html>

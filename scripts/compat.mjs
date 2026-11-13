@@ -12,33 +12,72 @@ const m = JSON.parse(leer('compat/matriz.json'))
 const pkg = JSON.parse(leer('package.json'))
 const INI = '<!-- compat:inicio -->'
 const FIN = '<!-- compat:fin -->'
+const DOCS = [
+  ['es', 'docs/soporte.md'],
+  ['en', 'docs/en/soporte.md'],
+]
 
-function tablas() {
+const TXT = {
+  es: {
+    intro: `**Qué se ejecuta en CI (matriz de compatibilidad).** Las filas salen de [\`compat/matriz.json\`](https://github.com/urieldomingezm/nexus-dialogs/blob/main/compat/matriz.json): CI instala cada versión indicada y corre las pruebas de su envoltura, así que lo que dice «ejecuta» es lo que de verdad se ejecuta. \`npm run compat:check\` falla si esta tabla, \`package.json\` o el README no coinciden con ese archivo.`,
+    navegadores: 'Navegadores',
+    cabNav: ['Navegador', 'Mínimo', 'Motor que CI ejecuta (e2e)'],
+    frameworks: 'Frameworks',
+    cabFw: ['Framework', 'Mínimo declarado', 'Versiones que CI ejecuta'],
+    masDe: (v) => `${v} o más`,
+    nodeT: 'Node',
+    cabNode: ['Mínimo', 'Versiones que CI ejecuta', 'Qué se comprueba'],
+    nota: (n) => n,
+  },
+  en: {
+    intro: `**What runs in CI (compatibility matrix).** The rows come from [\`compat/matriz.json\`](https://github.com/urieldomingezm/nexus-dialogs/blob/main/compat/matriz.json): CI installs each listed version and runs the tests of its wrapper, so what says "runs" is what really runs. \`npm run compat:check\` fails if this table, \`package.json\` or the README don't match that file.`,
+    navegadores: 'Browsers',
+    cabNav: ['Browser', 'Minimum', 'Engine CI runs (e2e)'],
+    frameworks: 'Frameworks',
+    cabFw: ['Framework', 'Declared minimum', 'Versions CI runs'],
+    masDe: (v) => `${v} or later`,
+    nodeT: 'Node',
+    cabNode: ['Minimum', 'Versions CI runs', 'What is checked'],
+    nota: (n, o) => o.en ?? n,
+  },
+}
+const NAV_EN = { 'Chrome y Edge': 'Chrome and Edge' }
+const ORD_EN = { última: 'latest', '(mínimo)': '(minimum)', '(última)': '(latest)' }
+const enIngles = (txt) => Object.entries(ORD_EN).reduce((t, [a, b]) => t.replaceAll(a, b), txt)
+
+function tablas(lang = 'es') {
+  const x = TXT[lang]
   const nav = m.navegadores
   const filas = (cab, f) =>
-    [`| ${cab.join(' | ')} |`, `|${cab.map(() => '---').join('|')}|`, ...f.map((x) => `| ${x.join(' | ')} |`)].join('\n')
-  const motores = Object.entries(nav.minimos).map(([n, v]) => [n, `${v}`, nav.motores.find((x) => x.para === n)?.motor ?? '—'])
+    [`| ${cab.join(' | ')} |`, `|${cab.map(() => '---').join('|')}|`, ...f.map((r) => `| ${r.join(' | ')} |`)].join('\n')
+  const motores = Object.entries(nav.minimos).map(([n, v]) => [
+    lang === 'en' ? (NAV_EN[n] ?? n) : n,
+    `${v}`,
+    nav.motores.find((e) => e.para === n)?.motor ?? '—',
+  ])
   const fw = m.frameworks.map((f) => [
     `${f.nombre} (\`${f.entrada}\`)`,
-    `${f.minimo} o más${f.nota ? `. ${f.nota}` : ''}`,
-    f.versiones.map((v) => v.etiqueta).join(', '),
+    `${x.masDe(f.minimo)}${f.nota ? `. ${lang === 'en' ? (f.nota_en ?? f.nota) : f.nota}` : ''}`,
+    f.versiones.map((v) => (lang === 'en' ? enIngles(v.etiqueta) : v.etiqueta)).join(', '),
   ])
+  const notaNav = lang === 'en' ? nav.nota_en : nav.nota
+  const notaNode = lang === 'en' ? m.node.nota_en : m.node.nota
   return [
-    `**Qué se ejecuta en CI (matriz de compatibilidad).** Las filas salen de [\`compat/matriz.json\`](https://github.com/urieldomingezm/nexus-dialogs/blob/main/compat/matriz.json): CI instala cada versión indicada y corre las pruebas de su envoltura, así que lo que dice «ejecuta» es lo que de verdad se ejecuta. \`npm run compat:check\` falla si esta tabla, \`package.json\` o el README no coinciden con ese archivo.`,
+    x.intro,
     '',
-    '#### Navegadores',
+    `#### ${x.navegadores}`,
     '',
-    filas(['Navegador', 'Mínimo', 'Motor que CI ejecuta (e2e)'], motores),
+    filas(x.cabNav, motores),
     '',
-    nav.nota,
+    notaNav,
     '',
-    '#### Frameworks',
+    `#### ${x.frameworks}`,
     '',
-    filas(['Framework', 'Mínimo declarado', 'Versiones que CI ejecuta'], fw),
+    filas(x.cabFw, fw),
     '',
-    '#### Node',
+    `#### ${x.nodeT}`,
     '',
-    filas(['Mínimo', 'Versiones que CI ejecuta', 'Qué se comprueba'], [[`${m.node.minimo}`, m.node.probado.join(', '), m.node.nota]]),
+    filas(x.cabNode, [[`${m.node.minimo}`, m.node.probado.join(', '), notaNode]]),
   ].join('\n')
 }
 
@@ -54,18 +93,21 @@ function validar() {
     if (!entrada(id).versiones[0].etiqueta.includes('mínimo')) fallos.push(`${id}: la primera versión probada debe ser el mínimo`)
   }
   if (!m.node.probado.includes(m.node.minimo)) fallos.push('Node: el mínimo debe estar entre las versiones probadas')
-  const md = leer('docs/soporte.md')
-  const hay = md.includes(INI) && md.includes(FIN)
-  if (!hay) fallos.push('docs/soporte.md no tiene los marcadores compat:inicio / compat:fin')
-  else if (md.slice(md.indexOf(INI) + INI.length, md.indexOf(FIN)).trim() !== tablas().trim())
-    fallos.push('docs/soporte.md no está al día con compat/matriz.json: corre `npm run compat`')
+  for (const [lang, ruta] of DOCS) {
+    const md = leer(ruta)
+    if (!md.includes(INI) || !md.includes(FIN)) fallos.push(`${ruta} no tiene los marcadores compat:inicio / compat:fin`)
+    else if (md.slice(md.indexOf(INI) + INI.length, md.indexOf(FIN)).trim() !== tablas(lang).trim())
+      fallos.push(`${ruta} no está al día con compat/matriz.json: corre \`npm run compat\``)
+  }
   const nav = m.navegadores.minimos
   const rd = leer('README.md')
   const esperado = `Chrome/Edge ${nav['Chrome y Edge']}+, Firefox ${nav.Firefox}+, Safari ${nav.Safari}+`
   if (!rd.includes(esperado)) fallos.push(`README: debe decir «${esperado}»`)
-  const sp = leer('docs/soporte.md')
-  const esperadoDoc = `Chrome y Edge ${nav['Chrome y Edge']}, Firefox ${nav.Firefox}, Safari ${nav.Safari}`
-  if (!sp.includes(esperadoDoc)) fallos.push(`docs/soporte.md: «Mínimos de la librería» debe decir «${esperadoDoc}»`)
+  for (const [ruta, esperadoDoc] of [
+    ['docs/soporte.md', `Chrome y Edge ${nav['Chrome y Edge']}, Firefox ${nav.Firefox}, Safari ${nav.Safari}`],
+    ['docs/en/soporte.md', `Chrome and Edge ${nav['Chrome y Edge']}, Firefox ${nav.Firefox}, Safari ${nav.Safari}`],
+  ])
+    if (!leer(ruta).includes(esperadoDoc)) fallos.push(`${ruta}: «Mínimos de la librería» debe decir «${esperadoDoc}»`)
 }
 
 const arg = process.argv[2]
@@ -84,11 +126,13 @@ if (arg === '--ci') {
   }
   console.log('✓ La matriz de compatibilidad coincide con package.json, el README y docs/soporte.md')
 } else {
-  const md = leer('docs/soporte.md')
-  if (!md.includes(INI)) {
-    console.error('Faltan los marcadores en docs/soporte.md')
-    process.exit(1)
+  for (const [lang, ruta] of DOCS) {
+    const md = leer(ruta)
+    if (!md.includes(INI)) {
+      console.error(`Faltan los marcadores en ${ruta}`)
+      process.exit(1)
+    }
+    writeFileSync(ruta, `${md.slice(0, md.indexOf(INI) + INI.length)}\n${tablas(lang)}\n${md.slice(md.indexOf(FIN))}`)
+    console.log(`${ruta} actualizado`)
   }
-  writeFileSync('docs/soporte.md', `${md.slice(0, md.indexOf(INI) + INI.length)}\n${tablas()}\n${md.slice(md.indexOf(FIN))}`)
-  console.log('docs/soporte.md actualizado')
 }

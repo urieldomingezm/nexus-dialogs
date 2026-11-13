@@ -8,11 +8,18 @@ const DIR = 'site-dist'
 const pendientes = []
 // Cada página debe cargar (su entrada y lo que precarga) el buscador, «volver arriba» y las animaciones comunes.
 const COMUN = ['busca-caja', 'Volver arriba', 'particulas']
-const POR_PAGINA = { 'index.html': ['demo-titulo', 'data-apariencia', 'data-escribe'] }
+const POR_PAGINA = Object.fromEntries(
+  ['index.html', 'en/index.html', 'pt/index.html', 'fr/index.html'].map((p) => [p, ['demo-titulo', 'data-apariencia', 'data-escribe']]),
+)
 
-for (const pagina of readdirSync(DIR).filter((f) => f.endsWith('.html'))) {
+const paginas = ['', 'en', 'pt', 'fr'].flatMap((d) =>
+  readdirSync(join(DIR, d))
+    .filter((f) => f.endsWith('.html'))
+    .map((f) => join(d, f)),
+)
+for (const pagina of paginas) {
   const html = readFileSync(join(DIR, pagina), 'utf8')
-  const scripts = [...html.matchAll(/(?:src|href)="\.\/(assets\/[^"]+\.js)"/g)].map((m) => m[1])
+  const scripts = [...html.matchAll(/(?:src|href)="(?:\.\.?)\/(assets\/[^"]+\.js)"/g)].map((m) => m[1])
   const codigo = scripts.map((s) => readFileSync(join(DIR, s), 'utf8')).join('\n')
   for (const marca of [...COMUN, ...(POR_PAGINA[pagina] ?? [])]) {
     if (!codigo.includes(marca)) pendientes.push(`${pagina}: falta «${marca}» en el JavaScript que carga la página`)

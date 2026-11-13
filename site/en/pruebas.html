@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Testing bench · nexus-dialogs</title>
+    <meta name="description" content="nexus-dialogs testing bench: choose the theme (Nexus, Tailwind, Bootstrap, Material) and light or dark mode, open the dialogs and check with your browser, keyboard and screen reader." />
+  </head>
+  <body>
+    <a class="saltar" href="#contenido"><!--@t:saltar--></a>
+    <!--@cabecera:pruebas-->
+    <main class="doc" id="pruebas" data-version="<!--@version-->">
+      <aside class="lateral" data-toc aria-label="<!--@t:toc-->"></aside>
+      <article class="contenido" id="contenido">
+        <h1>Testing bench</h1>
+        <p class="nota">A bench to <strong>check the library with your own eyes</strong>: choose how it looks, open the dialogs, go through the checklist and, if something fails or if everything goes well, tell us with one click. Nothing to install.</p>
+
+        <h2 id="apariencia">1. Choose the appearance</h2>
+        <p>It simulates a page with <strong>Tailwind</strong> (or Bootstrap, Material) and its light or dark mode. It uses <code>followPageScheme()</code>: when the mode changes, the dialogs you open afterwards come out in the new mode.</p>
+        <div class="mesa-grupo" role="group" aria-labelledby="t-tema">
+          <p class="mesa-et" id="t-tema">Color theme</p>
+          <div class="chips">
+            <button type="button" class="chip" data-tema-prueba="nexus" aria-pressed="true">Nexus</button>
+            <button type="button" class="chip" data-tema-prueba="tailwind" aria-pressed="false">Tailwind</button>
+            <button type="button" class="chip" data-tema-prueba="bootstrap" aria-pressed="false">Bootstrap</button>
+            <button type="button" class="chip" data-tema-prueba="material" aria-pressed="false">Material</button>
+          </div>
+        </div>
+        <div class="mesa-grupo" role="group" aria-labelledby="t-modo">
+          <p class="mesa-et" id="t-modo">Page mode</p>
+          <div class="chips">
+            <button type="button" class="chip" data-modo-prueba="claro" aria-pressed="false">Light</button>
+            <button type="button" class="chip" data-modo-prueba="oscuro" aria-pressed="false">Dark</button>
+            <button type="button" class="chip" data-modo-prueba="sistema" aria-pressed="true">Like the system</button>
+          </div>
+        </div>
+        <p class="mesa-estado" id="estado-apariencia" role="status"></p>
+        <p class="sub">Bootstrap and Material only have a light palette: in dark mode Nexus’s is used.</p>
+
+        <h2 id="abrir">2. Open the dialogs</h2>
+        <p>Each button opens a real case. Try them with the mouse and the keyboard (<kbd>Tab</kbd>, <kbd>Esc</kbd>, <kbd>Enter</kbd>), and repeat with another theme or mode.</p>
+        <div class="mesa-botones" id="botones" role="group" aria-label="Test dialogs"></div>
+
+        <h2 id="revisar">3. What to check</h2>
+        <p>Tick what you tested: it is saved in this browser. What you can’t test (for example a screen reader), leave unticked.</p>
+        <ul class="mesa-lista" id="lista-revision"></ul>
+        <label class="mesa-et" for="notas">Notes (optional)</label>
+        <textarea id="notas" class="mesa-notas" rows="3" placeholder="What you saw, in which browser, what confused you…"></textarea>
+
+        <h2 id="reportar">4. Tell us</h2>
+        <p>This summary includes the version, your browser, the chosen appearance and your checklist. Copy it or open it directly in a report.</p>
+        <textarea id="resumen" class="mesa-notas mesa-resumen" rows="10" readonly aria-label="Review summary"></textarea>
+        <div class="mesa-acciones">
+          <button type="button" class="btn primario" id="copiar">Copy summary</button>
+          <a class="btn" id="reportar-error" href="https://github.com/urieldomingezm/nexus-dialogs/issues/new?template=error.yml" rel="noopener">Report a problem</a>
+          <a class="btn" id="reportar-ok" href="https://github.com/urieldomingezm/nexus-dialogs/issues/new?template=adopcion.yml" rel="noopener">Tell us how it went</a>
+        </div>
+      </article>
+    </main>
+    <!--@pie-->
+    <script type="module" src="../src/pruebas.ts"></script>
+  </body>
+</html>

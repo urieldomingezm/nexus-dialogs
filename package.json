@@ -308,6 +308,8 @@
     "bench": "node scripts/bench.mjs",
     "api": "node scripts/api.mjs",
     "api:check": "node scripts/api.mjs --check",
+    "idiomas": "node scripts/idiomas.mjs",
+    "idiomas:check": "node scripts/idiomas.mjs --check",
     "compat": "node scripts/compat.mjs",
     "compat:check": "node scripts/compat.mjs --check",
     "check:node": "node scripts/probar-node.mjs",

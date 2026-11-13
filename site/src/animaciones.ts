@@ -1,6 +1,8 @@
 // Animaciones del sitio, sin dependencias: partículas en la portada, aparición al hacer scroll y chispas al confirmar un ejemplo.
 // Todo es decorativo (aria-hidden, sin capturar clics) y se apaga con «reducir movimiento».
 
+import { t } from './textos'
+
 const sinMovimiento = matchMedia('(prefers-reduced-motion: reduce)')
 
 /** Color de acento del tema actual, listo para el canvas. Si el navegador no lo entiende, un violeta parecido. */
@@ -341,7 +343,7 @@ function volverArriba(): void {
   b.type = 'button'
   b.className = 'arriba'
   b.hidden = true
-  b.setAttribute('aria-label', 'Volver arriba')
+  b.setAttribute('aria-label', t('volverArriba'))
   b.innerHTML =
     '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M12 19V5M5 12l7-7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
   document.body.appendChild(b)

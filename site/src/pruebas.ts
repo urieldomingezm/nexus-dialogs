@@ -3,7 +3,61 @@ import './comun'
 import { configure } from 'nexus-dialogs'
 import { toast } from 'nexus-dialogs/toast'
 import { themes, followPageScheme, type Theme } from 'nexus-dialogs/themes'
-import * as ej from './ejemplos-def'
+import { idioma } from './textos'
+import { funciones as ej } from './ejemplos-idioma'
+
+// Textos de la mesa en el idioma de la página (español e inglés; el resto, en español como el contenido de la página).
+const TXT = {
+  es: {
+    estado: (modo: string, tema: string) => `Los diálogos que abras ahora salen en modo ${modo}, con el tema ${tema}.`,
+    claro: 'claro',
+    oscuro: 'oscuro',
+    casos: ['Confirmar un borrado', 'Aviso de error', 'Formulario con validación', 'Asistente de varios pasos', 'Pestañas', 'Pestañas compactas', 'Seguimiento por etapas', 'Seguimiento horizontal', 'Panel lateral', 'Pantalla de espera', 'Aviso con acción', 'Elegir entre opciones'],
+    revision: [
+      'Con el teclado: Tab recorre los botones y campos en orden, Esc cierra y el foco vuelve al botón que abrió el diálogo.',
+      'Al cambiar entre claro y oscuro, todo el diálogo cambia de color y nada queda ilegible.',
+      'Con el tema elegido (Tailwind, Bootstrap o Material), los colores y las esquinas se parecen a tu página.',
+      'En un teléfono (o con la ventana angosta) el diálogo cabe sin desplazarse hacia los lados.',
+      'Con el zoom al 200 %, el formulario sigue pudiéndose usar.',
+      'En el formulario, enviar vacío muestra los errores junto a cada campo y el foco va al primero.',
+      'Con un lector de pantalla (NVDA, VoiceOver, TalkBack) se anuncia el título y los errores.',
+      'Los textos y botones se entienden sin explicación.',
+    ],
+    navegador: 'Navegador',
+    ventana: (w: number, h: number, z: number) => `Ventana: ${w}×${h} (zoom del dispositivo ${z})`,
+    apariencia: (t: string, m: string) => `Apariencia: tema ${t}, modo ${m}`,
+    revisionTitulo: 'Revisión:',
+    notas: 'Notas',
+    ninguna: '(ninguna)',
+    copiado: 'Resumen copiado',
+    seleccion: 'Selecciona y copia el resumen con Ctrl+C',
+  },
+  en: {
+    estado: (modo: string, tema: string) => `Dialogs you open now come out in ${modo} mode, with the ${tema} theme.`,
+    claro: 'light',
+    oscuro: 'dark',
+    casos: ['Confirm a delete', 'Error notice', 'Form with validation', 'Multi-step wizard', 'Tabs', 'Compact tabs', 'Step-by-step tracking', 'Horizontal tracking', 'Side panel', 'Wait screen', 'Notice with an action', 'Choose between options'],
+    revision: [
+      'With the keyboard: Tab goes through the buttons and fields in order, Esc closes and focus returns to the button that opened the dialog.',
+      'When switching between light and dark, the whole dialog changes color and nothing becomes unreadable.',
+      'With the chosen theme (Tailwind, Bootstrap or Material), the colors and corners look like your page.',
+      'On a phone (or with a narrow window) the dialog fits without scrolling sideways.',
+      'With zoom at 200 %, the form is still usable.',
+      'In the form, submitting empty shows the errors next to each field and focus goes to the first one.',
+      'With a screen reader (NVDA, VoiceOver, TalkBack) the title and the errors are announced.',
+      'The texts and buttons are understood without explanation.',
+    ],
+    navegador: 'Browser',
+    ventana: (w: number, h: number, z: number) => `Window: ${w}×${h} (device zoom ${z})`,
+    apariencia: (t: string, m: string) => `Appearance: ${t} theme, ${m} mode`,
+    revisionTitulo: 'Review:',
+    notas: 'Notes',
+    ninguna: '(none)',
+    copiado: 'Summary copied',
+    seleccion: 'Select and copy the summary with Ctrl+C',
+  },
+}
+const T = idioma === 'en' ? TXT.en : TXT.es
 
 type TemaPrueba = 'nexus' | 'tailwind' | 'bootstrap' | 'material'
 type Modo = 'claro' | 'oscuro' | 'sistema'
@@ -31,7 +85,7 @@ let parar: (() => void) | undefined
 function pintarBotones(): void {
   for (const b of document.querySelectorAll<HTMLButtonElement>('[data-tema-prueba]')) b.setAttribute('aria-pressed', String(b.dataset.temaPrueba === tema))
   for (const b of document.querySelectorAll<HTMLButtonElement>('[data-modo-prueba]')) b.setAttribute('aria-pressed', String(b.dataset.modoPrueba === modo))
-  $('estado-apariencia').textContent = `Los diálogos que abras ahora salen en modo ${vigente}, con el tema ${NOMBRES[tema]}.`
+  $('estado-apariencia').textContent = T.estado(vigente === 'oscuro' ? T.oscuro : T.claro, NOMBRES[tema])
   armarResumen()
 }
 
@@ -76,18 +130,18 @@ new MutationObserver(() => {
 
 // ── Diálogos de prueba ──────────────────────────────────────────────────────
 const CASOS: [string, () => unknown][] = [
-  ['Confirmar un borrado', ej.borrar],
-  ['Aviso de error', ej.error],
-  ['Formulario con validación', ej.gasto],
-  ['Asistente de varios pasos', ej.asistente],
-  ['Pestañas', ej.pestanas],
-  ['Pestañas compactas', ej.pestanasCompactas],
-  ['Seguimiento por etapas', ej.seguimiento],
-  ['Seguimiento horizontal', ej.seguimientoHorizontal],
-  ['Panel lateral', ej.panel],
-  ['Pantalla de espera', ej.espera],
-  ['Aviso con acción', ej.toastAccion],
-  ['Elegir entre opciones', ej.elegir],
+  [T.casos[0], ej.borrar],
+  [T.casos[1], ej.error],
+  [T.casos[2], ej.gasto],
+  [T.casos[3], ej.asistente],
+  [T.casos[4], ej.pestanas],
+  [T.casos[5], ej.pestanasCompactas],
+  [T.casos[6], ej.seguimiento],
+  [T.casos[7], ej.seguimientoHorizontal],
+  [T.casos[8], ej.panel],
+  [T.casos[9], ej.espera],
+  [T.casos[10], ej.toastAccion],
+  [T.casos[11], ej.elegir],
 ]
 const contenedor = $('botones')
 for (const [texto, correr] of CASOS) {
@@ -101,14 +155,14 @@ for (const [texto, correr] of CASOS) {
 
 // ── Lista de revisión (se guarda en este navegador) ─────────────────────────
 const REVISION: [string, string][] = [
-  ['teclado', 'Con el teclado: Tab recorre los botones y campos en orden, Esc cierra y el foco vuelve al botón que abrió el diálogo.'],
-  ['modos', 'Al cambiar entre claro y oscuro, todo el diálogo cambia de color y nada queda ilegible.'],
-  ['tema', 'Con el tema elegido (Tailwind, Bootstrap o Material), los colores y las esquinas se parecen a tu página.'],
-  ['celular', 'En un teléfono (o con la ventana angosta) el diálogo cabe sin desplazarse hacia los lados.'],
-  ['zoom', 'Con el zoom al 200 %, el formulario sigue pudiéndose usar.'],
-  ['errores', 'En el formulario, enviar vacío muestra los errores junto a cada campo y el foco va al primero.'],
-  ['lector', 'Con un lector de pantalla (NVDA, VoiceOver, TalkBack) se anuncia el título y los errores.'],
-  ['claridad', 'Los textos y botones se entienden sin explicación.'],
+  ['teclado', T.revision[0]],
+  ['modos', T.revision[1]],
+  ['tema', T.revision[2]],
+  ['celular', T.revision[3]],
+  ['zoom', T.revision[4]],
+  ['errores', T.revision[5]],
+  ['lector', T.revision[6]],
+  ['claridad', T.revision[7]],
 ]
 type Guardado = { marcas: Record<string, boolean>; notas: string }
 const LLAVE = 'nd-pruebas'
@@ -159,14 +213,14 @@ function armarResumen(): void {
   const navegador = navigator.userAgent
   const lineas = [
     `nexus-dialogs ${version}`,
-    `Navegador: ${navegador}`,
-    `Ventana: ${innerWidth}×${innerHeight} (zoom del dispositivo ${devicePixelRatio})`,
-    `Apariencia: tema ${NOMBRES[tema]}, modo ${vigente}`,
+    `${T.navegador}: ${navegador}`,
+    T.ventana(innerWidth, innerHeight, devicePixelRatio),
+    T.apariencia(NOMBRES[tema], vigente === 'oscuro' ? T.oscuro : T.claro),
     '',
-    'Revisión:',
+    T.revisionTitulo,
     ...REVISION.map(([id, texto]) => `[${datos.marcas[id] ? 'x' : ' '}] ${texto}`),
     '',
-    `Notas: ${datos.notas.trim() || '(ninguna)'}`,
+    `${T.notas}: ${datos.notas.trim() || T.ninguna}`,
   ]
   resumen.value = lineas.join('\n')
   const corto = navegador.length > 120 ? `${navegador.slice(0, 117)}…` : navegador
@@ -178,10 +232,10 @@ function armarResumen(): void {
 $('copiar').addEventListener('click', async () => {
   try {
     await navigator.clipboard.writeText(resumen.value)
-    toast.success('Resumen copiado')
+    toast.success(T.copiado)
   } catch {
     resumen.select()
-    toast('Selecciona y copia el resumen con Ctrl+C')
+    toast(T.seleccion)
   }
 })
 addEventListener('resize', armarResumen)

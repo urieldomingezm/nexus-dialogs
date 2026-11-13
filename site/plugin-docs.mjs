@@ -10,6 +10,7 @@ import { readFileSync, existsSync } from 'node:fs'
 import { gzipSync } from 'node:zlib'
 import { transformSync } from 'esbuild'
 import { Marked } from 'marked'
+import { GRUPOS, IDIOMAS, NOMBRES, PAGINAS, LOCALE_OG, avisoDe, grupos, idiomaDeRuta, pagina as paginaDe, ui } from './idiomas.mjs'
 
 const REPO = 'https://github.com/urieldomingezm/nexus-dialogs'
 const NPM = 'https://www.npmjs.com/package/nexus-dialogs'
@@ -20,52 +21,18 @@ const leer = (ruta) => readFileSync(new URL(ruta, import.meta.url), 'utf8')
 const pkg = JSON.parse(leer('../package.json'))
 
 // Menú de la cabecera: enlaces sueltos y grupos con submenú. Cada página es [id, archivo, texto, descripción corta].
-const MENU = [
-  ['inicio', 'index.html', 'Inicio'],
-  {
-    texto: 'Empezar',
-    items: [
-      ['primeros-pasos', 'primeros-pasos.html', 'Primeros pasos', 'Instalar y abrir tu primer diálogo'],
-      ['guia', 'guia.html', 'Guía', 'Cómo se usa cada pieza'],
-      ['novedades', 'novedades.html', 'Novedades', 'Lo último que cambió'],
-    ],
-  },
-  {
-    texto: 'Probar',
-    items: [
-      ['ejemplos', 'ejemplos.html', 'Ejemplos', 'Casos listos para ejecutar'],
-      ['playground', 'playground.html', 'Playground', 'Prueba la API sin instalar'],
-      ['pruebas', 'pruebas.html', 'Pruebas', 'Revisa temas, modo claro y oscuro'],
-      ['erp', 'erp.html', 'Mini ERP', 'Una aplicación completa de muestra'],
-    ],
-  },
-  {
-    texto: 'Referencia',
-    items: [
-      ['api', 'api.html', 'API', 'Funciones, opciones y tipos'],
-      ['contratos', 'contratos.html', 'Contratos', 'Qué promete cada función'],
-      ['arquitectura', 'arquitectura.html', 'Arquitectura', 'Cómo está construida'],
-      ['plugins', 'plugins.html', 'Plugins e idiomas', 'Extender la librería'],
-      ['limitaciones', 'limitaciones.html', 'Limitaciones', 'Lo que no hace'],
-      ['soporte', 'soporte.html', 'Soporte', 'Navegadores, versiones y soporte'],
-      ['rendimiento', 'rendimiento.html', 'Rendimiento', 'Tamaños, tiempos y cómo repetirlos'],
-      ['seguridad', 'seguridad.html', 'Seguridad', 'HTML, CSP y buenas prácticas'],
-      ['accesibilidad', 'accesibilidad.html', 'Accesibilidad', 'Objetivo, pruebas y límites'],
-    ],
-  },
-  {
-    texto: 'Migrar',
-    items: [
-      ['migracion', 'migracion.html', 'Migrar de SweetAlert2', 'Paso a paso'],
-      ['swal-compat', 'swal-compat.html', 'Compatibilidad SweetAlert2', 'Qué cubre el adaptador'],
-      ['versiones', 'versiones.html', 'Versionado y migraciones', 'Actualizar sin sorpresas'],
-    ],
-  },
-]
-
+// Los textos salen de idiomas.mjs, así que el menú cambia con el idioma de la página.
+const ARCHIVO = Object.fromEntries(PAGINAS)
+const menu = (lang = 'es') => {
+  const item = (id) => {
+    const { texto, desc } = paginaDe(lang, id)
+    return desc ? [id, ARCHIVO[id], texto, desc] : [id, ARCHIVO[id], texto]
+  }
+  return [item('inicio'), ...GRUPOS.map(([g, ids]) => ({ texto: grupos(lang)[g], items: ids.map(item) }))]
+}
 
 /** Dirección sin extensión: `ejemplos.html` → `ejemplos` y `index.html` → la raíz. GitHub Pages sirve `/ejemplos` con `ejemplos.html`. */
-const sinExtension = (f) => (f === 'index.html' ? '' : f.replace(/\.html$/, ''))
+const sinExtension = (f) => (/(^|\/)index\.html$/.test(f) ? f.replace(/index\.html$/, '') : f.replace(/\.html$/, ''))
 
 /**
  * Enlaces del sitio sin «.html» (solo en el build): `href="ejemplos.html#alerta"` → `href="ejemplos#alerta"`, `index.html` → `./`, y lo
@@ -96,7 +63,7 @@ function enlace(href) {
   return `${REPO}/blob/main/${href.replace(/^\.\//, '')}`
 }
 
-function markdown() {
+function markdown(lang = 'es') {
   const m = new Marked({ gfm: true })
   const usados = new Map()
   m.use({
@@ -108,7 +75,7 @@ function markdown() {
         const n = usados.get(id) ?? 0
         usados.set(id, n + 1)
         if (n) id += `-${n}`
-        return `<h${depth} id="${id}"><a class="ancla" href="#${id}" aria-label="Enlace a esta sección">#</a>${html}</h${depth}>\n`
+        return `<h${depth} id="${id}"><a class="ancla" href="#${id}" aria-label="${ui(lang).ancla}">#</a>${html}</h${depth}>\n`
       },
       code({ text, lang }) {
         const l = (lang ?? '').split(/\s/)[0] || 'txt'
@@ -130,22 +97,23 @@ function markdown() {
 }
 
 /** README sin la cabecera centrada (la reemplaza la portada) y sin el índice (lo reemplaza el menú lateral). */
-function readmeHtml() {
-  let md = leer('../README.md')
+function readmeHtml(lang = 'es') {
+  const archivo = lang !== 'es' && existsSync(new URL(`../README.${lang}.md`, import.meta.url)) ? `../README.${lang}.md` : '../README.md'
+  let md = leer(archivo)
   md = md.replace(/^<div align="center">[\s\S]*?<\/div>\s*---\s*/, '')
-  md = md.replace(/## Índice[\s\S]*?(?=\n## 1\.)/, '')
-  return markdown().parse(md)
+  md = md.replace(/## (?:Índice|Index|Índice|Sommaire|Table des matières)[\s\S]*?(?=\n## 1\.)/, '')
+  return markdown(lang).parse(md)
 }
 
-function apiHtml() {
+function apiHtml(lang = 'es') {
   let md = leer('../api/nexus-dialogs.api.md').replace(/^# .*\n/, '')
   md = md.replace(/^>.*\n?/gm, '')
-  return markdown().parse(md)
+  return markdown(lang).parse(md)
 }
 
 /** Cualquier archivo Markdown del repositorio (por ejemplo docs/accesibilidad.md) convertido a HTML. */
-function mdHtml(ruta) {
-  return markdown().parse(leer(`../${ruta}`).replace(/^# .*\n/, ''))
+function mdHtml(ruta, lang = 'es') {
+  return markdown(lang).parse(leer(`../${ruta}`).replace(/^# .*\n/, ''))
 }
 
 const tamano = (ruta) => {
@@ -155,7 +123,13 @@ const tamano = (ruta) => {
 }
 const kb = (n) => (n === null ? '—' : `${n.toFixed(1)} KB`)
 
-function cabecera(activa) {
+/** Selector de idioma: una lista nativa que lleva a la misma página en el otro idioma (ver comun.ts). */
+const selectorIdioma = (lang) =>
+  `<select class="tema idioma" data-idioma aria-label="${ui(lang).idioma}" title="${ui(lang).idiomaTitulo}">${IDIOMAS.map((l) => `<option value="${l}" lang="${l}"${l === lang ? ' selected' : ''}>${NOMBRES[l]}</option>`).join('')}</select>`
+
+function cabecera(activa, lang = 'es') {
+  const t = ui(lang)
+  const MENU = menu(lang)
   const enlace = ([id, href, texto, desc]) =>
     desc
       ? `<a href="${href}"${id === activa ? ' aria-current="page"' : ''}><span class="sm-tit">${texto}</span><span class="sm-desc">${desc}</span></a>`
@@ -167,14 +141,14 @@ function cabecera(activa) {
   ).join('')
   return `<header class="cabecera">
   <a class="marca" href="index.html"><span class="logo"><svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g transform="rotate(-6 32 32)"><rect x="5" y="5" width="54" height="54" rx="12" fill="#6D28D9" stroke="#1A1033" stroke-width="5"/><text x="32" y="41" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace" font-weight="900" font-size="22" fill="#FFFFFF">&lt;/&gt;</text></g></svg></span>nexus-dialogs</a>
-  <button type="button" class="menu-btn" aria-expanded="false" aria-controls="menu-principal" aria-label="Menú"><span aria-hidden="true"></span></button>
-  <nav id="menu-principal" aria-label="Principal">${enlaces}<a class="solo-movil" href="${REPO}" rel="noopener">GitHub</a><a class="solo-movil" href="${NPM}" rel="noopener">npm</a></nav>
+  <button type="button" class="menu-btn" aria-expanded="false" aria-controls="menu-principal" aria-label="${t.menu}"><span aria-hidden="true"></span></button>
+  <nav id="menu-principal" aria-label="${t.principal}">${enlaces}<a class="solo-movil" href="${REPO}" rel="noopener">GitHub</a><a class="solo-movil" href="${NPM}" rel="noopener">npm</a></nav>
   <div class="herr">
-    <button type="button" class="buscar-btn" data-buscar aria-haspopup="dialog" aria-keyshortcuts="/ Control+K" title="Buscar en la documentación (atajo: /)"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 16l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Buscar</span><kbd aria-hidden="true">/</kbd></button>
+    <button type="button" class="buscar-btn" data-buscar aria-haspopup="dialog" aria-keyshortcuts="/ Control+K" title="${t.buscarTitulo}"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 16l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>${t.buscar}</span><kbd aria-hidden="true">/</kbd></button>
     <a class="ico-enlace" href="${REPO}" rel="noopener">GitHub</a>
     <a class="ico-enlace" href="${NPM}" rel="noopener">npm</a>
-    <button type="button" class="tema" data-tema title="Cambiar entre automático, claro y oscuro"></button>
-    <button type="button" class="tema" data-idioma title="Idioma de los textos de los diálogos de la biblioteca"></button>
+    <button type="button" class="tema" data-tema title="${t.tema}"></button>
+    ${selectorIdioma(lang)}
   </div>
 </header>`
 }
@@ -182,41 +156,46 @@ function cabecera(activa) {
 const ICONO =
   '<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Cg transform=%27rotate%28-6 32 32%29%27%3E%3Crect x=%275%27 y=%275%27 width=%2754%27 height=%2754%27 rx=%2712%27 fill=%27%236D28D9%27 stroke=%27%231A1033%27 stroke-width=%275%27/%3E%3Ctext x=%2732%27 y=%2741%27 text-anchor=%27middle%27 font-family=%27ui-monospace,Menlo,Consolas,monospace%27 font-weight=%27900%27 font-size=%2722%27 fill=%27%23FFFFFF%27%3E%26lt%3B/%26gt%3B%3C/text%3E%3C/g%3E%3C/svg%3E" />'
 
-// Pie de página: la marca y cuatro columnas de enlaces; los de documentación salen del mismo MENU de la cabecera.
+// Pie de página: la marca y cuatro columnas de enlaces; los de documentación salen del mismo menú de la cabecera.
 const columna = (titulo, enlaces) =>
   `<nav aria-label="${titulo}"><p class="pie-tit">${titulo}</p><ul>${enlaces.map(([href, texto, ext]) => `<li><a href="${href}"${ext ? ' rel="noopener"' : ''}>${texto}</a></li>`).join('')}</ul></nav>`
-const pagina = (id) => MENU.flatMap((e) => (Array.isArray(e) ? [e] : e.items)).find(([i]) => i === id)
-const deMenu = (...ids) => ids.map((id) => pagina(id)).map(([, href, texto]) => [href, texto])
+const deMenu = (lang, ...ids) => ids.map((id) => [ARCHIVO[id], paginaDe(lang, id).texto])
 
-const pie = () => `<footer class="pie">
+const FIRMA = `<a class="firma" href="https://devmedina.is-a.dev/" rel="noopener"><svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g transform="rotate(-6 32 32)"><rect x="5" y="5" width="54" height="54" rx="12" fill="#6D28D9" stroke="#1A1033" stroke-width="5"/><text x="32" y="41" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace" font-weight="900" font-size="22" fill="#FFFFFF">&lt;/&gt;</text></g></svg>DevMedina</a>`
+
+const pie = (lang = 'es') => {
+  const t = ui(lang)
+  return `<footer class="pie">
   <div class="pie-cuerpo">
     <div class="pie-marca">
       <p class="pie-nombre"><strong>nexus-dialogs</strong> <span>v${pkg.version}</span></p>
-      <p>Diálogos, formularios y toasts para la web, sin dependencias.</p>
+      <p>${t.lema}</p>
     </div>
-    ${columna('Documentación', deMenu('primeros-pasos', 'guia', 'ejemplos', 'playground', 'pruebas', 'erp'))}
-    ${columna('Referencia', deMenu('api', 'contratos', 'arquitectura', 'plugins', 'limitaciones', 'soporte', 'rendimiento', 'seguridad', 'accesibilidad'))}
-    ${columna('Migración', deMenu('migracion', 'swal-compat', 'versiones'))}
-    ${columna('Proyecto', [[REPO, 'Código', true], [NPM, 'npm', true], ...deMenu('novedades'), [`${REPO}/issues`, 'Reportar un problema', true]])}
+    ${columna(t.documentacion, deMenu(lang, 'primeros-pasos', 'guia', 'ejemplos', 'playground', 'pruebas', 'erp'))}
+    ${columna(t.referencia, deMenu(lang, 'api', 'contratos', 'arquitectura', 'plugins', 'limitaciones', 'soporte', 'rendimiento', 'seguridad', 'accesibilidad'))}
+    ${columna(t.migracion, deMenu(lang, 'migracion', 'swal-compat', 'versiones'))}
+    ${columna(t.proyecto, [[REPO, t.codigo, true], [NPM, 'npm', true], ...deMenu(lang, 'novedades'), [`${REPO}/issues`, t.reportar, true]])}
   </div>
-  <p class="pie-legal">Licencia MIT. Hecho por <a class="firma" href="https://devmedina.is-a.dev/" rel="noopener"><svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g transform="rotate(-6 32 32)"><rect x="5" y="5" width="54" height="54" rx="12" fill="#6D28D9" stroke="#1A1033" stroke-width="5"/><text x="32" y="41" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace" font-weight="900" font-size="22" fill="#FFFFFF">&lt;/&gt;</text></g></svg>DevMedina</a>, rama de librerías de Nexus.</p>
+  <p class="pie-legal">${t.licencia(FIRMA)}</p>
 </footer>`
+}
 
 const atributo = (html, rx) => html.match(rx)?.[1]
 
 /** Etiquetas para compartir el enlace (Open Graph y Twitter), canónico y color de la barra del navegador. */
-function metaSocial(html, pagina) {
+function metaSocial(html, pagina, lang = 'es') {
   const titulo = atributo(html, /<title>([\s\S]*?)<\/title>/)
   const desc = atributo(html, /<meta name="description" content="([^"]*)"/)
   if (!titulo || !desc) return ''
-  const url = `${SITE}/${sinExtension(pagina)}`
+  const url = `${SITE}/${lang === 'es' ? '' : `${lang}/`}${sinExtension(pagina)}`
   return `
     <link rel="canonical" href="${url}" />
+${IDIOMAS.map((l) => `    <link rel="alternate" hreflang="${l}" href="${SITE}/${l === 'es' ? '' : `${l}/`}${sinExtension(pagina)}" />`).join('\n')}
     <meta name="theme-color" content="#f1ecf9" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#16111f" media="(prefers-color-scheme: dark)" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="nexus-dialogs" />
-    <meta property="og:locale" content="es_MX" />
+    <meta property="og:locale" content="${LOCALE_OG[lang]}" />
     <meta property="og:title" content="${titulo}" />
     <meta property="og:description" content="${desc}" />
     <meta property="og:url" content="${url}" />
@@ -231,59 +210,64 @@ function metaSocial(html, pagina) {
 }
 
 /** Columna derecha de las páginas de texto largo: dónde editar la página, versión y tamaño del núcleo. */
-function riel(html, pagina) {
+function riel(html, pagina, lang = 'es') {
+  const t = ui(lang)
   const md = atributo(html, /<!--@md:([\w./-]+)-->/)
-  const origen = md ?? (html.includes('<!--@readme-->') ? 'README.md' : html.includes('<!--@api-->') ? null : `site/${pagina}`)
+  const origen = md ?? (html.includes('<!--@readme-->') ? (lang !== 'es' && existsSync(new URL(`../README.${lang}.md`, import.meta.url)) ? `README.${lang}.md` : 'README.md') : html.includes('<!--@api-->') ? null : `site/${lang === 'es' ? '' : `${lang}/`}${pagina}`)
   const nucleo = tamano('dist/nexus-dialogs.js')
-  return `<aside class="riel" aria-label="Sobre esta página">
-        <p class="riel-t">Esta página</p>
+  return `<aside class="riel" aria-label="${t.sobre}">
+        <p class="riel-t">${t.estaPagina}</p>
         <ul>
-          ${origen ? `<li><a href="${REPO}/edit/main/${origen}" rel="noopener">Editar en GitHub</a></li>` : ''}
-          <li><a href="${REPO}/issues/new" rel="noopener">Reportar un problema</a></li>
-          <li><a href="${REPO}/blob/main/CHANGELOG.md" rel="noopener">Historial de cambios</a></li>
+          ${origen ? `<li><a href="${REPO}/edit/main/${origen}" rel="noopener">${t.editar}</a></li>` : ''}
+          <li><a href="${REPO}/issues/new" rel="noopener">${t.reportar}</a></li>
+          <li><a href="${REPO}/blob/main/CHANGELOG.md" rel="noopener">${t.historial}</a></li>
         </ul>
-        <p class="riel-t">Versión</p>
-        <p class="riel-v">v${pkg.version}${nucleo === null ? '' : `<br />núcleo ${kb(nucleo)} gzip`}</p>
+        <p class="riel-t">${t.version}</p>
+        <p class="riel-v">v${pkg.version}${nucleo === null ? '' : `<br />${t.nucleo(kb(nucleo))}`}</p>
       </aside>`
 }
 
 
-/** Índice de búsqueda: páginas del menú, encabezados de las páginas de texto y ejemplos de la galería. */
-export function construirIndice() {
+/** Índice de búsqueda de un idioma: páginas del menú, encabezados de las páginas de texto y ejemplos de la galería. */
+export function construirIndice(lang = 'es') {
+  const t = ui(lang)
   const entradas = []
-  for (const e of MENU) for (const [, href, texto, desc] of Array.isArray(e) ? [e] : e.items) entradas.push({ t: texto, p: 'Página', d: desc ?? '', u: href })
+  const paginas = menu(lang).flatMap((e) => (Array.isArray(e) ? [e] : e.items))
+  for (const [, href, texto, desc] of paginas) entradas.push({ t: texto, p: t.pagina, d: desc ?? '', u: href, g: 1 })
   const encabezados = (html, pagina, nombre) => {
     for (const m of html.matchAll(/<h([23]) id="([^"]+)"><a class="ancla"[^>]*>#<\/a>([\s\S]*?)<\/h\1>/g)) {
-      const t = m[3].replace(/<[^>]+>/g, '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').trim()
-      if (t) entradas.push({ t, p: nombre, d: '', u: `${pagina}#${m[2]}` })
+      const tx = m[3].replace(/<[^>]+>/g, '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').trim()
+      if (tx) entradas.push({ t: tx, p: nombre, d: '', u: `${pagina}#${m[2]}` })
     }
   }
-  for (const [, href, texto] of MENU.flatMap((e) => (Array.isArray(e) ? [e] : e.items))) {
+  const dir = lang === 'es' ? '' : `${lang}/`
+  for (const [, href, texto] of paginas) {
     let origen = ''
     try {
-      origen = leer(href)
+      origen = leer(`${dir}${href}`)
     } catch {
       continue
     }
-    if (origen.includes('<!--@readme-->')) encabezados(readmeHtml(), href, texto)
-    if (origen.includes('<!--@api-->')) encabezados(apiHtml(), href, texto)
-    for (const m of origen.matchAll(/<!--@md:([\w./-]+)-->/g)) encabezados(mdHtml(m[1]), href, texto)
+    if (origen.includes('<!--@readme-->')) encabezados(readmeHtml(lang), href, texto)
+    if (origen.includes('<!--@api-->')) encabezados(apiHtml(lang), href, texto)
+    for (const m of origen.matchAll(/<!--@md:([\w./-]+)-->/g)) encabezados(mdHtml(m[1], lang), href, texto)
   }
   try {
-    const def = leer('./src/ejemplos-def.ts')
-    for (const m of def.matchAll(/^ \* id: (\S+)\n \* grupo: (.+)\n \* titulo: (.+)\n \* desc: (.+)$/gm)) entradas.push({ t: m[3], p: `Ejemplos · ${m[2]}`, d: m[4], u: `ejemplos.html#${m[1]}` })
+    const def = leer(lang === 'en' ? './src/ejemplos-def.en.ts' : './src/ejemplos-def.ts')
+    for (const m of def.matchAll(/^ \* id: (\S+)\n \* grupo: (.+)\n \* titulo: (.+)\n \* desc: (.+)$/gm)) entradas.push({ t: m[3], p: `${paginaDe(lang, 'ejemplos').texto} · ${m[2]}`, d: m[4], u: `ejemplos.html#${m[1]}` })
   } catch {
     /* sin ejemplos: el índice sigue con lo demás */
   }
   return entradas
 }
 
-const VIRTUAL = 'virtual:indice-busqueda'
+// Un módulo virtual por idioma (`virtual:indice-busqueda/en`): cada página descarga solo el suyo.
+const VIRTUAL = 'virtual:indice-busqueda/'
 function indicePlugin() {
   return {
     name: 'nexus-dialogs-indice',
-    resolveId: (id) => (id === VIRTUAL ? `\0${VIRTUAL}` : null),
-    load: (id) => (id === `\0${VIRTUAL}` ? `export default ${JSON.stringify(construirIndice())}` : null),
+    resolveId: (id) => (id.startsWith(VIRTUAL) ? `\0${id}` : null),
+    load: (id) => (id.startsWith(`\0${VIRTUAL}`) ? `export default ${JSON.stringify(construirIndice(id.slice(VIRTUAL.length + 1)))}` : null),
   }
 }
 
@@ -296,19 +280,25 @@ export function docsPlugin() {
         order: 'pre',
         handler(html, ctx) {
           if (!html.includes('<!--@')) return html
-          const pagina = (ctx?.path ?? '/index.html').split('/').pop() || 'index.html'
-          const conRiel = html.includes('<main class="doc">')
+          const ruta = ctx?.path ?? '/index.html'
+          const lang = idiomaDeRuta(ruta)
+          const pagina = ruta.split('/').pop() || 'index.html'
+          const t = ui(lang)
+          const conRiel = /<main[^>]*class="doc"/.test(html)
           let salida = html
-            .replace(/<!--@md:([\w./-]+)-->/g, (_, ruta) => mdHtml(ruta))
-            .replace('</head>', `    ${ICONO}${metaSocial(html, pagina)}\n  </head>`)
-            .replace(/<!--@cabecera:([\w-]+)-->/g, (_, id) => cabecera(id))
-            .replace(/<!--@pie-->/g, pie())
-            .replace(/<!--@readme-->/g, () => readmeHtml())
-            .replace(/<!--@api-->/g, () => apiHtml())
+            .replace(/<!--@md:([\w./-]+)-->/g, (_, r) => mdHtml(r, lang))
+            .replace('</head>', `    ${ICONO}${metaSocial(html, pagina, lang)}\n  </head>`)
+            .replace(/<!--@cabecera:([\w-]+)-->/g, (_, id) => cabecera(id, lang))
+            .replace(/<!--@pie-->/g, pie(lang))
+            .replace(/<!--@generado-->\s*/g, '')
+            .replace(/<!--@t:(\w+)-->/g, (_, k) => t[k])
+            .replace(/<!--@aviso:(\w+)-->/g, (_, en) => `<p class="nota aviso" lang="${lang}">${avisoDe(lang, en)}</p>`)
+            .replace(/<!--@readme-->/g, () => readmeHtml(lang))
+            .replace(/<!--@api-->/g, () => apiHtml(lang))
             .replace(/<!--@version-->/g, pkg.version)
             .replace(/<!--@tam:([\w.+-]+)-->/g, (_, a) => kb(a.split('+').map((x) => tamano(`dist/${x}.js`)).reduce((s, n) => (s === null || n === null ? null : s + n), 0)))
           if (conRiel) {
-            salida = salida.replace('<main class="doc">', '<main class="doc con-riel">').replace('</article>', `</article>\n      ${riel(html, pagina)}`)
+            salida = salida.replace(/<main([^>]*)class="doc"/, '<main$1class="doc con-riel"').replace('</article>', `</article>\n      ${riel(html, pagina, lang)}`)
           }
           return salida
         },

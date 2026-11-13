@@ -2,16 +2,31 @@
   "node": {
     "minimo": "18",
     "probado": ["18", "20", "22", "24"],
-    "nota": "Importar (ESM y CJS) y fallar con un error claro sin DOM. La librería se compila con Node 22."
+    "nota": "Importar (ESM y CJS) y fallar con un error claro sin DOM. La librería se compila con Node 22.",
+    "nota_en": "Importing (ESM and CJS) and failing with a clear error without a DOM. The library is built with Node 22."
   },
   "navegadores": {
-    "minimos": { "Chrome y Edge": "111", "Firefox": "113", "Safari": "16.4" },
+    "minimos": {
+      "Chrome y Edge": "111",
+      "Firefox": "113",
+      "Safari": "16.4"
+    },
     "motores": [
-      { "motor": "Chromium", "para": "Chrome y Edge" },
-      { "motor": "Firefox", "para": "Firefox" },
-      { "motor": "WebKit", "para": "Safari" }
+      {
+        "motor": "Chromium",
+        "para": "Chrome y Edge"
+      },
+      {
+        "motor": "Firefox",
+        "para": "Firefox"
+      },
+      {
+        "motor": "WebKit",
+        "para": "Safari"
+      }
     ],
-    "nota": "CI ejecuta las pruebas e2e con la versión de cada motor que trae Playwright; no se prueban versiones viejas por separado."
+    "nota": "CI ejecuta las pruebas e2e con la versión de cada motor que trae Playwright; no se prueban versiones viejas por separado.",
+    "nota_en": "CI runs the e2e tests with the version of each engine that Playwright ships; old versions are not tested separately."
   },
   "frameworks": [
     {
@@ -21,8 +36,14 @@
       "minimo": "3.3",
       "pruebas": ["test/unit/vue.test.ts"],
       "versiones": [
-        { "etiqueta": "3.3 (mínimo)", "paquetes": ["vue@3.3.0"] },
-        { "etiqueta": "última", "paquetes": ["vue@latest"] }
+        {
+          "etiqueta": "3.3 (mínimo)",
+          "paquetes": ["vue@3.3.0"]
+        },
+        {
+          "etiqueta": "última",
+          "paquetes": ["vue@latest"]
+        }
       ]
     },
     {
@@ -32,9 +53,18 @@
       "minimo": "18",
       "pruebas": ["test/unit/react.test.ts"],
       "versiones": [
-        { "etiqueta": "18.0 (mínimo)", "paquetes": ["react@18.0.0", "react-dom@18.0.0"] },
-        { "etiqueta": "18 (última)", "paquetes": ["react@18", "react-dom@18"] },
-        { "etiqueta": "última", "paquetes": ["react@latest", "react-dom@latest"] }
+        {
+          "etiqueta": "18.0 (mínimo)",
+          "paquetes": ["react@18.0.0", "react-dom@18.0.0"]
+        },
+        {
+          "etiqueta": "18 (última)",
+          "paquetes": ["react@18", "react-dom@18"]
+        },
+        {
+          "etiqueta": "última",
+          "paquetes": ["react@latest", "react-dom@latest"]
+        }
       ]
     },
     {
@@ -45,10 +75,20 @@
       "nota": "Solo ESM.",
       "pruebas": ["test/unit/angular.test.ts"],
       "versiones": [
-        { "etiqueta": "16.0 (mínimo)", "paquetes": ["@angular/core@16.0.0", "rxjs@7.8.0", "zone.js@0.13"] },
-        { "etiqueta": "19", "paquetes": ["@angular/core@19", "rxjs@7"] },
-        { "etiqueta": "última", "paquetes": ["@angular/core@latest", "rxjs@7"] }
-      ]
+        {
+          "etiqueta": "16.0 (mínimo)",
+          "paquetes": ["@angular/core@16.0.0", "rxjs@7.8.0", "zone.js@0.13"]
+        },
+        {
+          "etiqueta": "19",
+          "paquetes": ["@angular/core@19", "rxjs@7"]
+        },
+        {
+          "etiqueta": "última",
+          "paquetes": ["@angular/core@latest", "rxjs@7"]
+        }
+      ],
+      "nota_en": "ESM only."
     }
   ]
 }

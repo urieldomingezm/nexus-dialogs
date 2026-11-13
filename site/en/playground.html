@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Playground · nexus-dialogs</title>
+    <meta name="description" content="Try nexus-dialogs without installing anything: write JavaScript, press Run and see the dialog and the result. With ready-made examples and a link to share your code." />
+  </head>
+  <body>
+    <a class="saltar" href="#pg-codigo"><!--@t:saltar--></a>
+    <!--@cabecera:playground-->
+    <main>
+      <section class="hero chico">
+        <h1>Playground</h1>
+        <p class="lema">Write or choose an example, press <strong>Run</strong> and the real dialog opens with this version’s code (<strong>v<!--@version--></strong>). Nothing to install.</p>
+      </section>
+      <div class="pg">
+        <div class="pg-barra">
+          <label for="pg-ejemplo">Example</label>
+          <select id="pg-ejemplo"></select>
+          <button class="btn primario chico" id="pg-ejecutar" type="button">Run</button>
+          <button class="btn chico" id="pg-compartir" type="button">Copy link</button>
+          <button class="btn chico" id="pg-restablecer" type="button">Reset</button>
+        </div>
+        <div class="pg-paneles">
+          <div class="pg-panel">
+            <label class="pg-etiqueta" for="pg-codigo">Code <span class="pg-ayuda">JavaScript · Ctrl + Enter runs</span></label>
+            <textarea id="pg-codigo" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="pg-nota"></textarea>
+          </div>
+          <div class="pg-panel">
+            <h2 class="pg-etiqueta" id="pg-salida-t">Result</h2>
+            <div id="pg-salida" class="pg-salida" role="log" aria-live="polite" aria-labelledby="pg-salida-t" tabindex="0"></div>
+          </div>
+        </div>
+        <p class="pg-nota" id="pg-nota">
+          <code>import</code>s from <code>nexus-dialogs</code> (and its subpaths: <code>forms</code>, <code>patterns</code>, <code>toast</code>, <code>mx</code>, <code>import</code>, <code>table</code>, <code>tabs</code>, <code>timeline</code>, <code>rrhh</code>, <code>themes</code>) resolve by themselves; you can use <code>await</code> without wrapping it. <code>console.log</code> writes to “Result”. The code runs on this page and is not sent to any server; the link carries it inside the address.
+        </p>
+      </div>
+    </main>
+    <!--@pie-->
+    <script type="module" src="../src/playground.ts"></script>
+  </body>
+</html>

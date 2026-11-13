@@ -3,7 +3,33 @@
 // el cuerpo de una función `async`, así que `await` funciona sin envolverlo. Sin servidor: nada del código sale de la página.
 import './comun'
 import { analizar } from './ejemplos-datos'
-import fuente from './ejemplos-def.ts?raw'
+import { idioma } from './textos'
+import { fuente } from './ejemplos-idioma'
+
+const T =
+  idioma === 'en'
+    ? {
+        noEntiendo: (p: string) => `I don't understand this import: «${p}».`,
+        noConozco: (de: string, lista: string) => `I don't know «${de}». Available: ${lista}.`,
+        noExporta: (de: string, n: string) => `«${de}» does not export «${n}».`,
+        vacio: `import { dialog } from 'nexus-dialogs'\n\nconst r = await dialog.confirm({ title: 'Save the changes?', text: 'This updates the record.' })\nconsole.log(r)\n`,
+        tuCodigo: 'Your code',
+        listo: '(done: the code finished without writing anything)',
+        copiado: 'Link copied',
+        enBarra: 'It is in the address bar',
+        copiar: 'Copy link',
+      }
+    : {
+        noEntiendo: (p: string) => `No entiendo este import: «${p}».`,
+        noConozco: (de: string, lista: string) => `No conozco «${de}». Disponibles: ${lista}.`,
+        noExporta: (de: string, n: string) => `«${de}» no exporta «${n}».`,
+        vacio: `import { dialog } from 'nexus-dialogs'\n\nconst r = await dialog.confirm({ title: '¿Guardar los cambios?', text: 'Esto actualiza el expediente.' })\nconsole.log(r)\n`,
+        tuCodigo: 'Tu código',
+        listo: '(listo: el código terminó sin escribir nada)',
+        copiado: 'Enlace copiado',
+        enBarra: 'Está en la barra de direcciones',
+        copiar: 'Copiar enlace',
+      }
 
 type Modulo = Record<string, unknown>
 const MODULOS: Record<string, () => Promise<Modulo>> = {
@@ -35,7 +61,7 @@ async function preparar(codigo: string): Promise<{ nombres: string[]; valores: u
       const p = parte.trim()
       if (!p || p.startsWith('type ')) continue
       const m = /^(\w+)(?:\s+as\s+(\w+))?$/.exec(p)
-      if (!m) throw new Error(`No entiendo este import: «${p}».`)
+      if (!m) throw new Error(T.noEntiendo(p))
       pedidos.push([de, m[1]])
       nombres.push(m[2] ?? m[1])
     }
@@ -45,12 +71,12 @@ async function preparar(codigo: string): Promise<{ nombres: string[]; valores: u
   for (const [de] of pedidos) {
     if (cargados.has(de)) continue
     const carga = MODULOS[de]
-    if (!carga) throw new Error(`No conozco «${de}». Disponibles: ${Object.keys(MODULOS).join(', ')}.`)
+    if (!carga) throw new Error(T.noConozco(de, Object.keys(MODULOS).join(', ')))
     cargados.set(de, await carga())
   }
   for (const [de, nombre] of pedidos) {
     const v = cargados.get(de)![nombre]
-    if (v === undefined) throw new Error(`«${de}» no exporta «${nombre}».`)
+    if (v === undefined) throw new Error(T.noExporta(de, nombre))
     valores.push(v)
   }
   return { nombres, valores, cuerpo }
@@ -64,11 +90,7 @@ const ejecutar = $<HTMLButtonElement>('pg-ejecutar')
 const compartir = $<HTMLButtonElement>('pg-compartir')
 const restablecer = $<HTMLButtonElement>('pg-restablecer')
 
-const VACIO = `import { dialog } from 'nexus-dialogs'
-
-const r = await dialog.confirm({ title: '¿Guardar los cambios?', text: 'Esto actualiza el expediente.' })
-console.log(r)
-`
+const VACIO = T.vacio
 
 // Solo entran los ejemplos que son JavaScript: los que traen anotaciones de tipos de TypeScript no corren aquí.
 const ejemplos = analizar(fuente).filter((e) => {
@@ -85,7 +107,7 @@ for (const g of [...new Set(ejemplos.map((e) => e.grupo))]) {
   for (const e of ejemplos.filter((x) => x.grupo === g)) og.append(new Option(e.titulo, e.id))
   selector.append(og)
 }
-selector.prepend(new Option('Tu código', ''))
+selector.prepend(new Option(T.tuCodigo, ''))
 
 const aBase64 = (t: string): string => btoa(String.fromCharCode(...new TextEncoder().encode(t))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
 const deBase64 = (b: string): string => {
@@ -125,7 +147,7 @@ async function correr(): Promise<void> {
     const f = new AsyncFunction(...nombres, 'console', cuerpo)
     const r = await f(...valores, consola)
     if (r !== undefined) linea(`→ ${mostrar(r)}`)
-    if (!salida.childElementCount) linea('(listo: el código terminó sin escribir nada)', 'tenue')
+    if (!salida.childElementCount) linea(T.listo, 'tenue')
   } catch (e) {
     linea(e instanceof Error ? `${e.name}: ${e.message}` : String(e), 'error')
   } finally {
@@ -178,11 +200,11 @@ compartir.addEventListener('click', async () => {
   history.replaceState(null, '', url)
   try {
     await navigator.clipboard.writeText(url)
-    compartir.textContent = 'Enlace copiado'
+    compartir.textContent = T.copiado
   } catch {
-    compartir.textContent = 'Está en la barra de direcciones'
+    compartir.textContent = T.enBarra
   }
-  setTimeout(() => (compartir.textContent = 'Copiar enlace'), 2000)
+  setTimeout(() => (compartir.textContent = T.copiar), 2000)
 })
 window.addEventListener('hashchange', desdeHash)
 desdeHash()

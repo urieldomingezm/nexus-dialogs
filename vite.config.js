@@ -154,7 +154,12 @@ export default defineConfig(({ mode, command }) => {
         emptyOutDir: true,
         target: 'es2022',
         rollupOptions: {
-          input: Object.fromEntries(paginas.map((p) => [p, fileURLToPath(new URL(`./site/${p}.html`, import.meta.url))])),
+          // Cada página en cada idioma: español en la raíz y /en, /pt y /fr (las genera `npm run idiomas`).
+          input: Object.fromEntries(
+            ['', 'en/', 'pt/', 'fr/'].flatMap((dir) =>
+              paginas.map((p) => [`${dir}${p}`, fileURLToPath(new URL(`./site/${dir}${p}.html`, import.meta.url))]),
+            ),
+          ),
         },
       },
     }

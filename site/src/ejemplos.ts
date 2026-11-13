@@ -3,8 +3,13 @@ import './comun'
 import { decorarCodigo } from './comun'
 import { chispas, fueConfirmado } from './animaciones'
 import { analizar, type Ejemplo } from './ejemplos-datos'
-import fuente from './ejemplos-def.ts?raw'
-import * as funciones from './ejemplos-def'
+import { idioma } from './textos'
+import { fuente, funciones } from './ejemplos-idioma'
+
+const T =
+  idioma === 'en'
+    ? { sinValor: '(no value: the example returns nothing)', probar: 'Try', resultado: 'Result:', error: 'Error:', todos: 'All' }
+    : { sinValor: '(sin valor: el ejemplo no devuelve nada)', probar: 'Probar', resultado: 'Resultado:', error: 'Error:', todos: 'Todos' }
 
 const ejemplos = analizar(fuente)
 const grupos = [...new Set(ejemplos.map((e) => e.grupo))]
@@ -24,7 +29,7 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, props: Partial<HTMLEl
 }
 
 function mostrar(res: unknown): string {
-  if (res === undefined) return '(sin valor: el ejemplo no devuelve nada)'
+  if (res === undefined) return T.sinValor
   try {
     return JSON.stringify(res, null, 2) ?? String(res)
   } catch {
@@ -35,16 +40,16 @@ function mostrar(res: unknown): string {
 function tarjeta(e: Ejemplo): HTMLElement {
   const salida = el('div', { class: 'resultado' })
   salida.hidden = true
-  const boton = el('button', { class: 'btn primario chico', type: 'button' }, 'Probar')
+  const boton = el('button', { class: 'btn primario chico', type: 'button' }, T.probar)
   boton.addEventListener('click', async () => {
     boton.disabled = true
     boton.setAttribute('aria-busy', 'true')
     try {
       const res = await (funciones as unknown as Record<string, () => unknown>)[e.funcion]()
       if (fueConfirmado(res)) chispas(boton)
-      salida.replaceChildren('Resultado:', el('pre', { 'data-lang': 'json' } as never, el('code', { class: 'language-json' }, mostrar(res))))
+      salida.replaceChildren(T.resultado, el('pre', { 'data-lang': 'json' } as never, el('code', { class: 'language-json' }, mostrar(res))))
     } catch (err) {
-      salida.replaceChildren(`Error: ${err instanceof Error ? err.message : String(err)}`)
+      salida.replaceChildren(`${T.error} ${err instanceof Error ? err.message : String(err)}`)
     } finally {
       salida.hidden = false
       decorarCodigo(salida)
@@ -88,7 +93,7 @@ function chip(texto: string, valor: string): HTMLButtonElement {
   })
   return b
 }
-chips.append(chip('Todos', ''), ...grupos.map((g) => chip(g, g)))
+chips.append(chip(T.todos, ''), ...grupos.map((g) => chip(g, g)))
 
 function filtrar(): void {
   const q = buscador.value.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim()

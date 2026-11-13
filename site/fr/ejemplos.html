@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="fr">
+  <!--@generado-->
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Exemples · nexus-dialogs</title>
+    <meta name="description" content="Cas prêts à exécuter" />
+  </head>
+  <body>
+    <a class="saltar" href="#galeria"><!--@t:saltar--></a>
+    <!--@cabecera:ejemplos-->
+    <main lang="es">
+      <section class="hero chico">
+        <h1>Exemples</h1>
+        <!--@aviso:es-->
+        <p class="lema"><span id="total">…</span> ejemplos que se ejecutan de verdad con el código de esta versión (<strong>v<!--@version--></strong>). Pulsa <strong>Probar</strong>, mira el resultado y copia el código.</p>
+      </section>
+      <div class="filtros" role="search">
+        <input id="buscar" type="search" placeholder="Buscar: formulario, RFC, toast, Excel…" aria-label="Buscar ejemplos" />
+        <div id="chips" class="chips" role="group" aria-label="Filtrar por grupo"></div>
+      </div>
+      <div id="galeria"></div>
+      <p id="vacio" class="vacio" hidden>Ningún ejemplo coincide. Prueba con otra palabra.</p>
+    </main>
+    <!--@pie-->
+    <script type="module" src="../src/ejemplos.ts"></script>
+  </body>
+</html>
