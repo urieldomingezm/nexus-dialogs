@@ -142,7 +142,7 @@ test.describe('Sitio de documentación', () => {
     const probar = page.locator('header.cabecera').getByRole('button', { name: 'Probar' })
     const empezar = page.locator('header.cabecera').getByRole('button', { name: 'Empezar' })
     await expect(page.locator('.grupo.activo')).toHaveClass(/activo/)
-    await expect(page.locator('#sm-2 a')).toHaveCount(3)
+    await expect(page.locator('#sm-2 a')).toHaveCount(4)
     await expect(page.locator('#sm-2')).toBeHidden()
     await probar.click()
     await expect(page.locator('#sm-2')).toBeVisible()
