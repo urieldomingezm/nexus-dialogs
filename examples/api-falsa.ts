@@ -22,8 +22,23 @@ export const recibosDeLaQuincena: Recibo[] = [
   { id: 4, empleado: 'Mateo Silva', neto: 5210.75 },
 ]
 
+export interface Solicitud {
+  id: string
+  empleado: string
+  fechas: string
+  dias: number
+}
+
 export const api = {
   empleados: {
+    async baja(numero: string): Promise<void> {
+      await espera()
+      void numero
+    },
+    async restaurar(numero: string): Promise<void> {
+      await espera()
+      void numero
+    },
     async crear(e: Empleado): Promise<Empleado> {
       await espera()
       return e
@@ -43,6 +58,21 @@ export const api = {
       await espera()
       if (r.id === 3) throw new Error('El SAT no respondió')
       return `FOLIO-${r.id}`
+    },
+  },
+  vacaciones: {
+    async resolver(s: Solicitud, decision: 'aprobada' | 'rechazada', comentario: string): Promise<{ folio: string }> {
+      await espera()
+      void comentario
+      return { folio: `${decision.toUpperCase()}-${s.id}` }
+    },
+  },
+  sesion: {
+    async renovar(): Promise<void> {
+      await espera()
+    },
+    async cerrar(): Promise<void> {
+      await espera()
     },
   },
 }

@@ -58,3 +58,51 @@ test('importar empleados: elegir el archivo, relacionar columnas y revisar', asy
   await boton(p, 'confirm').click()
   await expect.poll(() => p.evaluate(() => window.fin.then((n) => n))).toBe(2)
 })
+
+test('baja de empleado: hay que escribir el nombre y el aviso permite deshacer', async ({ ej: p }) => {
+  await p.evaluate(() => {
+    window.fin = window.ejemplos.bajaDeEmpleado()
+  })
+  await expect(boton(p, 'confirm')).toBeDisabled()
+  expect(await axe(p)).toEqual([])
+  await enDialogo(p, 'input').first().fill('Laura Méndez Ruiz')
+  await expect(boton(p, 'confirm')).toBeEnabled()
+  await boton(p, 'confirm').click()
+  expect(await p.evaluate(() => window.fin)).toBe(true)
+  await expect(p.locator('[data-nexus-toast]').first()).toBeAttached()
+})
+
+test('aprobar vacaciones: aprobar con comentario y rechazar con motivo', async ({ ej: p }) => {
+  await p.evaluate(() => {
+    window.fin = window.ejemplos.aprobarVacaciones()
+  })
+  expect(await axe(p)).toEqual([])
+  await boton(p, 'confirm').click()
+  expect(await p.evaluate(() => window.fin)).toBe('aprobada')
+
+  await p.evaluate(() => {
+    window.fin = window.ejemplos.aprobarVacaciones()
+  })
+  await boton(p, 'reject').click()
+  await expect(enDialogo(p, 'input[type=radio]').first()).toBeFocused()
+  await p.keyboard.press('Space')
+  await p.keyboard.press('Tab')
+  await p.keyboard.type('Cubre el turno de Marta esa semana.')
+  await boton(p, 'confirm').click()
+  expect(await p.evaluate(() => window.fin)).toBe('rechazada')
+})
+
+test('sesión por expirar: seguir trabajando la extiende y no responder la cierra', async ({ ej: p }) => {
+  await p.evaluate(() => {
+    window.fin = window.ejemplos.sesionPorExpirar(60)
+  })
+  await expect(boton(p, 'extend')).toBeFocused()
+  expect(await axe(p)).toEqual([])
+  await p.keyboard.press('Enter')
+  expect(await p.evaluate(() => window.fin)).toBe('extendida')
+
+  await p.evaluate(() => {
+    window.fin = window.ejemplos.sesionPorExpirar(2)
+  })
+  expect(await p.evaluate(() => window.fin)).toBe('cerrada') // se acabó el tiempo
+})

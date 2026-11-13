@@ -127,6 +127,7 @@ export default defineConfig(({ mode, command }) => {
       'arquitectura',
       'limitaciones',
       'soporte',
+      'versiones',
       'rendimiento',
       'novedades',
       'swal-compat',

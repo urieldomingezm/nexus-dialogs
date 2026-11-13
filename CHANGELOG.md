@@ -22,6 +22,8 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 - Sitio de documentación: partículas conectadas en la portada, aparición suave de las secciones al hacer scroll, chispas al confirmar un ejemplo y un texto que se escribe solo. Son decorativas, no usan dependencias, se detienen con la pestaña oculta o fuera de pantalla, usan menos partículas en celular y se apagan con «reducir movimiento».
 - Sitio de documentación: el fondo de la maqueta ahora imita una lista de personal (con nombres, áreas y estados de muestra) en lugar de barras vacías; la maqueta suma las escenas Vacaciones (días hábiles en vivo), Asistente (pasos con «Atrás»), Importar y Sin guardar, y un «Ver código» que muestra el código real de la escena elegida.
 - Sitio de documentación: sección «Una pieza en lugar de varias», insignias de la portada (versión confirmada con npm, tamaño del núcleo, licencia y CI), esqueleto brillante mientras llegan las descargas, transición suave entre páginas (View Transitions) y un brillo que sigue al puntero en los botones principales. Todo se apaga con «reducir movimiento».
+- Sitio de documentación: página «Versionado y migraciones» (`docs/versiones.md`): cómo se numeran las versiones, cómo leer el CHANGELOG, qué hacer antes de actualizar, lo que se vigila para no romper y la tabla de migraciones conocidas.
+- Ejemplos completos nuevos en `examples/`: baja de empleado (escribir el nombre y «Deshacer»), aprobar vacaciones (aprobar con comentario o rechazar con motivo) y sesión por expirar. Cada uno se ejecuta en el navegador en cada cambio.
 
 ### Corregido
 
