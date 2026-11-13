@@ -129,7 +129,7 @@ test.describe('Sitio de documentación', () => {
     await page.locator('.demo-pantalla').evaluate((e) => (e.dataset.retoma = '1500'))
     await page.locator('.demo-pantalla').scrollIntoViewIfNeeded()
     await expect(page.locator('.demo-cursor')).toHaveClass(/visible/)
-    await page.locator('.demo-pantalla').click({ position: { x: 5, y: 5 } })
+    await page.locator('.demo-pantalla').click({ position: { x: 24, y: 24 } })
     await expect(page.locator('.demo-cursor')).not.toHaveClass(/visible/) // la tomó: se detiene
     await expect(page.locator('.demo-cursor')).toHaveClass(/visible/, { timeout: 20_000 }) // y sin tocarla, retoma
   })
