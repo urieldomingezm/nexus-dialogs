@@ -50,4 +50,15 @@ describe('documentación por idioma', () => {
       for (const m of leer(f).matchAll(/guia\.html#([^)"\s]+)/g)) expect(anclas.has(decodeURIComponent(m[1])), `${f} → #${m[1]}`).toBe(true)
     for (const m of en.matchAll(/\]\(#([^)]+)\)/g)) expect(anclas.has(m[1]), `README.en.md → #${m[1]}`).toBe(true)
   })
+  it('los ejemplos en inglés tienen los mismos ids, funciones y grupos que los de español', () => {
+    const lee = (f: string) => {
+      const t = leer(f)
+      return {
+        ids: [...t.matchAll(/^ \* id: (\S+)$/gm)].map((m) => m[1]),
+        funciones: [...t.matchAll(/^export (?:async )?function (\w+)\(\)/gm)].map((m) => m[1]),
+        grupos: [...t.matchAll(/^ \* grupo: (.+)$/gm)].map((m) => m[1]).filter((g, i, a) => a.indexOf(g) === i).length,
+      }
+    }
+    expect(lee('site/src/ejemplos-def.en.ts')).toEqual(lee('site/src/ejemplos-def.ts'))
+  })
 })

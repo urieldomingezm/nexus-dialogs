@@ -1,26 +1,24 @@
 <!doctype html>
 <html lang="en">
-  <!--@generado-->
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Tests · nexus-dialogs</title>
-    <meta name="description" content="Check themes, light and dark mode" />
+    <title>Testing bench · nexus-dialogs</title>
+    <meta name="description" content="nexus-dialogs testing bench: choose the theme (Nexus, Tailwind, Bootstrap, Material) and light or dark mode, open the dialogs and check with your browser, keyboard and screen reader." />
   </head>
   <body>
     <a class="saltar" href="#contenido"><!--@t:saltar--></a>
     <!--@cabecera:pruebas-->
-    <main lang="es" class="doc" id="pruebas" data-version="<!--@version-->">
+    <main class="doc" id="pruebas" data-version="<!--@version-->">
       <aside class="lateral" data-toc aria-label="<!--@t:toc-->"></aside>
       <article class="contenido" id="contenido">
-        <h1>Tests</h1>
-        <!--@aviso:es-->
-        <p class="nota">Una mesa para <strong>revisar la librería con tus propios ojos</strong>: elige cómo se ve, abre los diálogos, recorre la lista de revisión y, si algo falla o si todo sale bien, cuéntalo con un clic. No hace falta instalar nada.</p>
+        <h1>Testing bench</h1>
+        <p class="nota">A bench to <strong>check the library with your own eyes</strong>: choose how it looks, open the dialogs, go through the checklist and, if something fails or if everything goes well, tell us with one click. Nothing to install.</p>
 
-        <h2 id="apariencia">1. Elige la apariencia</h2>
-        <p>Simula una página con <strong>Tailwind</strong> (o Bootstrap, Material) y su modo claro u oscuro. Usa <code>followPageScheme()</code>: al cambiar el modo, los diálogos que abras después salen en el modo nuevo.</p>
+        <h2 id="apariencia">1. Choose the appearance</h2>
+        <p>It simulates a page with <strong>Tailwind</strong> (or Bootstrap, Material) and its light or dark mode. It uses <code>followPageScheme()</code>: when the mode changes, the dialogs you open afterwards come out in the new mode.</p>
         <div class="mesa-grupo" role="group" aria-labelledby="t-tema">
-          <p class="mesa-et" id="t-tema">Tema de colores</p>
+          <p class="mesa-et" id="t-tema">Color theme</p>
           <div class="chips">
             <button type="button" class="chip" data-tema-prueba="nexus" aria-pressed="true">Nexus</button>
             <button type="button" class="chip" data-tema-prueba="tailwind" aria-pressed="false">Tailwind</button>
@@ -29,33 +27,33 @@
           </div>
         </div>
         <div class="mesa-grupo" role="group" aria-labelledby="t-modo">
-          <p class="mesa-et" id="t-modo">Modo de la página</p>
+          <p class="mesa-et" id="t-modo">Page mode</p>
           <div class="chips">
-            <button type="button" class="chip" data-modo-prueba="claro" aria-pressed="false">Claro</button>
-            <button type="button" class="chip" data-modo-prueba="oscuro" aria-pressed="false">Oscuro</button>
-            <button type="button" class="chip" data-modo-prueba="sistema" aria-pressed="true">Como el sistema</button>
+            <button type="button" class="chip" data-modo-prueba="claro" aria-pressed="false">Light</button>
+            <button type="button" class="chip" data-modo-prueba="oscuro" aria-pressed="false">Dark</button>
+            <button type="button" class="chip" data-modo-prueba="sistema" aria-pressed="true">Like the system</button>
           </div>
         </div>
         <p class="mesa-estado" id="estado-apariencia" role="status"></p>
-        <p class="sub">Bootstrap y Material solo tienen paleta clara: en oscuro se usa la de Nexus.</p>
+        <p class="sub">Bootstrap and Material only have a light palette: in dark mode Nexus’s is used.</p>
 
-        <h2 id="abrir">2. Abre los diálogos</h2>
-        <p>Cada botón abre un caso real. Pruébalos con el mouse y con el teclado (<kbd>Tab</kbd>, <kbd>Esc</kbd>, <kbd>Enter</kbd>), y repite con otro tema o modo.</p>
-        <div class="mesa-botones" id="botones" role="group" aria-label="Diálogos de prueba"></div>
+        <h2 id="abrir">2. Open the dialogs</h2>
+        <p>Each button opens a real case. Try them with the mouse and the keyboard (<kbd>Tab</kbd>, <kbd>Esc</kbd>, <kbd>Enter</kbd>), and repeat with another theme or mode.</p>
+        <div class="mesa-botones" id="botones" role="group" aria-label="Test dialogs"></div>
 
-        <h2 id="revisar">3. Qué revisar</h2>
-        <p>Marca lo que probaste: se guarda en este navegador. Lo que no puedas probar (por ejemplo un lector de pantalla), déjalo sin marcar.</p>
+        <h2 id="revisar">3. What to check</h2>
+        <p>Tick what you tested: it is saved in this browser. What you can’t test (for example a screen reader), leave unticked.</p>
         <ul class="mesa-lista" id="lista-revision"></ul>
-        <label class="mesa-et" for="notas">Notas (opcional)</label>
-        <textarea id="notas" class="mesa-notas" rows="3" placeholder="Qué viste, en qué navegador, qué te confundió…"></textarea>
+        <label class="mesa-et" for="notas">Notes (optional)</label>
+        <textarea id="notas" class="mesa-notas" rows="3" placeholder="What you saw, in which browser, what confused you…"></textarea>
 
-        <h2 id="reportar">4. Cuéntalo</h2>
-        <p>Este resumen incluye la versión, tu navegador, la apariencia elegida y tu lista. Cópialo o ábrelo directo en un reporte.</p>
-        <textarea id="resumen" class="mesa-notas mesa-resumen" rows="10" readonly aria-label="Resumen de la revisión"></textarea>
+        <h2 id="reportar">4. Tell us</h2>
+        <p>This summary includes the version, your browser, the chosen appearance and your checklist. Copy it or open it directly in a report.</p>
+        <textarea id="resumen" class="mesa-notas mesa-resumen" rows="10" readonly aria-label="Review summary"></textarea>
         <div class="mesa-acciones">
-          <button type="button" class="btn primario" id="copiar">Copiar resumen</button>
-          <a class="btn" id="reportar-error" href="https://github.com/urieldomingezm/nexus-dialogs/issues/new?template=error.yml" rel="noopener">Reportar un problema</a>
-          <a class="btn" id="reportar-ok" href="https://github.com/urieldomingezm/nexus-dialogs/issues/new?template=adopcion.yml" rel="noopener">Contar cómo me fue</a>
+          <button type="button" class="btn primario" id="copiar">Copy summary</button>
+          <a class="btn" id="reportar-error" href="https://github.com/urieldomingezm/nexus-dialogs/issues/new?template=error.yml" rel="noopener">Report a problem</a>
+          <a class="btn" id="reportar-ok" href="https://github.com/urieldomingezm/nexus-dialogs/issues/new?template=adopcion.yml" rel="noopener">Tell us how it went</a>
         </div>
       </article>
     </main>
