@@ -126,6 +126,7 @@ export default defineConfig(({ mode, command }) => {
       'primeros-pasos',
       'guia',
       'ejemplos',
+      'playground',
       'pruebas',
       'erp',
       'migracion',

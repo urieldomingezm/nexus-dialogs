@@ -11,6 +11,17 @@ npm run bench -- --write  # además actualiza esta página
 
 Los tiempos usan Chromium con Playwright; si ya tienes uno instalado, `PW_CHROMIUM=/ruta/a/chrome npm run bench`.
 
+### Comparar dos versiones
+
+Para saber si un cambio hizo la librería más pesada o más lenta, guarda la medición de la versión base y compárala con la tuya, en la misma máquina:
+
+```bash
+git checkout main && npm run build && npm run bench -- --json base.json
+git checkout mi-rama && npm run build && npm run bench -- --comparar base.json
+```
+
+La tabla muestra, para cada archivo, cada caso de «usar solo una parte» y cada tiempo, el valor antes, el de ahora y el cambio en porcentaje. Si un tamaño crece más de 3 %, el comando termina con error (los tamaños no dependen de la máquina; los tiempos sí, por eso solo se informan).
+
 ## Qué se mide y qué no
 
 - **Tamaño de cada archivo.** El archivo publicado se minifica con esbuild y se comprime con gzip y con brotli. Es lo mismo que mide `npm run size` (con sus límites por archivo), más brotli.

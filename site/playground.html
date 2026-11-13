@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Playground · nexus-dialogs</title>
+    <meta name="description" content="Prueba nexus-dialogs sin instalar nada: escribe JavaScript, pulsa Ejecutar y mira el diálogo y el resultado. Con ejemplos listos y un enlace para compartir tu código." />
+  </head>
+  <body>
+    <a class="saltar" href="#pg-codigo">Saltar al editor</a>
+    <!--@cabecera:playground-->
+    <main>
+      <section class="hero chico">
+        <h1>Playground</h1>
+        <p class="lema">Escribe o elige un ejemplo, pulsa <strong>Ejecutar</strong> y se abre el diálogo de verdad con el código de esta versión (<strong>v<!--@version--></strong>). Sin instalar nada.</p>
+      </section>
+      <div class="pg">
+        <div class="pg-barra">
+          <label for="pg-ejemplo">Ejemplo</label>
+          <select id="pg-ejemplo"></select>
+          <button class="btn primario chico" id="pg-ejecutar" type="button">Ejecutar</button>
+          <button class="btn chico" id="pg-compartir" type="button">Copiar enlace</button>
+          <button class="btn chico" id="pg-restablecer" type="button">Restablecer</button>
+        </div>
+        <div class="pg-paneles">
+          <div class="pg-panel">
+            <label class="pg-etiqueta" for="pg-codigo">Código <span class="pg-ayuda">JavaScript · Ctrl + Enter ejecuta</span></label>
+            <textarea id="pg-codigo" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="pg-nota"></textarea>
+          </div>
+          <div class="pg-panel">
+            <h2 class="pg-etiqueta" id="pg-salida-t">Resultado</h2>
+            <div id="pg-salida" class="pg-salida" role="log" aria-live="polite" aria-labelledby="pg-salida-t" tabindex="0"></div>
+          </div>
+        </div>
+        <p class="pg-nota" id="pg-nota">
+          Los <code>import</code> de <code>nexus-dialogs</code> (y de sus subrutas: <code>forms</code>, <code>patterns</code>, <code>toast</code>, <code>mx</code>, <code>import</code>, <code>table</code>, <code>tabs</code>, <code>timeline</code>, <code>rrhh</code>, <code>themes</code>) se resuelven solos; puedes usar <code>await</code> sin envolverlo. <code>console.log</code> escribe en «Resultado». El código corre en esta página y no se envía a ningún servidor; el enlace lo lleva dentro de la dirección.
+        </p>
+      </div>
+    </main>
+    <!--@pie-->
+    <script type="module" src="./src/playground.ts"></script>
+  </body>
+</html>
