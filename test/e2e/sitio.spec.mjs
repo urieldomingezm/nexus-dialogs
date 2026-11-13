@@ -440,6 +440,21 @@ test.describe('Sitio de documentación', () => {
     await expect(page.locator('#mig-salida')).toContainText('API propia → true')
   })
 
+  test('migración en inglés: la página, los ejemplos y los avisos salen en inglés', async ({ pagina: page }) => {
+    await page.goto(SITIO + 'en/migracion.html')
+    await expect(page.locator('h1')).toHaveText('Migrate from SweetAlert2')
+    await expect(page.locator('main .nota.aviso')).toHaveCount(0)
+    await page.locator('#m-borrar button[data-mig="swal"]').click()
+    const d = page.locator('dialog[data-nexus-dialog]').last()
+    await expect(d).toContainText('Delete Laura Méndez?')
+    await d.locator('button[data-id="confirm"]').click()
+    await expect(page.locator('#mig-salida')).toContainText('SweetAlert2 (adapter) → true')
+    await page.locator('#m-borrar button[data-mig="nativa"]').click()
+    await expect(page.locator('dialog[data-nexus-dialog]').last()).toContainText('Laura Méndez')
+    await page.locator('dialog[data-nexus-dialog]').last().locator('button[data-id="confirm"]').click()
+    await expect(page.locator('#mig-salida')).toContainText('Native API → true')
+  })
+
   test('páginas de texto: etiquetas para compartir, canónico y columna derecha en pantalla ancha', async ({ page }) => {
     await page.setViewportSize({ width: 1500, height: 800 })
     await page.goto(SITIO + 'arquitectura.html')
