@@ -2,7 +2,6 @@
 // y el selector de apariencia, que también cambia los diálogos y toasts reales de la página.
 import { configure } from 'nexus-dialogs'
 import { toast } from 'nexus-dialogs/toast'
-import { confirmDelete } from 'nexus-dialogs/patterns'
 import { themes, type Theme } from 'nexus-dialogs/themes'
 import { chispas } from './animaciones'
 import { decorarCodigo } from './comun'
@@ -65,6 +64,7 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener('change', aplicar)
 aplicar()
 
 $('#b-demo')?.addEventListener('click', async (e) => {
+  const { confirmDelete } = await import('nexus-dialogs/patterns')
   if (await confirmDelete({ what: 'a Laura Méndez' })) {
     toast.success('Laura Méndez eliminada')
     chispas(e.currentTarget as Element)
@@ -140,8 +140,7 @@ ${botones(['cancelar', 'Cancelar'], ['enviar', 'Enviar'])}`,
 
 // «Ver código»: lo que se escribe de verdad en la librería para cada escena.
 const CODIGO: Record<Escena, string> = {
-  borrar: `import { confirmDelete } from 'nexus-dialogs/patterns'
-
+  borrar: `
 if (await confirmDelete({ what: 'a Laura Méndez' })) {
   // eliminar
 }`,

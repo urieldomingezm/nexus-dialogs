@@ -26,6 +26,10 @@ interface Punto {
   vy: number
 }
 
+/** Pantalla táctil o angosta: se gasta menos (menos resolución y 30 cuadros por segundo). */
+const pocaPantalla = matchMedia('(pointer: coarse), (max-width: 640px)')
+const ahorro = (): boolean => pocaPantalla.matches
+
 function particulas(hero: HTMLElement): void {
   const lienzo = document.createElement('canvas')
   lienzo.className = 'particulas'
@@ -45,7 +49,7 @@ function particulas(hero: HTMLElement): void {
 
   function medir(): void {
     const r = hero.getBoundingClientRect()
-    const dpr = Math.min(devicePixelRatio || 1, 2)
+    const dpr = Math.min(devicePixelRatio || 1, ahorro() ? 1 : 2) // en el teléfono 1: son puntos y líneas finas, no se nota
     ancho = r.width
     alto = r.height
     lienzo.width = Math.round(ancho * dpr)
@@ -59,11 +63,15 @@ function particulas(hero: HTMLElement): void {
     n = cantidad
   }
 
+  // Una sola ruta para todos los puntos y una por intensidad de línea (en vez de un trazo por cada par): cientos de llamadas
+  // menos por cuadro, que es lo que más pesa en un teléfono.
   const DIST = 120
+  const NIVELES = 4
+  const ALFA = [0.1, 0.2, 0.3, 0.42]
   function pintar(): void {
     ctx!.clearRect(0, 0, ancho, alto)
-    ctx!.fillStyle = color
-    ctx!.strokeStyle = color
+    const trazos: Path2D[] = Array.from({ length: NIVELES }, () => new Path2D())
+    const dots = new Path2D()
     for (let i = 0; i < n; i++) {
       const p = puntos[i]
       p.x += p.vx
@@ -81,36 +89,44 @@ function particulas(hero: HTMLElement): void {
           p.y += (dy / Math.sqrt(d2)) * f
         }
       }
-      ctx!.globalAlpha = 0.8
-      ctx!.beginPath()
-      ctx!.arc(p.x, p.y, 1.8, 0, Math.PI * 2)
-      ctx!.fill()
+      dots.moveTo(p.x + 1.8, p.y)
+      dots.arc(p.x, p.y, 1.8, 0, Math.PI * 2)
       for (let j = i + 1; j < n; j++) {
         const q = puntos[j]
         const dx = p.x - q.x
         const dy = p.y - q.y
         const d = dx * dx + dy * dy
         if (d < DIST * DIST) {
-          ctx!.globalAlpha = (1 - Math.sqrt(d) / DIST) * 0.42
-          ctx!.lineWidth = 1
-          ctx!.beginPath()
-          ctx!.moveTo(p.x, p.y)
-          ctx!.lineTo(q.x, q.y)
-          ctx!.stroke()
+          const nivel = Math.min(NIVELES - 1, Math.floor((1 - Math.sqrt(d) / DIST) * NIVELES))
+          trazos[nivel].moveTo(p.x, p.y)
+          trazos[nivel].lineTo(q.x, q.y)
         }
       }
     }
+    ctx!.fillStyle = color
+    ctx!.strokeStyle = color
+    ctx!.lineWidth = 1
+    for (let k = 0; k < NIVELES; k++) {
+      ctx!.globalAlpha = ALFA[k]
+      ctx!.stroke(trazos[k])
+    }
+    ctx!.globalAlpha = 0.8
+    ctx!.fill(dots)
     ctx!.globalAlpha = 1
   }
 
+  // En pantallas táctiles o chicas se dibuja a 30 cuadros por segundo: el movimiento es lento y no se nota, y se gasta la mitad.
   let tic = 0
-  function bucle(): void {
+  let ultimo = 0
+  function bucle(ahora: number): void {
     cuadro = 0
     if (!visible || document.hidden || sinMovimiento.matches) return
+    cuadro = requestAnimationFrame(bucle)
+    if (ahorro() && ahora - ultimo < 30) return
+    ultimo = ahora
     // El color se relee de vez en cuando por si cambió el tema.
     if (++tic % 90 === 0) color = colorDe('--color-accent')
     pintar()
-    cuadro = requestAnimationFrame(bucle)
   }
   const arrancar = (): void => {
     if (!cuadro && visible && !document.hidden && !sinMovimiento.matches) cuadro = requestAnimationFrame(bucle)

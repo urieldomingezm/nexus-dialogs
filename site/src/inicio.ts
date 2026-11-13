@@ -1,6 +1,4 @@
 import './comun'
-import { confirmDelete } from 'nexus-dialogs/patterns'
-import { form } from 'nexus-dialogs/forms'
 import { toast } from 'nexus-dialogs/toast'
 import { chispas, animarNumero } from './animaciones'
 import './demo'
@@ -34,11 +32,14 @@ void (async () => {
   }
 })()
 
+// Los patrones y formularios pesan casi todo el JS de la página y solo se necesitan al pulsar un botón: se cargan entonces.
 $('b-borrar').addEventListener('click', async () => {
+  const { confirmDelete } = await import('nexus-dialogs/patterns')
   if (await confirmDelete({ what: 'a Laura Méndez' })) toast.success('Laura Méndez eliminada')
 })
 
 $('b-form').addEventListener('click', async () => {
+  const { form } = await import('nexus-dialogs/forms')
   const r = await form({
     title: 'Nuevo gasto',
     columns: 2,
@@ -52,6 +53,7 @@ $('b-form').addEventListener('click', async () => {
 })
 
 $('b-vacaciones').addEventListener('click', async () => {
+  const { form } = await import('nexus-dialogs/forms')
   const r = await form({
     title: 'Solicitar vacaciones',
     fields: [{ name: 'dias', label: 'Fechas', type: 'daterange', calendar: true, businessDays: true, maxDays: 12, required: true }],
@@ -64,6 +66,7 @@ $('b-toast').addEventListener('click', () => {
 })
 
 $('b-hero').addEventListener('click', async () => {
+  const { confirmDelete } = await import('nexus-dialogs/patterns')
   if (await confirmDelete({ what: 'a Laura Méndez' })) {
     toast.success('Laura Méndez eliminada')
     chispas($('b-hero'))
