@@ -16,6 +16,7 @@ Todo corre en el CI en cada cambio (`test/e2e/accesibilidad.spec.mjs` y `test/e2
 | **Reflow** | A 320 px de ancho (zoom de 400 %) el diálogo no desborda la pantalla |
 | **Colores forzados** | Con `forced-colors: active` los botones conservan su borde |
 | **Sitio de documentación** | axe en todas sus páginas |
+| **Árbol de accesibilidad** | Lo que recibe un lector de pantalla (rol, nombre y estado de cada elemento, y su orden) en la confirmación de peligro, el borrado con nombre, el formulario con errores, la sesión por expirar y el toast (`test/e2e/lectores.spec.mjs`, Chromium) |
 | **Casos extremos** | Varios diálogos a la vez, desmontar un componente con un diálogo abierto, validaciones asíncronas que fallan, archivos corruptos, SSR y navegadores sin alguna API nativa (`test/unit/extremos.test.ts`, `test/unit/ssr.test.ts`) |
 
 ### Temas y esquemas probados
@@ -30,7 +31,7 @@ Si creas un tema propio, cuida el contraste del botón de peligro (texto blanco 
 
 ## Qué NO cubren las pruebas automáticas
 
-axe y las pruebas de teclado no sustituyen a una persona usando un lector de pantalla: no pueden juzgar si un anuncio es claro, si el orden de lectura tiene sentido ni cómo cambia entre lectores y navegadores. Esa revisión se hace a mano.
+axe, el árbol de accesibilidad y las pruebas de teclado no sustituyen a una persona usando un lector de pantalla: no pueden juzgar si un anuncio es claro, si el orden de lectura tiene sentido ni cómo cambia entre lectores y navegadores. Esa revisión se hace a mano.
 
 ### Guion de prueba manual
 
@@ -46,7 +47,7 @@ Haz estos recorridos con cada combinación de la tabla de resultados y anota lo 
 
 ### Resultados
 
-Cada fila se llena cuando alguien hace la revisión. «Pendiente» significa que aún no se ha hecho; no se afirma compatibilidad con un lector que no se haya probado.
+Cada fila se llena cuando alguien hace la revisión, con el formulario [«Prueba con lector de pantalla»](https://github.com/urieldomingezm/nexus-dialogs/issues/new?template=lector-de-pantalla.yml). «Pendiente» significa que aún no se ha hecho; no se afirma compatibilidad con un lector que no se haya probado.
 
 | Lector de pantalla | Navegador | Sistema | Fecha | Resultado |
 |---|---|---|---|---|

@@ -25,5 +25,5 @@
       "nexus-dialogs": ["./src/index.ts"]
     }
   },
-  "include": ["src", "site", "test/tipos"]
+  "include": ["src", "site", "test/tipos", "examples"]
 }

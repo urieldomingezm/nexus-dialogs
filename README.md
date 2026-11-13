@@ -1029,7 +1029,7 @@ La API pública completa, generada de los tipos, está en [`api/nexus-dialogs.ap
 
 ## 13. Compatibilidad
 
-- Navegadores actuales: Chrome/Edge 111+, Firefox 113+, Safari 16.4+ (usa `<dialog>` modal y `color-mix()`). Probado en Chromium, Firefox y WebKit.
+- Navegadores actuales: Chrome/Edge 111+, Firefox 113+, Safari 16.4+ (usa `<dialog>` modal y `color-mix()`). Probado en Chromium, Firefox y WebKit. Función por función, qué pasa si falta alguna y la política de versiones y de soporte: [Soporte](https://urieldomingezm.github.io/nexus-dialogs/soporte.html).
 - **nexus-tours**: los diálogos son `<dialog open>` de verdad, así que los tours los detectan y pueden explicar lo que hay dentro.
 - Bootstrap, Tailwind, SweetAlert2: sin choques de `z-index` ni de CSS. Para migrar de SweetAlert2, ver [¿Vienes de SweetAlert2?](#vienes-de-sweetalert2).
 - Seguridad: [`docs/seguridad.md`](docs/seguridad.md). Para reportar una vulnerabilidad, [`SECURITY.md`](SECURITY.md).
@@ -1045,6 +1045,9 @@ npm run build:site    # sitio de documentación en site-dist/ (necesita npm run 
 npm run test:unit     # Vitest + happy-dom
 npm run test:e2e      # Playwright (Chromium, Firefox, WebKit) + axe
 npm run build && npm run size && npm run api:check && npm run check:paquete
+npm run bench         # tamaños, tiempos y memoria repetibles (docs/rendimiento.md)
 ```
+
+Ejemplos completos de principio a fin (alta de empleado, cierre de quincena, importar empleados): [`examples/`](examples/). Tamaños y tiempos: [Rendimiento](https://urieldomingezm.github.io/nexus-dialogs/rendimiento.html).
 
 Ver [CHANGELOG](CHANGELOG.md).

@@ -292,6 +292,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "size": "node scripts/tamano.mjs",
+    "bench": "node scripts/bench.mjs",
     "api": "node scripts/api.mjs",
     "api:check": "node scripts/api.mjs --check",
     "check:paquete": "attw --pack . --ignore-rules cjs-resolves-to-esm && node scripts/probar-paquete.mjs",
