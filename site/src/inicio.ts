@@ -1,4 +1,5 @@
 import './comun'
+import { d } from './demo-textos'
 import { confirmDelete } from 'nexus-dialogs/patterns'
 import { form } from 'nexus-dialogs/forms'
 import { toast } from 'nexus-dialogs/toast'
@@ -35,37 +36,37 @@ void (async () => {
 })()
 
 $('b-borrar').addEventListener('click', async () => {
-  if (await confirmDelete({ what: 'a Laura Méndez' })) toast.success('Laura Méndez eliminada')
+  if (await confirmDelete({ what: d.what })) toast.success(d.eliminada)
 })
 
 $('b-form').addEventListener('click', async () => {
   const r = await form({
-    title: 'Nuevo gasto',
+    title: d.gastoTitulo,
     columns: 2,
     fields: [
-      { name: 'rfc', label: 'RFC del proveedor', type: 'rfc', required: true },
-      { name: 'importe', label: 'Importe', type: 'money', required: true, min: 1 },
-      { name: 'concepto', label: 'Concepto', type: 'textarea', span: 2, maxLength: 200 },
+      { name: 'rfc', label: d.rfcEt, type: 'rfc', required: true },
+      { name: 'importe', label: d.importeEt, type: 'money', required: true, min: 1 },
+      { name: 'concepto', label: d.conceptoEt, type: 'textarea', span: 2, maxLength: 200 },
     ],
   })
-  if (r.confirmed) toast.success('Enviado a aprobación')
+  if (r.confirmed) toast.success(d.enviadoAprob)
 })
 
 $('b-vacaciones').addEventListener('click', async () => {
   const r = await form({
-    title: 'Solicitar vacaciones',
-    fields: [{ name: 'dias', label: 'Fechas', type: 'daterange', calendar: true, businessDays: true, maxDays: 12, required: true }],
+    title: d.vacTitulo,
+    fields: [{ name: 'dias', label: d.fechasEt, type: 'daterange', calendar: true, businessDays: true, maxDays: 12, required: true }],
   })
-  if (r.confirmed) toast.success('Solicitud enviada')
+  if (r.confirmed) toast.success(d.solicitudEnviada)
 })
 
 $('b-toast').addEventListener('click', () => {
-  toast.success('Empleado guardado', { action: { label: 'Deshacer', onClick: () => toast('Cambio deshecho') } })
+  toast.success(d.guardado, { action: { label: d.deshacer, onClick: () => toast(d.deshecho) } })
 })
 
 $('b-hero').addEventListener('click', async () => {
-  if (await confirmDelete({ what: 'a Laura Méndez' })) {
-    toast.success('Laura Méndez eliminada')
+  if (await confirmDelete({ what: d.what })) {
+    toast.success(d.eliminada)
     chispas($('b-hero'))
   }
 })

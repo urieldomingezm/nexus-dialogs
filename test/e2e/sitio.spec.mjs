@@ -608,6 +608,30 @@ test.describe('Sitio: demo, cifras, buscador y volver arriba', () => {
     await expect(pantalla.locator('#demo-importe')).toHaveValue('99')
   })
 
+  for (const [lang, eliminar, eliminada, nuevo, guardar, obligatorio] of [
+    ['en', 'Delete', 'Laura Méndez deleted', 'New expense', 'Save', 'required'],
+    ['pt', 'Excluir', 'Laura Méndez excluída', 'Nova despesa', 'Salvar', 'obrigatório'],
+    ['fr', 'Supprimer', 'Laura Méndez supprimée', 'Nouvelle dépense', 'Enregistrer', 'obligatoire'],
+  ])
+    test(`la portada en ${lang} traduce la maqueta, sus avisos y el código`, async ({ page }) => {
+      await page.emulateMedia({ reducedMotion: 'reduce' })
+      await page.goto(`${SITIO}${lang}/index.html`)
+      await expect(page.locator('html')).toHaveAttribute('lang', lang)
+      const pantalla = page.locator('.demo-pantalla')
+      const toast = pantalla.locator('.demo-toast')
+      await pantalla.scrollIntoViewIfNeeded()
+      await pantalla.getByRole('button', { name: eliminar, exact: true }).click()
+      await expect(toast).toContainText(eliminada)
+      await page.locator('button[data-escena=formulario]').click()
+      await expect(pantalla.locator('.demo-titulo')).toHaveText(nuevo)
+      await pantalla.getByRole('button', { name: guardar, exact: true }).click()
+      await expect(pantalla.locator('#demo-rfc-e')).toContainText(obligatorio)
+      await expect(page.locator('.demo-codigo code')).toContainText(nuevo)
+      // Los diálogos de verdad también salen en el idioma de la página.
+      await page.locator('#b-borrar').click()
+      await expect(page.locator('dialog.nexus, nexus-dialog, [role=alertdialog], dialog').first()).toBeVisible()
+    })
+
   test('la maqueta se puede usar: borrar con «Deshacer», formulario con validación y aprobar con motivo', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' })
     await page.goto(SITIO + 'index.html')

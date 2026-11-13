@@ -6,13 +6,14 @@ import { confirmDelete } from 'nexus-dialogs/patterns'
 import { themes, type Theme } from 'nexus-dialogs/themes'
 import { chispas } from './animaciones'
 import { decorarCodigo } from './comun'
+import { d as T } from './demo-textos'
 
 const $ = <T extends HTMLElement>(q: string) => document.querySelector<T>(q)
 const pantalla = $('.demo-pantalla')
 const controles = document.querySelector('.demo-apariencia')
 
 type Apariencia = 'nexus' | 'material' | 'bootstrap' | 'tailwind' | 'oscuro'
-const NOMBRES: Record<Apariencia, string> = { nexus: 'Nexus', material: 'Material', bootstrap: 'Bootstrap', tailwind: 'Tailwind', oscuro: 'Oscuro' }
+const NOMBRES: Record<Apariencia, string> = { nexus: 'Nexus', material: 'Material', bootstrap: 'Bootstrap', tailwind: 'Tailwind', oscuro: T.oscuro }
 // Cada apariencia con su paleta clara y oscura (Bootstrap y Material no traen oscura: en oscuro vale la de Nexus), como en la mesa de pruebas.
 // El sitio define su propio `--nd-accent-contrast` en :root; los temas claros de otros sistemas no lo traen y lo heredarían (texto casi
 // blanco violeta sobre su azul), así que aquí se fija al blanco de siempre de la librería.
@@ -50,7 +51,7 @@ function aplicar(): void {
   configure({ theme: vars })
   toast.configure({ theme: vars })
   const estado = $('#demo-estado')
-  if (estado) estado.textContent = `Los diálogos de esta página salen ahora con la apariencia ${NOMBRES[actual]}.`
+  if (estado) estado.textContent = T.estado(NOMBRES[actual])
 }
 
 controles?.addEventListener('click', (e) => {
@@ -85,8 +86,8 @@ type Escena = 'borrar' | 'formulario' | 'aprobar' | 'vacaciones' | 'asistente' |
 const ESCENAS: Escena[] = ['borrar', 'formulario', 'aprobar', 'vacaciones', 'asistente', 'importar', 'descartar']
 
 // Estado de las escenas con varios pasos (se reinicia al abrir la escena).
-const datos = { paso: 1, nombre: '', puesto: 'Ventas', cargado: false }
-const PUESTOS = ['Ventas', 'Contabilidad', 'Operaciones']
+const datos = { paso: 1, nombre: '', puesto: T.puestos[0], cargado: false }
+const PUESTOS = T.puestos
 const FILAS = [
   ['Laura Méndez', true],
   ['Mario Ruiz', true],
@@ -99,104 +100,54 @@ const botones = (cancelar: [string, string], principal: [string, string]): strin
 
 // Plantillas propias de este archivo, sin datos de nadie.
 const HTML_ESCENA: Record<Escena, () => string> = {
-  borrar: () => `<p class="demo-titulo">¿Eliminar a Laura Méndez?</p>
-<p class="demo-texto">Se eliminará su registro. Esta acción no se puede deshacer.</p>
-<div class="demo-botones"><button type="button" class="demo-btn cancelar" data-accion="cancelar">Cancelar</button><button type="button" class="demo-btn peligro" data-accion="eliminar">Eliminar</button></div>`,
-  formulario: () => `<p class="demo-titulo">Nuevo gasto</p>
-<div class="demo-campo"><label class="demo-etiqueta" for="demo-rfc">RFC del proveedor</label><input class="demo-entrada" id="demo-rfc" autocomplete="off" spellcheck="false" aria-describedby="demo-rfc-e" /><span class="demo-error" id="demo-rfc-e"></span></div>
-<div class="demo-campo"><label class="demo-etiqueta" for="demo-importe">Importe</label><input class="demo-entrada" id="demo-importe" inputmode="decimal" autocomplete="off" aria-describedby="demo-importe-e" /><span class="demo-error" id="demo-importe-e"></span></div>
-<div class="demo-botones"><button type="button" class="demo-btn cancelar" data-accion="cancelar">Cancelar</button><button type="button" class="demo-btn primario" data-accion="guardar">Guardar</button></div>`,
-  aprobar: () => `<p class="demo-titulo">Solicitud de vacaciones</p>
-<p class="demo-texto">Laura Méndez pide 5 días hábiles, del 18 al 22 de diciembre.</p>
-<div class="demo-campo"><label class="demo-etiqueta" for="demo-motivo">Motivo (obligatorio al rechazar)</label><textarea class="demo-entrada" id="demo-motivo" rows="2" aria-describedby="demo-motivo-e"></textarea><span class="demo-error" id="demo-motivo-e"></span></div>
-<div class="demo-botones"><button type="button" class="demo-btn cancelar" data-accion="rechazar">Rechazar</button><button type="button" class="demo-btn primario" data-accion="aprobar">Aprobar</button></div>`,
-  vacaciones: () => `<p class="demo-titulo">Solicitar vacaciones</p>
+  borrar: () => `<p class="demo-titulo">${T.borrarTitulo}</p>
+<p class="demo-texto">${T.borrarTexto}</p>
+<div class="demo-botones"><button type="button" class="demo-btn cancelar" data-accion="cancelar">${T.cancelar}</button><button type="button" class="demo-btn peligro" data-accion="eliminar">${T.eliminar}</button></div>`,
+  formulario: () => `<p class="demo-titulo">${T.gastoTitulo}</p>
+<div class="demo-campo"><label class="demo-etiqueta" for="demo-rfc">${T.rfcEt}</label><input class="demo-entrada" id="demo-rfc" autocomplete="off" spellcheck="false" aria-describedby="demo-rfc-e" /><span class="demo-error" id="demo-rfc-e"></span></div>
+<div class="demo-campo"><label class="demo-etiqueta" for="demo-importe">${T.importeEt}</label><input class="demo-entrada" id="demo-importe" inputmode="decimal" autocomplete="off" aria-describedby="demo-importe-e" /><span class="demo-error" id="demo-importe-e"></span></div>
+<div class="demo-botones"><button type="button" class="demo-btn cancelar" data-accion="cancelar">${T.cancelar}</button><button type="button" class="demo-btn primario" data-accion="guardar">${T.guardar}</button></div>`,
+  aprobar: () => `<p class="demo-titulo">${T.aprobarTitulo}</p>
+<p class="demo-texto">${T.aprobarTexto}</p>
+<div class="demo-campo"><label class="demo-etiqueta" for="demo-motivo">${T.motivoEt}</label><textarea class="demo-entrada" id="demo-motivo" rows="2" aria-describedby="demo-motivo-e"></textarea><span class="demo-error" id="demo-motivo-e"></span></div>
+<div class="demo-botones"><button type="button" class="demo-btn cancelar" data-accion="rechazar">${T.rechazar}</button><button type="button" class="demo-btn primario" data-accion="aprobar">${T.aprobar}</button></div>`,
+  vacaciones: () => `<p class="demo-titulo">${T.vacTitulo}</p>
 <div class="demo-fechas">
-<div class="demo-campo"><label class="demo-etiqueta" for="demo-desde">Desde</label><input class="demo-entrada" id="demo-desde" type="date" aria-describedby="demo-desde-e" /><span class="demo-error" id="demo-desde-e"></span></div>
-<div class="demo-campo"><label class="demo-etiqueta" for="demo-hasta">Hasta</label><input class="demo-entrada" id="demo-hasta" type="date" aria-describedby="demo-hasta-e" /><span class="demo-error" id="demo-hasta-e"></span></div>
+<div class="demo-campo"><label class="demo-etiqueta" for="demo-desde">${T.desde}</label><input class="demo-entrada" id="demo-desde" type="date" aria-describedby="demo-desde-e" /><span class="demo-error" id="demo-desde-e"></span></div>
+<div class="demo-campo"><label class="demo-etiqueta" for="demo-hasta">${T.hasta}</label><input class="demo-entrada" id="demo-hasta" type="date" aria-describedby="demo-hasta-e" /><span class="demo-error" id="demo-hasta-e"></span></div>
 </div>
-<p class="demo-texto" id="demo-dias" role="status">Elige las fechas: se cuentan solo días hábiles (máximo 12).</p>
-${botones(['cancelar', 'Cancelar'], ['enviar', 'Enviar'])}`,
+<p class="demo-texto" id="demo-dias" role="status">${T.vacAyuda}</p>
+${botones(['cancelar', T.cancelar], ['enviar', T.enviar])}`,
   asistente: () => {
     const p = datos.paso
-    const cabeza = `<p class="demo-titulo">Alta de empleado</p><p class="demo-texto" id="demo-paso">Paso ${p} de 3</p><div class="demo-progreso" aria-hidden="true"><i style="width:${Math.round((p / 3) * 100)}%"></i></div>`
+    const cabeza = `<p class="demo-titulo">${T.asisTitulo}</p><p class="demo-texto" id="demo-paso">${T.paso(p)}</p><div class="demo-progreso" aria-hidden="true"><i style="width:${Math.round((p / 3) * 100)}%"></i></div>`
     if (p === 1)
-      return `${cabeza}<div class="demo-campo"><label class="demo-etiqueta" for="demo-nombre">Nombre completo</label><input class="demo-entrada" id="demo-nombre" autocomplete="off" value="${datos.nombre}" aria-describedby="demo-nombre-e" /><span class="demo-error" id="demo-nombre-e"></span></div>${botones(['cancelar', 'Cancelar'], ['siguiente', 'Siguiente'])}`
+      return `${cabeza}<div class="demo-campo"><label class="demo-etiqueta" for="demo-nombre">${T.nombreCompleto}</label><input class="demo-entrada" id="demo-nombre" autocomplete="off" value="${datos.nombre}" aria-describedby="demo-nombre-e" /><span class="demo-error" id="demo-nombre-e"></span></div>${botones(['cancelar', T.cancelar], ['siguiente', T.siguiente])}`
     if (p === 2)
-      return `${cabeza}<div class="demo-campo"><label class="demo-etiqueta" for="demo-puesto">Área</label><select class="demo-entrada" id="demo-puesto">${PUESTOS.map((x) => `<option${x === datos.puesto ? ' selected' : ''}>${x}</option>`).join('')}</select></div>${botones(['atras', 'Atrás'], ['siguiente', 'Siguiente'])}`
-    return `${cabeza}<p class="demo-texto">Revisa antes de terminar:</p><dl class="demo-resumen"><div><dt>Nombre</dt><dd>${datos.nombre}</dd></div><div><dt>Área</dt><dd>${datos.puesto}</dd></div></dl>${botones(['atras', 'Atrás'], ['terminar', 'Dar de alta'])}`
+      return `${cabeza}<div class="demo-campo"><label class="demo-etiqueta" for="demo-puesto">${T.areaEt}</label><select class="demo-entrada" id="demo-puesto">${PUESTOS.map((x) => `<option${x === datos.puesto ? ' selected' : ''}>${x}</option>`).join('')}</select></div>${botones(['atras', T.atras], ['siguiente', T.siguiente])}`
+    return `${cabeza}<p class="demo-texto">${T.revisa}</p><dl class="demo-resumen"><div><dt>${T.nombre}</dt><dd>${datos.nombre}</dd></div><div><dt>${T.areaEt}</dt><dd>${datos.puesto}</dd></div></dl>${botones(['atras', T.atras], ['terminar', T.darAlta])}`
   },
   importar: () => {
     const ok = FILAS.filter((f) => f[1]).length
     const vista = datos.cargado
-      ? `<ul class="demo-filas" aria-label="Vista previa del archivo">${FILAS.map((f) => `<li class="${f[1] ? 'bien' : 'mal'}"><span>${f[0]}</span><b>${f[1] ? 'Lista' : 'RFC no válido'}</b></li>`).join('')}</ul><p class="demo-texto">${ok} filas listas y 1 con error (se omitirá).</p>`
-      : `<button type="button" class="demo-btn demo-archivo" data-accion="cargar">Elegir empleados.csv</button><span class="demo-error" id="demo-archivo-e"></span>`
-    return `<p class="demo-titulo">Importar empleados</p>${vista}${botones(['cancelar', 'Cancelar'], ['importar', datos.cargado ? `Importar ${ok}` : 'Importar'])}`
+      ? `<ul class="demo-filas" aria-label="${T.vistaPrevia}">${FILAS.map((f) => `<li class="${f[1] ? 'bien' : 'mal'}"><span>${f[0]}</span><b>${f[1] ? T.lista : T.rfcMal}</b></li>`).join('')}</ul><p class="demo-texto">${T.filasListas(ok)}</p>`
+      : `<button type="button" class="demo-btn demo-archivo" data-accion="cargar">${T.elegirArchivo}</button><span class="demo-error" id="demo-archivo-e"></span>`
+    return `<p class="demo-titulo">${T.impTitulo}</p>${vista}${botones(['cancelar', T.cancelar], ['importar', datos.cargado ? T.importarN(ok) : T.importar])}`
   },
-  descartar: () => `<p class="demo-titulo">¿Salir sin guardar?</p>
-<p class="demo-texto">Cambiaste el salario diario de $ 980.00 a $ 1,150.00. Si sales, se pierde.</p>
-<div class="demo-botones"><button type="button" class="demo-btn cancelar" data-accion="descartar">Descartar</button><button type="button" class="demo-btn primario" data-accion="seguir">Seguir editando</button></div>`,
+  descartar: () => `<p class="demo-titulo">${T.descTitulo}</p>
+<p class="demo-texto">${T.descTexto}</p>
+<div class="demo-botones"><button type="button" class="demo-btn cancelar" data-accion="descartar">${T.descartar}</button><button type="button" class="demo-btn primario" data-accion="seguir">${T.seguirEd}</button></div>`,
 }
 
 // «Ver código»: lo que se escribe de verdad en la librería para cada escena.
 const CODIGO: Record<Escena, string> = {
-  borrar: `import { confirmDelete } from 'nexus-dialogs/patterns'
-
-if (await confirmDelete({ what: 'a Laura Méndez' })) {
-  // eliminar
-}`,
-  formulario: `import { form } from 'nexus-dialogs/forms'
-
-const r = await form({
-  title: 'Nuevo gasto',
-  fields: [
-    { name: 'rfc', label: 'RFC del proveedor', type: 'rfc', required: true },
-    { name: 'importe', label: 'Importe', type: 'money', required: true, min: 1 },
-  ],
-})
-if (r.confirmed) guardar(r.values)`,
-  aprobar: `import { approval } from 'nexus-dialogs/patterns'
-
-const r = await approval({
-  title: 'Vacaciones de Laura Méndez',
-  details: [{ label: 'Días hábiles', value: '5' }],
-  reasons: ['Cubre otro turno', 'Sin saldo'],
-})`,
-  vacaciones: `import { form } from 'nexus-dialogs/forms'
-
-const r = await form({
-  title: 'Solicitar vacaciones',
-  fields: [
-    { name: 'dias', label: 'Fechas', type: 'daterange',
-      calendar: true, businessDays: true, maxDays: 12, required: true },
-  ],
-})`,
-  asistente: `import { wizard } from 'nexus-dialogs/forms'
-
-const r = await wizard({
-  title: 'Alta de empleado',
-  review: true,
-  steps: [
-    { title: 'Datos', fields: [{ name: 'nombre', label: 'Nombre completo', required: true }] },
-    { title: 'Área', fields: [{ name: 'area', label: 'Área', type: 'select', options: ['Ventas', 'Contabilidad'] }] },
-  ],
-})`,
-  importar: `import { importData } from 'nexus-dialogs/import'
-
-const r = await importData({
-  title: 'Importar empleados',
-  columns: [
-    { name: 'nombre', label: 'Nombre completo', required: true },
-    { name: 'rfc', label: 'RFC', type: 'rfc', unique: true },
-  ],
-  onImport: (filas) => api.importar(filas),
-})`,
-  descartar: `import { unsavedChanges } from 'nexus-dialogs/patterns'
-
-const r = await unsavedChanges({
-  changes: [{ label: 'Salario diario', from: '$ 980.00', to: '$ 1,150.00' }],
-  onSave: () => guardar(),
-})`,
+  borrar: T.codBorrar,
+  formulario: T.codFormulario,
+  aprobar: T.codAprobar,
+  vacaciones: T.codVacaciones,
+  asistente: T.codAsistente,
+  importar: T.codImportar,
+  descartar: T.codDescartar,
 }
 
 class Cancelado extends Error {}
@@ -262,7 +213,7 @@ function abrirEscena(e: Escena): void {
   if (!dialogo) return
   if (e !== escenaActual) mostrarCodigo(e)
   escenaActual = e
-  Object.assign(datos, { paso: 1, nombre: '', puesto: 'Ventas', cargado: false })
+  Object.assign(datos, { paso: 1, nombre: '', puesto: T.puestos[0], cargado: false })
   pintar()
   dialogo.classList.remove('sale')
   dialogo.classList.add('entra')
@@ -289,14 +240,14 @@ function valida(accion: string): boolean {
     const importe = campo('demo-importe')?.value.trim().replace(/[$,\s]/g, '') ?? ''
     const rfcOk = /^[A-ZÑ&]{3,4}\d{6}[A-Z\d]{3}$/i.test(rfc)
     const importeOk = importe !== '' && Number(importe) > 0
-    error('demo-rfc', rfcOk ? '' : rfc ? 'El RFC no es válido (13 caracteres, como XAXX010101000).' : 'El RFC es obligatorio.')
-    error('demo-importe', importeOk ? '' : importe ? 'Escribe un importe mayor a cero.' : 'El importe es obligatorio.')
+    error('demo-rfc', rfcOk ? '' : rfc ? T.rfcInvalido : T.rfcObligatorio)
+    error('demo-importe', importeOk ? '' : importe ? T.importeMayor : T.importeObligatorio)
     ;(!rfcOk ? campo('demo-rfc') : !importeOk ? campo('demo-importe') : null)?.focus({ preventScroll: true })
     return rfcOk && importeOk
   }
   if (accion === 'rechazar') {
     const ok = (campo('demo-motivo')?.value.trim() ?? '') !== ''
-    error('demo-motivo', ok ? '' : 'Cuéntale el motivo para poder rechazar.')
+    error('demo-motivo', ok ? '' : T.motivoRechazo)
     if (!ok) campo('demo-motivo')?.focus({ preventScroll: true })
     return ok
   }
@@ -306,20 +257,20 @@ function valida(accion: string): boolean {
     const dOk = d !== ''
     const hOk = h !== '' && (!dOk || h >= d)
     const largo = dOk && hOk && diasHabiles(d, h) > 12
-    error('demo-desde', dOk ? '' : 'Elige el primer día.')
-    error('demo-hasta', !h ? 'Elige el último día.' : !hOk ? 'No puede ser antes del primer día.' : largo ? 'Máximo 12 días hábiles.' : '')
+    error('demo-desde', dOk ? '' : T.primerDia)
+    error('demo-hasta', !h ? T.ultimoDia : !hOk ? T.antesDelPrimero : largo ? T.maximo : '')
     ;(!dOk ? campo('demo-desde') : !hOk || largo ? campo('demo-hasta') : null)?.focus({ preventScroll: true })
     return dOk && hOk && !largo
   }
   if (accion === 'siguiente' && datos.paso === 1) {
     const ok = (campo('demo-nombre')?.value.trim() ?? '') !== ''
-    error('demo-nombre', ok ? '' : 'El nombre es obligatorio.')
+    error('demo-nombre', ok ? '' : T.nombreObligatorio)
     if (!ok) campo('demo-nombre')?.focus({ preventScroll: true })
     return ok
   }
   if (accion === 'importar' && !datos.cargado) {
     const aviso = dialogo?.querySelector<HTMLElement>('#demo-archivo-e')
-    if (aviso) aviso.textContent = 'Primero elige un archivo.'
+    if (aviso) aviso.textContent = T.primeroArchivo
     dialogo?.querySelector<HTMLElement>('[data-accion="cargar"]')?.focus({ preventScroll: true })
     return false
   }
@@ -327,16 +278,16 @@ function valida(accion: string): boolean {
 }
 
 const MENSAJES: Record<string, string> = {
-  eliminar: 'Laura Méndez eliminada',
-  cancelar: 'Cancelado, no se guardó nada',
-  guardar: 'Enviado a aprobación',
-  aprobar: 'Solicitud aprobada',
-  rechazar: 'Solicitud rechazada',
-  enviar: 'Solicitud de vacaciones enviada',
-  terminar: 'Empleado dado de alta',
-  importar: 'Se importaron 3 empleados',
-  descartar: 'Cambios descartados',
-  seguir: 'Sigues editando',
+  eliminar: T.eliminada,
+  cancelar: T.cancelado,
+  guardar: T.enviadoAprob,
+  aprobar: T.aprobada,
+  rechazar: T.rechazada,
+  enviar: T.vacEnviada,
+  terminar: T.altaOk,
+  importar: T.importados,
+  descartar: T.descartados,
+  seguir: T.sigues,
 }
 
 /** Días hábiles (lunes a viernes) entre dos fechas ISO, ambas incluidas. */
@@ -354,7 +305,7 @@ function actualizaDias(): void {
   const h = campo('demo-hasta')?.value
   if (!t || !d || !h || h < d) return
   const n = diasHabiles(d, h)
-  t.textContent = `${n} ${n === 1 ? 'día hábil' : 'días hábiles'}${n > 12 ? ' (máximo 12)' : ''}`
+  t.textContent = T.dias(n)
 }
 
 /** Cierra el diálogo y avisa con el toast (con «Deshacer» si se eliminó). */
@@ -369,7 +320,7 @@ async function resolver(accion: string, token = ciclo): Promise<void> {
   let deshecho = false
   const alDeshacer = (): void => {
     deshecho = true
-    textoToast.textContent = 'Cambio deshecho'
+    textoToast.textContent = T.deshecho
     deshacer.hidden = true
   }
   deshacer.addEventListener('click', alDeshacer, { once: true })
@@ -537,7 +488,7 @@ const GUION: Record<Escena, (t: number) => Promise<void>> = {
     await pulsar(t, 'guardar')
   },
   aprobar: async (t) => {
-    await escribir(t, campo('demo-motivo'), 'Cubre su equipo')
+    await escribir(t, campo('demo-motivo'), T.motivoEj)
     await esperar(t, 400)
     await pulsar(t, 'aprobar')
   },
