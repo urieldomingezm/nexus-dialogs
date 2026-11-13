@@ -8,8 +8,8 @@ import { describe, expect, it } from 'vitest'
 const SRC = join(__dirname, '../../src')
 const NIVEL: Record<string, number> = {}
 const asignar = (n: number, ...mods: string[]) => mods.forEach((m) => (NIVEL[m] = n))
-asignar(0, 'index', 'dialog', 'config', 'styles', 'types', 'i18n', 'core/dom', 'core/engine', 'core/icons', 'core/sheet')
-asignar(1, 'forms', 'fields', 'toast', 'table', 'tabs', 'timeline', 'patterns', 'themes')
+asignar(0, 'index', 'dialog', 'config', 'styles', 'types', 'i18n', 'plugins', 'core/dom', 'core/engine', 'core/icons', 'core/sheet')
+asignar(1, 'locales', 'forms', 'fields', 'toast', 'table', 'tabs', 'timeline', 'patterns', 'themes')
 asignar(2, 'rrhh', 'import')
 asignar(3, 'vue', 'react', 'angular', 'adaptadores', 'swal', 'swal-global', 'global')
 const HOJAS = new Set(['mx', 'sepomex'])

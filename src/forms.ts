@@ -21,7 +21,8 @@ import { h, uid } from './core/dom'
 import { isCLABE, isCURP, isNSS, isPostalCode, isRFC } from './mx'
 import { CAMPOS, FIELDS_CSS, type CustomControl, type NestedFieldSet, type PhoneCountry, type PostalLookup } from './fields'
 export { defaultDatePresets, DEFAULT_COUNTRIES, formatPhone } from './fields'
-export type { Address, PhoneCountry, PostalLookup } from './fields'
+export type { Address, PhoneCountry, PostalLookup, CustomControl, FieldContext, FieldFactory } from './fields'
+export { registerField } from './fields'
 
 /**
  * Condición declarativa (sirve en JSON): `{ field: 'tipo', equals: 'empresa' }`, `{ field: 'pais', in: ['MX', 'US'] }`,
@@ -75,6 +76,8 @@ export type FieldType =
   | 'phone'
   | 'address'
   | 'signature'
+  /** Un tipo propio registrado con `registerField`. */
+  | (string & {})
 
 /**
  * Columnas del formulario. `1` o `2` fijas (en pantallas angostas `2` se queda en dos columnas mientras quepan
@@ -654,7 +657,7 @@ async function restaurar(b: Borrador | null, preguntar: boolean): Promise<Guarda
   const g = b?.leer()
   if (!b || !g) return null
   if (!preguntar) return g
-  const t = TXT[language() === 'en' ? 'en' : 'es']
+  const t = TXT[language() === 'es' ? 'es' : 'en']
   const r = await openDialog({
     role: 'alertdialog',
     title: t.title,

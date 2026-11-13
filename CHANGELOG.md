@@ -24,9 +24,19 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 - Sitio de documentación: sección «Una pieza en lugar de varias», insignias de la portada (versión confirmada con npm, tamaño del núcleo, licencia y CI), esqueleto brillante mientras llegan las descargas, transición suave entre páginas (View Transitions) y un brillo que sigue al puntero en los botones principales. Todo se apaga con «reducir movimiento».
 - Sitio de documentación: página «Versionado y migraciones» (`docs/versiones.md`): cómo se numeran las versiones, cómo leer el CHANGELOG, qué hacer antes de actualizar, lo que se vigila para no romper y la tabla de migraciones conocidas.
 - Ejemplos completos nuevos en `examples/`: baja de empleado (escribir el nombre y «Deshacer»), aprobar vacaciones (aprobar con comentario o rechazar con motivo) y sesión por expirar. Cada uno se ejecuta en el navegador en cada cambio.
+- **Plugins**: `use(plugin)`, `unuse(name)` y `plugins()` en `nexus-dialogs`. Un plugin tiene `name` y, opcionalmente, `install`, `beforeOpen` (puede cambiar las opciones), `afterOpen` y `afterClose`; los ganchos corren con todos los diálogos (también `form`, `wizard` y las recetas), en orden de instalación, y uno que falla se registra en la consola sin romper nada. Los paquetes que no usan plugins (como `swal` para el navegador) no cargan su código.
+- **`registerField(tipo, fábrica)`** en `nexus-dialogs/forms`: tipos de campo propios para `form()` y `wizard()` (devuelve una función que lo quita). `Field.type` acepta cualquier cadena.
+- **Más idiomas**: `registerLanguage(código, textos)`, `labelsFor(código)` y `pageLanguage()` (el de `<html lang>`) en `nexus-dialogs`; `configure({ lang })` y `toast.configure({ lang })` aceptan cualquier idioma registrado (`pt-BR` se usa como `pt`) y lo que no se traduzca se ve en inglés. Nuevo `nexus-dialogs/locales` con portugués (Brasil) y francés (1.3 KB, aparte). Las recetas, tablas, importación y demás módulos siguen con sus textos en español e inglés.
+- Sitio de documentación: página «Plugins e idiomas».
+
+### Cambiado
+
+- `language()` devuelve `string` (antes `'es' | 'en'`) porque ahora puede ser un idioma registrado. Quien compare con `'es'` o `'en'` no cambia; solo afecta a un tipo propio construido sobre su resultado.
+- `nexus-dialogs/toast` ya no lleva su propia copia de los textos: los toma del núcleo (`nexus-dialogs`), que es dependencia del paquete. Pesa 1 KB menos.
 
 ### Corregido
 
+- Combobox: cuando la búsqueda falla (o no hay resultados), la lista ya no queda como un `listbox` sin opciones (axe: `aria-required-children`); mientras no hay opciones es un grupo.
 - Sitio de documentación: en la cabecera, «buscar», «github», «npm» y «tema» ahora miden lo mismo y quedan alineados; en celular angosto «buscar» pasa a ser una lupa y el nombre de la marca ya no se parte en dos líneas.
 - Sitio de documentación: en «Míralo en acción», al elegir otra escena (Borrar, Formulario, Aprobar) esta se reproduce sola, con el cursor escribiendo y pulsando, y al terminar queda lista para usarse. Antes solo se abría quieta.
 - Sitio de documentación: el buscador, la demo y las animaciones comunes no llegaban a la web publicada, porque el build descartaba los archivos que solo se importan por su efecto (`sideEffects: false`). Ahora se conservan, y el CI revisa el sitio construido (`scripts/revisar-sitio.mjs`).

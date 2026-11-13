@@ -121,7 +121,7 @@ interface EngineOptions<T> extends DialogOptions<T> {
 const es: Labels;
 
 interface GlobalConfig {
-    lang?: 'es' | 'en';
+    lang?: string;
     labels?: Partial<Labels>;
     theme?: Record<string, string>;
     scheme?: Scheme;
@@ -184,7 +184,9 @@ interface Labels {
     info: string;
 }
 
-const language: () => "es" | "en";
+const labelsFor: (code: string) => Labels;
+
+const language: () => string;
 
 const open: <T = unknown>(opciones: DialogOptions<T> & {
     render?: (ctx: DialogContext) => Node | null | void;
@@ -192,7 +194,24 @@ const open: <T = unknown>(opciones: DialogOptions<T> & {
 
 function openDialog<T = unknown>(opciones: EngineOptions<T>): Promise<DialogResult<T>>;
 
+const pageLanguage: () => string;
+
 type Placement = 'center' | 'right' | 'left' | 'bottom';
+
+interface Plugin {
+    name: string;
+    install?(api: PluginApi): void;
+    beforeOpen?(opciones: EngineOptions<any>): EngineOptions<any> | void;
+    afterOpen?(ctx: DialogContext, opciones: EngineOptions<any>): void;
+    afterClose?(resultado: DialogResult<any>, opciones: EngineOptions<any>): void;
+}
+
+interface PluginApi {
+    configure: typeof configure;
+    labels: typeof labels;
+}
+
+const plugins: () => string[];
 
 function prompt(opciones: PromptOptions): Promise<DialogResult<string>>;
 
@@ -213,6 +232,8 @@ interface PromptOptions extends DialogOptions<string> {
     validate?: (value: string) => string | void | null | undefined | Promise<string | void | null | undefined>;
 }
 
+function registerLanguage(code: string, textos: Partial<Labels>): void;
+
 type Scheme = 'light' | 'dark' | 'auto';
 
 const setHtml: (el: Element, html: string) => void;
@@ -226,6 +247,10 @@ interface TimerControl {
     resume(): number;
     increase(ms: number): number;
 }
+
+function unuse(name: string): boolean;
+
+function use(plugin: Plugin): boolean;
 
 const version: string;
 ```
@@ -254,6 +279,17 @@ type Condition = {
 } | {
     not: Condition;
 };
+
+interface CustomControl {
+    el: HTMLElement;
+    value(): unknown;
+    focus(): void;
+    invalid(on: boolean): void;
+    validate?(): string | null | undefined | Promise<string | null | undefined>;
+    summary?(): string;
+    group?: boolean;
+    lazy?: boolean;
+}
 
 interface DatePreset {
     label: string;
@@ -321,9 +357,19 @@ interface Field {
     }[];
 }
 
+interface FieldContext {
+    id: string;
+    describedBy: string;
+    field: Field;
+    required: boolean;
+    nested: (fields: Field[], values: Record<string, unknown>, onChange: () => void) => NestedFieldSet;
+}
+
+type FieldFactory = (ctx: FieldContext, valor: unknown) => CustomControl;
+
 function fieldsFromJSON(campos: JSONField[], resolvers?: Record<string, (...args: any[]) => any>): Field[];
 
-type FieldType = 'text' | 'email' | 'tel' | 'url' | 'password' | 'number' | 'date' | 'time' | 'textarea' | 'select' | 'radio' | 'segmented' | 'checkbox' | 'switch' | 'money' | 'rfc' | 'curp' | 'nss' | 'clabe' | 'postal' | 'combobox' | 'file' | 'daterange' | 'otp' | 'items' | 'phone' | 'address' | 'signature';
+type FieldType = 'text' | 'email' | 'tel' | 'url' | 'password' | 'number' | 'date' | 'time' | 'textarea' | 'select' | 'radio' | 'segmented' | 'checkbox' | 'switch' | 'money' | 'rfc' | 'curp' | 'nss' | 'clabe' | 'postal' | 'combobox' | 'file' | 'daterange' | 'otp' | 'items' | 'phone' | 'address' | 'signature' | (string & {});
 
 function form<T extends Record<string, unknown> = Record<string, unknown>>(o: FormOptions<T>): Promise<DialogResult<T>>;
 
@@ -404,6 +450,8 @@ interface PostalLookup {
     city?: string;
 }
 
+function registerField(tipo: string, fabrica: Fabrica): () => void;
+
 function wizard<T extends Record<string, unknown> = Record<string, unknown>>(o: WizardOptions<T>): Promise<DialogResult<T>>;
 
 interface WizardOptions<T> extends ConBorrador, Omit<DialogOptions<T>, 'requireText'> {
@@ -462,7 +510,7 @@ interface ToastConfig {
     position?: ToastPosition;
     max?: number;
     duration?: number;
-    lang?: 'es' | 'en';
+    lang?: string;
     scheme?: Scheme;
     dir?: 'ltr' | 'rtl' | 'auto';
     theme?: Record<string, string>;
@@ -1085,6 +1133,14 @@ function toCSV<R>(rows: R[], columns: ExportColumn<R>[], separador?: string): st
 function toXLSX<R>(rows: R[], o: ExportOptions<R>): Promise<Blob>;
 ```
 
+## `nexus-dialogs/locales`
+
+```ts
+const fr: Labels;
+
+const pt: Labels;
+```
+
 ## `nexus-dialogs/timeline`
 
 ```ts
@@ -1513,7 +1569,7 @@ function formFromJSON<T extends Record<string, unknown> = Record<string, unknown
 function fromBootstrap(el?: Element): Theme;
 
 interface GlobalConfig {
-    lang?: 'es' | 'en';
+    lang?: string;
     labels?: Partial<Labels>;
     theme?: Record<string, string>;
     scheme?: Scheme;
@@ -1588,7 +1644,9 @@ interface Labels {
     info: string;
 }
 
-const language: () => "es" | "en";
+const labelsFor: (code: string) => Labels;
+
+const language: () => string;
 
 function loading<R>(texto: string, tarea: Promise<R> | (() => Promise<R> | R)): Promise<R>;
 namespace loading {
@@ -1610,7 +1668,24 @@ const open: <T = unknown>(opciones: DialogOptions<T> & {
 
 function openDialog<T = unknown>(opciones: EngineOptions<T>): Promise<DialogResult<T>>;
 
+const pageLanguage: () => string;
+
 type Placement = 'center' | 'right' | 'left' | 'bottom';
+
+interface Plugin {
+    name: string;
+    install?(api: PluginApi): void;
+    beforeOpen?(opciones: EngineOptions<any>): EngineOptions<any> | void;
+    afterOpen?(ctx: DialogContext, opciones: EngineOptions<any>): void;
+    afterClose?(resultado: DialogResult<any>, opciones: EngineOptions<any>): void;
+}
+
+interface PluginApi {
+    configure: typeof configure;
+    labels: typeof labels;
+}
+
+const plugins: () => string[];
 
 function prompt(opciones: PromptOptions): Promise<DialogResult<string>>;
 
@@ -1630,6 +1705,8 @@ interface PromptOptions extends DialogOptions<string> {
     inputmode?: string;
     validate?: (value: string) => string | void | null | undefined | Promise<string | void | null | undefined>;
 }
+
+function registerLanguage(code: string, textos: Partial<Labels>): void;
 
 type Scheme = 'light' | 'dark' | 'auto';
 
@@ -1681,6 +1758,10 @@ interface UnsavedChangesOptions {
     canSave?: boolean;
     onSave?: () => unknown;
 }
+
+function unuse(name: string): boolean;
+
+function use(plugin: Plugin): boolean;
 
 const version: string;
 

@@ -73,7 +73,7 @@ const EN: Textos = {
   exportCsv: 'CSV',
   exportXlsx: 'Excel',
 }
-const T = (): Textos => (language() === 'en' ? EN : ES)
+const T = (): Textos => (language() === 'es' ? ES : EN)
 const f = (s: string, ...v: (string | number)[]) => s.replace(/\{(\d)\}/g, (_, i) => String(v[+i] ?? ''))
 const plano = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 

@@ -26,6 +26,7 @@ const LIMITES = {
   table: 4,
   tabs: 3,
   timeline: 3,
+  locales: 2,
   sepomex: 0.8,
   rrhh: 4.5,
 }

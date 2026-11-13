@@ -87,5 +87,22 @@ export const en: Labels = {
   info: 'Notice',
 }
 
+const registrados: Record<string, Partial<Labels>> = {}
+
+/**
+ * Registra (o completa) los textos de un idioma. Úsalo antes de `configure({ lang })`. Lo que no traduzcas se ve en inglés.
+ * Los textos de recetas, tablas, importación, etc. se cambian con `configurePatterns` y las demás funciones de cada módulo.
+ */
+export function registerLanguage(code: string, textos: Partial<Labels>): void {
+  const c = code.split('-')[0].toLowerCase() // «pt-BR» → «pt»
+  registrados[c] = { ...registrados[c], ...textos }
+}
+
+/** El idioma de la página (`<html lang>`, solo la parte principal: «pt-BR» → «pt»); 'es' si la página no lo dice. */
+export const pageLanguage = (): string => document.documentElement.lang.split('-')[0].toLowerCase() || 'es'
+
+/** Los textos de un idioma: español, o inglés con lo que se haya registrado encima. */
+export const labelsFor = (code: string): Labels => ({ ...(code === 'es' ? es : en), ...registrados[code] })
+
 /** Reemplaza {0}, {1}… */
 export const fmt = (s: string, ...v: (string | number)[]): string => s.replace(/\{(\d)\}/g, (_, i) => String(v[+i] ?? ''))

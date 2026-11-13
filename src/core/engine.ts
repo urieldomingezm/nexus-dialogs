@@ -1,6 +1,7 @@
 // Motor de diálogos: un <dialog> nativo (capa superior del navegador, fondo inerte, Esc) con un host dentro cuyo
 // Shadow DOM tiene el contenido. Todos los diálogos públicos (alert, confirm, prompt, form, wizard) pasan por aquí.
 import { config, labels, setHtml } from '../config'
+import { motor } from '../plugins'
 import { CORE_CSS } from '../styles'
 import type { ButtonSpec, CloseReason, DialogContext, DialogOptions, DialogResult, Dismissible, TimerControl } from '../types'
 import { activeDeep, angosto, seguirVisualViewport, direccion, focusables, h, reducedMotion, uid } from './dom'
@@ -100,7 +101,8 @@ const varianteDe = (b: ButtonSpec): string =>
 export function openDialog<T = unknown>(opciones: EngineOptions<T>): Promise<DialogResult<T>> {
   const cfg = config()
   const L = labels()
-  const o: EngineOptions<T> = { ...(cfg.defaults as EngineOptions<T>), ...opciones }
+  const base: EngineOptions<T> = { ...(cfg.defaults as EngineOptions<T>), ...opciones }
+  const o: EngineOptions<T> = motor.preparar?.(base) ?? base
   const placement = o.placement ?? 'center'
   const puede = permisos(o)
   globalStyles()
