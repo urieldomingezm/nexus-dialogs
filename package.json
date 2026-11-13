@@ -281,7 +281,13 @@
     "vue",
     "react",
     "angular",
-    "sweetalert2"
+    "sweetalert2",
+    "native-dialog",
+    "shadow-dom",
+    "typescript",
+    "zero-dependencies",
+    "form-validation",
+    "enterprise"
   ],
   "engines": {
     "node": ">=18"

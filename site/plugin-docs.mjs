@@ -206,7 +206,71 @@ ${IDIOMAS.map((l) => `    <link rel="alternate" hreflang="${l}" href="${SITE}/${
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${titulo}" />
     <meta name="twitter:description" content="${desc}" />
-    <meta name="twitter:image" content="${SITE}/og.png" />`
+    <meta name="twitter:image" content="${SITE}/og.png" />
+    <link rel="alternate" type="text/plain" href="${SITE}/llms.txt" title="nexus-dialogs: documentation index for AI assistants" />${/(^|\/)index\.html$/.test(pagina) && lang === 'es' ? jsonLd() : ''}`
+}
+
+/** Datos estructurados de la librería (schema.org) para buscadores y asistentes; solo en la portada. */
+const jsonLd = () => `
+    <script type="application/ld+json">${JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareSourceCode',
+      name: 'nexus-dialogs',
+      description: pkg.description,
+      url: SITE,
+      codeRepository: REPO,
+      programmingLanguage: 'TypeScript',
+      license: 'https://opensource.org/licenses/MIT',
+      version: pkg.version,
+      keywords: pkg.keywords.join(', '),
+      author: { '@type': 'Person', name: 'Angel Uriel Domínguez Medina (DevMedina)', url: 'https://devmedina.is-a.dev/' },
+      sameAs: [REPO, NPM],
+    })}</script>`
+
+/** `llms.txt`: índice breve, en inglés, para asistentes de IA. Las direcciones salen del menú, así que nunca se desfasan. */
+function llmsTxt() {
+  const url = (id) => `${SITE}/en/${sinExtension(ARCHIVO[id])}`
+  const enlace = (id) => {
+    const { texto, desc } = paginaDe('en', id)
+    return `- [${texto}](${url(id)})${desc ? `: ${desc}` : ''}`
+  }
+  const secciones = GRUPOS.map(([g, ids]) => `## ${grupos('en')[g]}\n\n${ids.map(enlace).join('\n')}`).join('\n\n')
+  return `# nexus-dialogs
+
+> ${pkg.description}
+
+nexus-dialogs is a TypeScript library of transactional interfaces for business applications (HR, accounting, administrative systems): confirmations, forms with validation, multi-step wizards, toasts, tabs, timelines and tables, plus Mexican validators (RFC, CURP, NSS, CLABE, postal code). It has no runtime dependencies, uses the native \`<dialog>\` element and Shadow DOM, and every operation returns a promise. Accessibility targets WCAG 2.2 AA and is covered by automated tests; it is not certified, and screen-reader validation is still pending. Made by Angel Uriel Domínguez Medina (DevMedina), MIT license.
+
+## Install
+
+- \`npm i nexus-dialogs\` (npm: ${NPM})
+- Source code: ${REPO}
+- Full documentation as one Markdown file: ${SITE}/llms-full.txt
+
+## When it fits
+
+- Business apps that need more than an alert: forms with an error summary, wizards with a review step, delete-by-typing-the-name confirmations, unsaved-changes warnings, approvals.
+- Mexican administrative apps that need RFC, CURP, NSS or CLABE validation.
+- Projects that want no runtime dependencies and a small import (a ~10 KB core; forms, toast, tabs, themes and validators are separate subpath imports).
+- Vue 3, React 18+, Angular 16+ or plain JavaScript (\`nexus-dialogs/vue\`, \`/react\`, \`/angular\`).
+
+For a one-off alert in a small page, the native \`<dialog>\` element may be enough. Always read the current API in the documentation before writing code; do not invent methods or options.
+
+${secciones}
+
+## Optional
+
+- [Documentación en español](${SITE}/): the Spanish site is the reference; Portuguese and French have the interface and home page only.
+- [Changelog](${REPO}/blob/main/CHANGELOG.md)
+- [Instructions for coding agents](${REPO}/blob/main/AGENTS.md)
+`
+}
+
+/** `llms-full.txt`: la guía y los documentos en inglés, en un solo Markdown, sin marcas del sitio. */
+function llmsFullTxt() {
+  const docs = ['primeros-pasos', 'contratos', 'arquitectura', 'plugins', 'limitaciones', 'soporte', 'rendimiento', 'seguridad', 'accesibilidad', 'swal-compat', 'versiones']
+  const partes = [leer('../README.en.md'), ...docs.map((d) => leer(`../docs/en/${d}.md`))]
+  return `# nexus-dialogs: full documentation (English)\n\nSource: ${REPO} · Site: ${SITE}/en/ · Version ${pkg.version}\n\n---\n\n${partes.map((t) => t.replace(/<!--[\s\S]*?-->/g, '').trim()).join('\n\n---\n\n')}\n`
 }
 
 /** Columna derecha de las páginas de texto largo: dónde editar la página, versión y tamaño del núcleo. */
@@ -337,6 +401,8 @@ export function docsPlugin() {
         const fecha = new Date().toISOString().slice(0, 10)
         const urls = paginas.map((f) => `  <url><loc>${SITE}/${sinExtension(f)}</loc><lastmod>${fecha}</lastmod></url>`).join('\n')
         this.emitFile({ type: 'asset', fileName: 'sitemap.xml', source: `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n` })
+        this.emitFile({ type: 'asset', fileName: 'llms.txt', source: llmsTxt() })
+        this.emitFile({ type: 'asset', fileName: 'llms-full.txt', source: llmsFullTxt() })
         this.emitFile({ type: 'asset', fileName: 'robots.txt', source: `User-agent: *\nAllow: /\n\nSitemap: ${SITE}/sitemap.xml\n` })
       },
     },
