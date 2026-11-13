@@ -34,6 +34,7 @@ const MENU = [
     texto: 'Probar',
     items: [
       ['ejemplos', 'ejemplos.html', 'Ejemplos', 'Casos listos para ejecutar'],
+      ['playground', 'playground.html', 'Playground', 'Prueba la API sin instalar'],
       ['pruebas', 'pruebas.html', 'Pruebas', 'Revisa temas, modo claro y oscuro'],
       ['erp', 'erp.html', 'Mini ERP', 'Una aplicación completa de muestra'],
     ],
@@ -191,7 +192,7 @@ const pie = () => `<footer class="pie">
       <p class="pie-nombre"><strong>nexus-dialogs</strong> <span>v${pkg.version}</span></p>
       <p>Diálogos, formularios y toasts para la web, sin dependencias.</p>
     </div>
-    ${columna('Documentación', deMenu('primeros-pasos', 'guia', 'ejemplos', 'pruebas', 'erp'))}
+    ${columna('Documentación', deMenu('primeros-pasos', 'guia', 'ejemplos', 'playground', 'pruebas', 'erp'))}
     ${columna('Referencia', deMenu('api', 'contratos', 'arquitectura', 'limitaciones', 'soporte', 'rendimiento', 'seguridad', 'accesibilidad'))}
     ${columna('Migración', deMenu('migracion', 'swal-compat', 'versiones'))}
     ${columna('Proyecto', [[REPO, 'Código', true], [NPM, 'npm', true], ...deMenu('novedades'), [`${REPO}/issues`, 'Reportar un problema', true]])}

@@ -26,6 +26,7 @@ test.describe('Sitio de documentación', () => {
     ['primeros-pasos.html', /Primeros pasos/],
     ['guia.html', /Guía/],
     ['ejemplos.html', /Ejemplos/],
+    ['playground.html', /Playground/],
     ['pruebas.html', /Pruebas/],
     ['erp.html', /Mini ERP/],
     ['migracion.html', /Migrar/],
@@ -185,6 +186,37 @@ test.describe('Sitio de documentación', () => {
     await expect(page.locator('a[href="api.html"]').first()).toBeAttached()
     await page.locator('pre').first().hover()
     await expect(page.locator('pre .copiar').first()).toBeVisible()
+  })
+
+  test('playground: ejecuta el código, muestra el resultado y los errores, y el enlace lleva el código', async ({ pagina: page }) => {
+    await page.goto(SITIO + 'playground.html')
+    const editor = page.locator('#pg-codigo')
+    const salida = page.locator('#pg-salida')
+    await expect(editor).toHaveValue(/dialog\.confirm/)
+    // Código propio: el diálogo se abre de verdad y su resultado llega a «Resultado».
+    await editor.fill(`import { dialog } from 'nexus-dialogs'\nconst r = await dialog.confirm({ title: 'Hola' })\nconsole.log(r.confirmed)`)
+    await page.locator('#pg-ejecutar').click()
+    await expect(page.locator('dialog[data-nexus-dialog]')).toHaveCount(1)
+    await page.keyboard.press('Escape')
+    await expect(salida).toContainText('false')
+    // Un import que no existe y un error del propio código se dicen claro, sin romper la página.
+    await editor.fill(`import { x } from 'nexus-dialogs/nada'`)
+    await page.locator('#pg-ejecutar').click()
+    await expect(salida).toContainText('No conozco')
+    await editor.fill(`throw new Error('falló a propósito')`)
+    await page.keyboard.press('Control+Enter')
+    await expect(salida).toContainText('falló a propósito')
+    // Los ejemplos de la galería que son JavaScript se pueden cargar y ejecutar.
+    await page.locator('#pg-ejemplo').selectOption('validadores')
+    await expect(editor).toHaveValue(/isRFC/)
+    await page.locator('#pg-ejecutar').click()
+    await expect(salida).not.toBeEmpty()
+    // «Copiar enlace» deja el código en la dirección y, al abrirla, vuelve el mismo código.
+    await editor.fill(`console.log('compartido ✓')`)
+    await page.locator('#pg-compartir').click()
+    await expect(page).toHaveURL(/#c=/)
+    await page.reload()
+    await expect(editor).toHaveValue(`console.log('compartido ✓')`)
   })
 
   test('tema: cambia entre auto, claro y oscuro y se recuerda', async ({ pagina: page }) => {
@@ -367,6 +399,7 @@ test.describe('Sitio de documentación', () => {
       'arquitectura.html',
       'limitaciones.html',
       'soporte.html',
+      'playground.html',
       'versiones.html',
       'rendimiento.html',
       'novedades.html',

@@ -2,6 +2,8 @@
 // (tree-shaking) y tiempos reales en Chromium (abrir/cerrar diálogos, formularios, memoria).
 //   npm run build && npm run bench                 → imprime las tablas
 //   npm run bench -- --write                       → además reescribe docs/rendimiento.md (entre las marcas <!--bench-->)
+//   npm run bench -- --json medicion.json          → guarda los números (para comparar después)
+//   npm run bench -- --comparar medicion.json      → compara esta medición con una guardada (otra versión o rama)
 //   PW_CHROMIUM=/ruta/a/chrome npm run bench       → usa un Chromium ya instalado
 // Los tiempos dependen de la máquina: la página publicada dice dónde se midieron. Los tamaños no dependen de ella.
 import { brotliCompressSync, gzipSync } from 'node:zlib'
@@ -39,8 +41,10 @@ const ARCHIVOS = [
   'react',
   'angular',
 ]
+const numeros = { tamanos: {}, parcial: {}, tiempos: {}, memoriaKB: 0 }
 const filasTam = ARCHIVOS.filter((a) => existsSync(`dist/${a}.js`)).map((a) => {
   const t = medir(readFileSync(`dist/${a}.js`, 'utf8'))
+  numeros.tamanos[a] = t.gz
   return `| \`${a}.js\` | ${kb(t.gz)} KB | ${kb(t.br)} KB |`
 })
 
@@ -66,6 +70,7 @@ for (const [nombre, entrada] of CASOS) {
       logLevel: 'silent',
     })
     const codigo = r.outputFiles[0].text
+    numeros.parcial[nombre] = gzipSync(codigo).length
     filasTree.push(`| ${nombre} | ${kb(gzipSync(codigo).length)} KB | ${kb(brotliCompressSync(codigo).length)} KB |`)
   } catch (e) {
     filasTree.push(`| ${nombre} | no medido (${String(e.message).split('\n')[0].slice(0, 60)}) | |`)
@@ -143,6 +148,12 @@ const filasTiempo = [
 ]
 const entorno = `${cpus()[0]?.model.trim()} · ${platform()} ${release()} · Node ${process.version} · Chromium ${version}`
 const fuga = (despues - antes) / 1024
+numeros.tiempos = {
+  'Primer diálogo (arranque en frío)': medida.primera,
+  '`dialog.alert` (mediana)': medida.alerta.mediana,
+  '`form` de 20 campos (mediana)': medida.formulario.mediana,
+}
+numeros.memoriaKB = fuga
 const bloque = `<!--bench-->
 **Entorno de esta medición:** ${entorno}.
 
@@ -178,4 +189,44 @@ if (process.argv.includes('--write')) {
   if (!md.includes('<!--bench-->')) throw new Error('docs/rendimiento.md no tiene las marcas <!--bench-->')
   writeFileSync(ruta, md.replace(/<!--bench-->[\s\S]*<!--\/bench-->/, bloque))
   console.log(`\nEscrito en ${ruta}`)
+}
+
+const arg = (nombre) => {
+  const i = process.argv.indexOf(nombre)
+  return i >= 0 ? process.argv[i + 1] : undefined
+}
+const guardar = arg('--json')
+if (guardar) {
+  writeFileSync(guardar, JSON.stringify({ entorno, ...numeros }, null, 2) + '\n')
+  console.log(`\nNúmeros guardados en ${guardar}`)
+}
+
+// ── Comparar con otra medición ─────────────────────────────────────────────
+// Los tamaños no dependen de la máquina: un aumento de más de 3 % hace fallar el comando (exit 1). Los tiempos sí dependen
+// de ella y solo se informan (compara mediciones hechas en la misma máquina).
+const contra = arg('--comparar')
+if (contra) {
+  const base = JSON.parse(readFileSync(contra, 'utf8'))
+  const cambio = (a, b) => (a ? ((b - a) / a) * 100 : 0)
+  const fmt = (c) => `${c >= 0 ? '+' : ''}${c.toFixed(1)} %`
+  let regresion = false
+  const filas = []
+  const comparar = (titulo, antes, ahora, unidad, vigila) => {
+    for (const [k, v] of Object.entries(ahora)) {
+      if (!(k in antes)) continue
+      const c = cambio(antes[k], v)
+      const mal = vigila && c > 3
+      if (mal) regresion = true
+      filas.push(`| ${titulo}: ${k} | ${unidad(antes[k])} | ${unidad(v)} | ${fmt(c)}${mal ? ' ⚠' : ''} |`)
+    }
+  }
+  const enKB = (n) => `${kb(n)} KB`
+  comparar('Archivo', base.tamanos ?? {}, numeros.tamanos, enKB, true)
+  comparar('Parcial', base.parcial ?? {}, numeros.parcial, enKB, true)
+  comparar('Tiempo', base.tiempos ?? {}, numeros.tiempos, ms, false)
+  console.log(`\n### Comparación con ${contra}\n\n| Medida | Antes | Ahora | Cambio |\n|---|---|---|---|\n${filas.join('\n')}`)
+  if (regresion) {
+    console.error('\nHay archivos que crecieron más de 3 %. Optimiza el código; los límites de tamaño no se suben.')
+    process.exitCode = 1
+  }
 }
