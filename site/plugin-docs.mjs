@@ -56,6 +56,7 @@ const MENU = [
     items: [
       ['migracion', 'migracion.html', 'Migrar de SweetAlert2', 'Paso a paso'],
       ['swal-compat', 'swal-compat.html', 'Compatibilidad SweetAlert2', 'Qué cubre el adaptador'],
+      ['versiones', 'versiones.html', 'Versionado y migraciones', 'Actualizar sin sorpresas'],
     ],
   },
 ]
@@ -192,7 +193,7 @@ const pie = () => `<footer class="pie">
     </div>
     ${columna('Documentación', deMenu('primeros-pasos', 'guia', 'ejemplos', 'pruebas', 'erp'))}
     ${columna('Referencia', deMenu('api', 'contratos', 'arquitectura', 'limitaciones', 'soporte', 'rendimiento', 'seguridad', 'accesibilidad'))}
-    ${columna('Migración', deMenu('migracion', 'swal-compat'))}
+    ${columna('Migración', deMenu('migracion', 'swal-compat', 'versiones'))}
     ${columna('Proyecto', [[REPO, 'Código', true], [NPM, 'npm', true], ...deMenu('novedades'), [`${REPO}/issues`, 'Reportar un problema', true]])}
   </div>
   <p class="pie-legal">Licencia MIT. Hecho por <a class="firma" href="https://devmedina.is-a.dev/" rel="noopener"><svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g transform="rotate(-6 32 32)"><rect x="5" y="5" width="54" height="54" rx="12" fill="#6D28D9" stroke="#1A1033" stroke-width="5"/><text x="32" y="41" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace" font-weight="900" font-size="22" fill="#FFFFFF">&lt;/&gt;</text></g></svg>DevMedina</a>, rama de librerías de Nexus.</p>

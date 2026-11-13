@@ -1029,7 +1029,7 @@ La API pública completa, generada de los tipos, está en [`api/nexus-dialogs.ap
 
 ## 13. Compatibilidad
 
-- Navegadores actuales: Chrome/Edge 111+, Firefox 113+, Safari 16.4+ (usa `<dialog>` modal y `color-mix()`). Probado en Chromium, Firefox y WebKit. Función por función, qué pasa si falta alguna y la política de versiones y de soporte: [Soporte](https://urieldomingezm.github.io/nexus-dialogs/soporte.html).
+- Navegadores actuales: Chrome/Edge 111+, Firefox 113+, Safari 16.4+ (usa `<dialog>` modal y `color-mix()`). Probado en Chromium, Firefox y WebKit. Función por función, qué pasa si falta alguna y la política de versiones y de soporte: [Soporte](https://urieldomingezm.github.io/nexus-dialogs/soporte.html). Cómo actualizar sin sorpresas: [Versionado y migraciones](https://urieldomingezm.github.io/nexus-dialogs/versiones.html).
 - **nexus-tours**: los diálogos son `<dialog open>` de verdad, así que los tours los detectan y pueden explicar lo que hay dentro.
 - Bootstrap, Tailwind, SweetAlert2: sin choques de `z-index` ni de CSS. Para migrar de SweetAlert2, ver [¿Vienes de SweetAlert2?](#vienes-de-sweetalert2).
 - Seguridad: [`docs/seguridad.md`](docs/seguridad.md). Para reportar una vulnerabilidad, [`SECURITY.md`](SECURITY.md).
