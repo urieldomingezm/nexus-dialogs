@@ -52,6 +52,9 @@ jobs:
       - name: La matriz de compatibilidad coincide con package.json, el README y docs/soporte.md
         run: npm run compat:check
 
+      - name: Las páginas del sitio por idioma están al día
+        run: npm run idiomas:check
+
       - name: Auditoría de lo que se publica (sin dependencias vulnerables en producción)
         run: npm audit --omit=dev --audit-level=low
 

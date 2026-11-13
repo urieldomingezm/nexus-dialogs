@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <!--@generado-->
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mini ERP · nexus-dialogs</title>
+    <meta name="description" content="A complete sample application" />
+  </head>
+  <body>
+    <a class="saltar" href="#erp"><!--@t:saltar--></a>
+    <!--@cabecera:erp-->
+    <main lang="es" id="erp">
+      <section class="hero chico">
+        <h1>Mini ERP</h1>
+        <!--@aviso:es-->
+        <p class="lema">Una aplicación pequeña que junta varios módulos de la librería: asistente de alta, importar y exportar Excel, vacaciones con calendario, acciones masivas con progreso y bajas con confirmación. Todo corre en tu navegador; no se guarda nada.</p>
+      </section>
+
+      <section class="bloque" aria-labelledby="e-titulo">
+        <div class="erp-barra">
+          <h2 id="e-titulo">Empleados <span class="insignia" id="e-total">0</span></h2>
+          <div class="erp-acciones">
+            <button type="button" class="btn primario" id="e-alta">Alta de empleado</button>
+            <button type="button" class="btn" id="e-importar">Importar</button>
+            <button type="button" class="btn" id="e-exportar">Exportar a Excel</button>
+            <button type="button" class="btn" id="e-vacaciones">Pedir vacaciones</button>
+            <button type="button" class="btn" id="e-masiva">Mover de área…</button>
+          </div>
+        </div>
+        <div class="tabla"><table>
+          <caption class="solo-lectores">Lista de empleados</caption>
+          <thead><tr><th>Núm.</th><th>Nombre</th><th>Área</th><th>Puesto</th><th>Salario diario</th><th><span class="solo-lectores">Acciones</span></th></tr></thead>
+          <tbody id="e-filas"></tbody>
+        </table></div>
+        <p class="nota">Tip: «Importar» trae una plantilla CSV descargable con los encabezados para probar.</p>
+      </section>
+
+      <section class="bloque" aria-labelledby="e-act">
+        <h2 id="e-act">Actividad</h2>
+        <p class="sub">Lo que devolvió cada diálogo. Así se ve el resultado que recibe tu código.</p>
+        <ul class="erp-log" id="e-log" aria-live="polite"></ul>
+      </section>
+
+      <section class="bloque" aria-labelledby="e-codigo">
+        <h2 id="e-codigo">Cómo está hecho</h2>
+        <p class="sub">El código de la página son pocas líneas por módulo.</p>
+<pre data-lang="ts"><code>import { formFromJSON } from 'nexus-dialogs/forms'
+import { plantillas, sinResolvers } from 'nexus-dialogs/rrhh'
+import { importData, exportData } from 'nexus-dialogs/import'
+import { confirmDelete, bulkAction } from 'nexus-dialogs/patterns'
+import { toast } from 'nexus-dialogs/toast'
+
+// Alta: la plantilla de RR. HH. ya trae los pasos, validadores de RFC/CURP/CLABE y la revisión
+const alta = await formFromJSON(sinResolvers(plantillas.altaEmpleado))
+if (alta.confirmed) empleados.push(aEmpleado(alta.value))
+
+// Importar: elegir archivo, relacionar columnas y revisar errores por fila
+await importData({ title: 'Importar empleados', columns, onImport: (filas) =&gt; empleados.push(...filas) })
+
+// Baja con consecuencias y «Deshacer»
+if (await confirmDelete({ what: 'a Laura Méndez', consequences: ['Se cancela su acceso'] })) {
+  toast.success('Baja registrada', { action: { label: 'Deshacer', onClick: restaurar } })
+}</code></pre>
+      </section>
+    </main>
+    <!--@pie-->
+    <script type="module" src="../src/erp.ts"></script>
+  </body>
+</html>

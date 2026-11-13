@@ -1,11 +1,14 @@
 // Buscador de la documentación: se abre con «/» o Ctrl/Cmd+K (o el botón de la cabecera). Usa el <dialog> nativo, flechas y Enter.
 // El índice (páginas, encabezados y ejemplos) se genera en el build y se descarga solo la primera vez que se abre.
 
+import { idioma, t } from './textos'
+
 interface Entrada {
   t: string
   p: string
   d: string
   u: string
+  g?: 1 // entrada de una página del menú (no de un encabezado ni de un ejemplo)
 }
 
 const normal = (t: string): string =>
@@ -25,7 +28,13 @@ let abridor: Element | null = null
 
 async function cargarIndice(): Promise<void> {
   if (indice) return
-  const { default: datos } = await import('virtual:indice-busqueda')
+  const cargas = {
+    es: () => import('virtual:indice-busqueda/es'),
+    en: () => import('virtual:indice-busqueda/en'),
+    pt: () => import('virtual:indice-busqueda/pt'),
+    fr: () => import('virtual:indice-busqueda/fr'),
+  }
+  const { default: datos } = await cargas[idioma]()
   indice = datos.map((e) => ({ ...e, n: normal(`${e.t} ${e.p} ${e.d}`) }))
 }
 
@@ -33,14 +42,14 @@ function buscar(q: string): Entrada[] {
   if (!indice) return []
   const palabras = normal(q).split(/\s+/).filter(Boolean)
   // Sin texto: las páginas, para poder moverse sin escribir.
-  if (!palabras.length) return indice.filter((e) => e.p === 'Página').slice(0, 10)
+  if (!palabras.length) return indice.filter((e) => e.g).slice(0, 10)
   const puntos: Array<[number, Entrada]> = []
   for (const e of indice) {
     if (!palabras.every((w) => e.n.includes(w))) continue
     const t = normal(e.t)
     let p = 0
     for (const w of palabras) p += t.startsWith(w) ? 4 : t.includes(w) ? 3 : 1
-    if (e.p === 'Página') p += 2
+    if (e.g) p += 2
     puntos.push([p, e])
   }
   return puntos.sort((a, b) => b[0] - a[0]).map(([, e]) => e).slice(0, 8)
@@ -65,7 +74,7 @@ function pintar(): void {
     lista.appendChild(li)
   })
   entrada.setAttribute('aria-activedescendant', resultados.length ? `busca-${activo}` : '')
-  aviso.textContent = resultados.length ? `${resultados.length} resultados` : entrada.value.trim() ? 'Sin resultados' : ''
+  aviso.textContent = resultados.length ? t('nResultados', resultados.length) : entrada.value.trim() ? t('sinResultados') : ''
   lista.querySelector('[aria-selected=true]')?.scrollIntoView({ block: 'nearest' })
 }
 
@@ -78,11 +87,11 @@ function actualizar(): void {
 function construir(): HTMLDialogElement {
   const d = document.createElement('dialog')
   d.className = 'buscador'
-  d.setAttribute('aria-label', 'Buscar en la documentación')
+  d.setAttribute('aria-label', t('buscarDoc'))
   d.innerHTML = `<div class="busca-caja">
-    <input class="busca-entrada" type="text" role="combobox" aria-expanded="true" aria-controls="busca-lista" aria-autocomplete="list" aria-label="Buscar" placeholder="Buscar en la documentación…" autocomplete="off" spellcheck="false" />
-    <ul id="busca-lista" class="busca-lista" role="listbox" aria-label="Resultados"></ul>
-    <p class="busca-ayuda"><kbd>↑</kbd> <kbd>↓</kbd> para moverte · <kbd>Enter</kbd> para abrir · <kbd>Esc</kbd> para cerrar</p>
+    <input class="busca-entrada" type="text" role="combobox" aria-expanded="true" aria-controls="busca-lista" aria-autocomplete="list" aria-label="${t('buscar')}" placeholder="${t('buscarPista')}" autocomplete="off" spellcheck="false" />
+    <ul id="busca-lista" class="busca-lista" role="listbox" aria-label="${t('resultados')}"></ul>
+    <p class="busca-ayuda">${t('ayuda')}</p>
     <p class="busca-aviso" role="status"></p>
   </div>`
   entrada = d.querySelector('input')!
@@ -136,7 +145,7 @@ async function abrir(): Promise<void> {
   if (dialogo.open) return
   dialogo.showModal()
   entrada.value = ''
-  aviso.textContent = 'Cargando…'
+  aviso.textContent = t('cargando')
   await cargarIndice()
   actualizar()
 }

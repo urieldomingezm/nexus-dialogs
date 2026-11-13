@@ -189,6 +189,34 @@ if (process.argv.includes('--write')) {
   if (!md.includes('<!--bench-->')) throw new Error('docs/rendimiento.md no tiene las marcas <!--bench-->')
   writeFileSync(ruta, md.replace(/<!--bench-->[\s\S]*<!--\/bench-->/, bloque))
   console.log(`\nEscrito en ${ruta}`)
+  // La página en inglés lleva el mismo bloque con los rótulos traducidos.
+  const rutaEn = 'docs/en/rendimiento.md'
+  if (existsSync(rutaEn)) {
+    const en = bloque
+      .replace('**Entorno de esta medición:**', '**Environment of this measurement:**')
+      .replace('### Tamaño de cada archivo', '### Size of each file')
+      .replace('| Archivo | min + gzip | min + brotli |', '| File | min + gzip | min + brotli |')
+      .replace('### Lo que pesa usar solo una parte (con un bundler)', '### What using only a part weighs (with a bundler)')
+      .replace('| Caso | min + gzip | min + brotli |', '| Case | min + gzip | min + brotli |')
+      .replace('Solo `dialog` (alertas y confirmaciones)', 'Only `dialog` (alerts and confirmations)')
+      .replace('Solo validadores de México (`mx`)', 'Only Mexican validators (`mx`)')
+      .replace('### Tiempos en Chromium (animaciones reducidas)', '### Timings in Chromium (reduced animations)')
+      .replace(
+        'De la llamada a la función hasta que el diálogo está en pantalla con su botón listo.',
+        'From the function call until the dialog is on screen with its button ready.',
+      )
+      .replace('| Escenario | Mediana | p95 |', '| Scenario | Median | p95 |')
+      .replace('Primer diálogo (arranque en frío)', 'First dialog (cold start)')
+      .replace(/`dialog.alert`, (\d+) aperturas/, '`dialog.alert`, $1 openings')
+      .replace('`form` de 20 campos, 50 aperturas', '`form` with 20 fields, 50 openings')
+      .replace('### Memoria', '### Memory')
+      .replace(
+        /Tras (\d+) aperturas y cierres de `dialog.alert` \(con recolección de basura antes y después\), el montón de JavaScript cambió \*\*([^*]+)\*\* y quedaron \*\*(\d+)\*\* diálogos en el DOM\./,
+        'After $1 openings and closings of `dialog.alert` (with garbage collection before and after), the JavaScript heap changed **$2** and **$3** dialogs were left in the DOM.',
+      )
+    writeFileSync(rutaEn, readFileSync(rutaEn, 'utf8').replace(/<!--bench-->[\s\S]*<!--\/bench-->/, en))
+    console.log(`Escrito en ${rutaEn}`)
+  }
 }
 
 const arg = (nombre) => {

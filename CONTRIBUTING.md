@@ -61,6 +61,14 @@ npm run compat:check                 # si tocaste versiones mínimas o soporte
 
 No hace falta cambiar la versión: la sube quien mantiene al publicar (`npm run nueva-version`).
 
+## Traducciones del sitio
+
+El sitio vive en español (raíz), `en`, `pt` y `fr`. El texto de la interfaz (cabecera, menú, pie, avisos) está en [`site/idiomas.mjs`](site/idiomas.mjs) y el que escribe JavaScript, en `site/src/textos.ts`.
+
+- **Un documento de `docs/`**: su traducción va en `docs/<idioma>/` con el mismo nombre (por ejemplo `docs/en/soporte.md`). Debe tener las mismas secciones, tablas y bloques de código que el original; `npm run test:unit` lo comprueba. Las tablas que se generan (compatibilidad, benchmark) se regeneran en las dos versiones.
+- **Las páginas de `site/<idioma>/`** las genera `npm run idiomas` (créalas de nuevo después de agregar una traducción) y `npm run idiomas:check` falla si no están al día. Una página traducida a mano a una versión propia se deja sin la marca `<!--@generado-->` y el script ya no la toca.
+- Lo que aún no tenga traducción sale en español con un aviso; no hace falta traducirlo todo de una vez.
+
 ## La matriz de compatibilidad
 
 Qué navegadores, versiones de Node y de Vue, React y Angular se soportan sale de un único archivo, [`compat/matriz.json`](compat/matriz.json). De él salen las tablas de `docs/soporte.md` y las versiones que CI instala y prueba.

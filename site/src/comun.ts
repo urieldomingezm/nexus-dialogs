@@ -2,6 +2,7 @@
 import './estilos.css'
 import { configure, registerLanguage } from 'nexus-dialogs'
 import { fr, pt } from 'nexus-dialogs/locales'
+import { idioma, t as tx } from './textos'
 import { toast } from 'nexus-dialogs/toast'
 import './animaciones'
 import './buscador'
@@ -9,7 +10,6 @@ import './buscador'
 // ── Tema (automático, claro u oscuro) ───────────────────────────────────────
 type Tema = 'auto' | 'claro' | 'oscuro'
 const TEMAS: Tema[] = ['auto', 'claro', 'oscuro']
-const ETIQUETA: Record<Tema, string> = { auto: 'Auto', claro: 'Claro', oscuro: 'Oscuro' }
 
 function guardado(): Tema {
   try {
@@ -27,7 +27,7 @@ function aplicar(t: Tema): void {
   const esquema = t === 'auto' ? 'auto' : t === 'claro' ? 'light' : 'dark'
   configure({ scheme: esquema })
   toast.configure({ scheme: esquema })
-  for (const b of document.querySelectorAll<HTMLButtonElement>('button[data-tema]')) b.textContent = `Tema: ${ETIQUETA[t]}`
+  for (const b of document.querySelectorAll<HTMLButtonElement>('button[data-tema]')) b.textContent = `${tx('tema')}: ${tx(t)}`
 }
 
 aplicar(guardado())
@@ -43,41 +43,21 @@ document.addEventListener('click', (e) => {
   aplicar(siguiente)
 })
 
-// ── Idioma de los diálogos de la biblioteca (la página sigue en español) ─────
+// ── Idioma del sitio y de los diálogos de la biblioteca ─────────────────────
+// El español vive en la raíz y los demás en /en, /pt y /fr: el selector lleva a la misma página en el otro idioma.
+// Los diálogos y avisos de las demostraciones salen en el idioma de la página.
 registerLanguage('pt', pt)
 registerLanguage('fr', fr)
-const IDIOMAS = ['es', 'en', 'pt', 'fr']
-const NOMBRE: Record<string, string> = { es: 'Español', en: 'English', pt: 'Português', fr: 'Français' }
+configure({ lang: idioma })
+toast.configure({ lang: idioma })
 
-function idiomaGuardado(): string {
-  try {
-    const l = localStorage.getItem('nd-idioma')
-    return l && IDIOMAS.includes(l) ? l : 'es'
-  } catch {
-    return 'es'
-  }
-}
-
-function aplicarIdioma(l: string): void {
-  configure({ lang: l })
-  toast.configure({ lang: l })
-  for (const b of document.querySelectorAll<HTMLButtonElement>('button[data-idioma]')) {
-    b.textContent = `Idioma: ${l.toUpperCase()}`
-    b.setAttribute('aria-label', `Idioma: ${l.toUpperCase()} (${NOMBRE[l]})`) // el nombre accesible completo contiene el texto visible
-    b.dataset.idioma = l
-  }
-}
-
-aplicarIdioma(idiomaGuardado())
-document.addEventListener('click', (e) => {
-  if (!(e.target as Element).closest('button[data-idioma]')) return
-  const siguiente = IDIOMAS[(IDIOMAS.indexOf(idiomaGuardado()) + 1) % IDIOMAS.length]
-  try {
-    localStorage.setItem('nd-idioma', siguiente)
-  } catch {
-    /* sin almacenamiento: el idioma vale solo para esta visita */
-  }
-  aplicarIdioma(siguiente)
+const DIR = /\/(?:en|pt|fr)(?=\/[^/]*$)/
+document.addEventListener('change', (e) => {
+  const sel = (e.target as Element).closest<HTMLSelectElement>('select[data-idioma]')
+  if (!sel) return
+  const base = location.pathname.replace(DIR, '')
+  const ruta = sel.value === 'es' ? base : base.replace(/\/([^/]*)$/, `/${sel.value}/$1`)
+  location.assign(ruta + location.search + location.hash)
 })
 
 // ── Resaltado de código (mínimo, sin dependencias) ──────────────────────────
@@ -120,16 +100,16 @@ export function decorarCodigo(raiz: ParentNode = document): void {
     const b = document.createElement('button')
     b.type = 'button'
     b.className = 'copiar'
-    b.textContent = 'Copiar'
-    b.setAttribute('aria-label', 'Copiar el código')
+    b.textContent = tx('copiar')
+    b.setAttribute('aria-label', tx('copiarCodigo'))
     b.addEventListener('click', async () => {
       try {
         await navigator.clipboard.writeText(texto)
-        b.textContent = 'Copiado'
+        b.textContent = tx('copiado')
       } catch {
-        b.textContent = 'No se pudo'
+        b.textContent = tx('noSePudo')
       }
-      setTimeout(() => (b.textContent = 'Copiar'), 1500)
+      setTimeout(() => (b.textContent = tx('copiar')), 1500)
     })
     pre.appendChild(b)
   }
@@ -142,9 +122,9 @@ document.addEventListener('click', async (e) => {
   const antes = b.textContent
   try {
     await navigator.clipboard.writeText(b.dataset.copiar ?? '')
-    b.textContent = 'Copiado'
+    b.textContent = tx('copiado')
   } catch {
-    b.textContent = 'No se pudo'
+    b.textContent = tx('noSePudo')
   }
   setTimeout(() => (b.textContent = antes), 1500)
 })
@@ -168,7 +148,7 @@ function menuLateral(): void {
   destino.appendChild(ul)
   const movil = document.createElement('details')
   movil.className = 'toc-movil'
-  movil.innerHTML = '<summary>En esta página</summary>'
+  movil.innerHTML = `<summary>${destino.getAttribute('aria-label') ?? ''}</summary>`
   movil.appendChild(ul.cloneNode(true))
   cont.insertBefore(movil, cont.querySelector('h1')?.nextSibling ?? cont.firstChild)
   if (!('IntersectionObserver' in window)) return

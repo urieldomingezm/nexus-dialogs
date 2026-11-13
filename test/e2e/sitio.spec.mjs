@@ -53,6 +53,62 @@ test.describe('Sitio de documentación', () => {
     })
   }
 
+  // Cada página en cada idioma: carga sin errores, trae la interfaz en su idioma y el menú marca la página actual.
+  for (const [lang, saltar, minimo] of [
+    ['en', 'Skip to content', 'Home'],
+    ['pt', 'Pular para o conteúdo', 'Início'],
+    ['fr', 'Aller au contenu', 'Accueil'],
+  ]) {
+    for (const pagina of [
+      'index.html',
+      'primeros-pasos.html',
+      'guia.html',
+      'ejemplos.html',
+      'playground.html',
+      'soporte.html',
+      'api.html',
+      'migracion.html',
+      'novedades.html',
+      'erp.html',
+      'pruebas.html',
+    ]) {
+      test(`${lang}/${pagina}: carga con la interfaz en su idioma`, async ({ pagina: page }) => {
+        await page.goto(`${SITIO}${lang}/${pagina}`)
+        await expect(page.locator('html')).toHaveAttribute('lang', lang)
+        await expect(page.locator('a.saltar')).toHaveText(saltar)
+        await expect(page.locator('header.cabecera nav a').first()).toHaveText(minimo)
+        await expect(page.locator('header.cabecera nav a[aria-current="page"]')).toHaveCount(1)
+        await expect(page.locator('select[data-idioma]')).toHaveValue(lang)
+        expect(await page.content()).not.toContain('<!--@')
+        await expect(page.locator('footer.pie')).toContainText('MIT')
+      })
+    }
+  }
+
+  test('páginas sin traducir salen en español con un aviso y marcadas con su idioma', async ({ pagina: page }) => {
+    await page.goto(SITIO + 'pt/novedades.html')
+    await expect(page.locator('p.aviso')).toContainText('apenas em espanhol')
+    await expect(page.locator('article.contenido')).toHaveAttribute('lang', 'es')
+    await page.goto(SITIO + 'en/soporte.html')
+    await expect(page.locator('p.aviso')).toHaveCount(0) // esta sí está traducida
+    await expect(page.locator('h2').first()).toHaveText(/Browsers/)
+  })
+
+  test('accesibilidad: una muestra de páginas traducidas pasa axe en claro y oscuro', async ({ page, browserName }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    test.skip(browserName === 'firefox', 'axe se omite en Firefox (ver utilidades.mjs)')
+    test.setTimeout(90_000)
+    for (const p of ['en/soporte.html', 'en/primeros-pasos.html', 'pt/soporte.html', 'fr/novedades.html']) {
+      for (const tema of ['claro', 'oscuro']) {
+        await page.goto(SITIO + p)
+        await page.evaluate((t) => (document.documentElement.dataset.tema = t), tema)
+        await page.addStyleTag({ content: '*, *::before, *::after { animation: none !important; transition: none !important }' })
+        const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze()
+        expect(r.violations.map((v) => `${p} (${tema}) → ${v.id}`)).toEqual([])
+      }
+    }
+  })
+
   test('celular: el menú se abre y se cierra con Esc', async ({ pagina: page }) => {
     await page.setViewportSize({ width: 390, height: 800 })
     await page.goto(SITIO + 'index.html')
@@ -234,21 +290,28 @@ test.describe('Sitio de documentación', () => {
     await expect(page.locator('button[data-tema]')).toHaveText('Tema: Oscuro')
   })
 
-  test('idioma: cambia el idioma de los diálogos reales y se recuerda', async ({ pagina: page }) => {
-    await page.goto(SITIO + 'index.html')
-    const boton = page.locator('button[data-idioma]')
-    await expect(boton).toHaveText('Idioma: ES')
-    await expect(boton).toHaveAccessibleName('Idioma: ES (Español)')
-    await boton.click()
-    await expect(boton).toHaveText('Idioma: EN')
-    await boton.click()
-    await expect(boton).toHaveText('Idioma: PT')
-    await boton.click()
-    await expect(boton).toHaveText('Idioma: FR')
-    await page.reload()
-    await expect(page.locator('button[data-idioma]')).toHaveText('Idioma: FR')
+  test('idioma: el selector lleva a la misma página en otro idioma, con la interfaz y los diálogos en ese idioma', async ({
+    pagina: page,
+  }) => {
+    await page.goto(SITIO + 'soporte.html')
+    const sel = page.locator('select[data-idioma]')
+    await expect(sel).toHaveValue('es')
+    await expect(page.locator('a.saltar')).toHaveText('Saltar al contenido')
+    await sel.selectOption('en')
+    await expect(page).toHaveURL(/\/site\/en\/soporte(\.html)?$/)
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en')
+    await expect(page.locator('select[data-idioma]')).toHaveValue('en')
+    await expect(page.locator('a.saltar')).toHaveText('Skip to content')
+    await expect(page.locator('button[data-tema]')).toHaveText('Theme: Auto')
+    await expect(page.locator('.cabecera .buscar-btn span')).toHaveText('Search')
+    await page.locator('select[data-idioma]').selectOption('fr')
+    await expect(page).toHaveURL(/\/site\/fr\/soporte(\.html)?$/)
+    await page.goto(SITIO + 'fr/index.html')
     await page.click('#b-hero')
     await expect(enDialogo(page, 'button[data-id="cancel"]')).toHaveText('Annuler')
+    await page.keyboard.press('Escape')
+    await page.locator('select[data-idioma]').selectOption('es')
+    await expect(page).toHaveURL(/\/site\/index(\.html)?$/)
   })
 
   test('portada: los botones abren la librería de verdad', async ({ pagina: page }) => {
@@ -793,14 +856,14 @@ test.describe('Sitio: demo, cifras, buscador y volver arriba', () => {
   test('el buscador abierto no tiene violaciones de axe y un clic en un resultado navega', async ({ page }) => {
     await page.goto(SITIO + 'index.html')
     await page.keyboard.press('/')
-    await page.getByRole('combobox').fill('tema')
-    await expect(page.getByRole('option').first()).toBeVisible()
+    await page.locator('dialog.buscador').getByRole('combobox').fill('tema')
+    await expect(page.locator('dialog.buscador').getByRole('option').first()).toBeVisible()
     const r = await new AxeBuilder({ page })
       .include('dialog.buscador')
       .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
       .analyze()
     expect(r.violations.map((v) => v.id)).toEqual([])
-    await page.getByRole('option').first().click()
+    await page.locator('dialog.buscador').getByRole('option').first().click()
     await expect(page).not.toHaveURL(/index\.html$/)
   })
 
