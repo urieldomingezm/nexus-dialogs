@@ -392,6 +392,24 @@ test.describe('Sitio de documentación', () => {
     await expect(r).toContainText('"clabeMala": false')
   })
 
+  test('mini ERP en inglés: la lista, la baja con «Undo» y la actividad salen en inglés', async ({ pagina: page }) => {
+    await page.goto(SITIO + 'en/erp.html')
+    const filas = page.locator('#e-filas tr')
+    await expect(filas).toHaveCount(5)
+    await expect(filas.first()).toContainText('Shift lead')
+    await filas
+      .first()
+      .getByRole('button', { name: /Remove Ana/ })
+      .click()
+    const d = page.locator('dialog[data-nexus-dialog]').last()
+    await expect(d).toContainText('Their severance is calculated')
+    await d.locator('button[data-id="confirm"]').click()
+    await expect(filas).toHaveCount(4)
+    await expect(page.locator('#e-log')).toContainText('Removed Ana Torres')
+    await page.locator('[data-nexus-toast]').getByRole('button', { name: 'Undo' }).click()
+    await expect(filas).toHaveCount(5)
+  })
+
   test('mini ERP: baja con confirmación y «Deshacer», cambio de puesto y acción masiva', async ({ pagina: page }) => {
     await page.goto(SITIO + 'erp.html')
     const filas = page.locator('#e-filas tr')
