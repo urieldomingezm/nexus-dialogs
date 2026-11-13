@@ -173,6 +173,7 @@ function cabecera(activa) {
     <a class="ico-enlace" href="${REPO}" rel="noopener">GitHub</a>
     <a class="ico-enlace" href="${NPM}" rel="noopener">npm</a>
     <button type="button" class="tema" data-tema title="Cambiar entre automático, claro y oscuro"></button>
+    <button type="button" class="tema" data-idioma title="Idioma de los textos de los diálogos de la biblioteca"></button>
   </div>
 </header>`
 }

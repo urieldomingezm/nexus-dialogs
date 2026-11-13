@@ -2,6 +2,7 @@
 import { readFileSync } from 'node:fs'
 import { test as base, expect } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
+import { enDialogo } from './utilidades.mjs'
 
 const SITIO = '/site/'
 const IDS = [...readFileSync('site/src/ejemplos-def.ts', 'utf8').matchAll(/^ \* id: (\S+)$/gm)].map((m) => m[1])
@@ -199,6 +200,22 @@ test.describe('Sitio de documentación', () => {
     await page.reload()
     await expect(page.locator('html')).toHaveAttribute('data-tema', 'oscuro')
     await expect(page.locator('button[data-tema]')).toHaveText('Tema: Oscuro')
+  })
+
+  test('idioma: cambia el idioma de los diálogos reales y se recuerda', async ({ pagina: page }) => {
+    await page.goto(SITIO + 'index.html')
+    const boton = page.locator('button[data-idioma]')
+    await expect(boton).toHaveText('Idioma: Español')
+    await boton.click()
+    await expect(boton).toHaveText('Idioma: English')
+    await boton.click()
+    await expect(boton).toHaveText('Idioma: Português')
+    await boton.click()
+    await expect(boton).toHaveText('Idioma: Français')
+    await page.reload()
+    await expect(page.locator('button[data-idioma]')).toHaveText('Idioma: Français')
+    await page.click('#b-hero')
+    await expect(enDialogo(page, 'button[data-id="cancel"]')).toHaveText('Annuler')
   })
 
   test('portada: los botones abren la librería de verdad', async ({ pagina: page }) => {

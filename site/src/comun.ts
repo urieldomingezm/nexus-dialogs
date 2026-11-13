@@ -1,6 +1,7 @@
 // Lo que comparten todas las páginas: tema, resaltado de código, botón «Copiar» y menú lateral.
 import './estilos.css'
-import { configure } from 'nexus-dialogs'
+import { configure, registerLanguage } from 'nexus-dialogs'
+import { fr, pt } from 'nexus-dialogs/locales'
 import { toast } from 'nexus-dialogs/toast'
 import './animaciones'
 import './buscador'
@@ -40,6 +41,42 @@ document.addEventListener('click', (e) => {
     /* sin almacenamiento: el tema vale solo para esta visita */
   }
   aplicar(siguiente)
+})
+
+// ── Idioma de los diálogos de la biblioteca (la página sigue en español) ─────
+registerLanguage('pt', pt)
+registerLanguage('fr', fr)
+const IDIOMAS = ['es', 'en', 'pt', 'fr']
+const NOMBRE: Record<string, string> = { es: 'Español', en: 'English', pt: 'Português', fr: 'Français' }
+
+function idiomaGuardado(): string {
+  try {
+    const l = localStorage.getItem('nd-idioma')
+    return l && IDIOMAS.includes(l) ? l : 'es'
+  } catch {
+    return 'es'
+  }
+}
+
+function aplicarIdioma(l: string): void {
+  configure({ lang: l })
+  toast.configure({ lang: l })
+  for (const b of document.querySelectorAll<HTMLButtonElement>('button[data-idioma]')) {
+    b.textContent = `Idioma: ${NOMBRE[l]}`
+    b.dataset.idioma = l
+  }
+}
+
+aplicarIdioma(idiomaGuardado())
+document.addEventListener('click', (e) => {
+  if (!(e.target as Element).closest('button[data-idioma]')) return
+  const siguiente = IDIOMAS[(IDIOMAS.indexOf(idiomaGuardado()) + 1) % IDIOMAS.length]
+  try {
+    localStorage.setItem('nd-idioma', siguiente)
+  } catch {
+    /* sin almacenamiento: el idioma vale solo para esta visita */
+  }
+  aplicarIdioma(siguiente)
 })
 
 // ── Resaltado de código (mínimo, sin dependencias) ──────────────────────────
