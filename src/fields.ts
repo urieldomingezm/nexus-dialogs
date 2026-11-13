@@ -41,7 +41,9 @@ export interface FieldContext {
   nested: (fields: Field[], values: Record<string, unknown>, onChange: () => void) => NestedFieldSet
 }
 
-type Fabrica = (ctx: FieldContext, valor: unknown) => CustomControl
+/** Fábrica de un tipo de campo propio (ver `registerField`). */
+export type FieldFactory = (ctx: FieldContext, valor: unknown) => CustomControl
+type Fabrica = FieldFactory
 
 // ── Textos ──────────────────────────────────────────────────────────────────
 const ES = {
@@ -173,7 +175,7 @@ const EN: Textos = {
   postalNotFound: 'ZIP code not found: type the details.',
   missing: 'Missing: {0}.',
 }
-const T = (): Textos => (language() === 'en' ? EN : ES)
+const T = (): Textos => (language() === 'es' ? ES : EN)
 const f = (s: string, ...v: (string | number)[]) => s.replace(/\{(\d)\}/g, (_, i) => String(v[+i] ?? ''))
 const cambio = (el: Element) => el.dispatchEvent(new Event('change', { bubbles: true }))
 
@@ -382,6 +384,8 @@ const combobox: Fabrica = (ctx, valor) => {
     if (nota) items.push(fila(nota, 'muted'))
     else if (!visibles.length) items.push(fila(t.noResults, 'muted'))
     lista.replaceChildren(...items)
+    // Un listbox sin opciones (sin resultados, buscando, error) no es válido: mientras no haya opciones es solo un grupo.
+    lista.setAttribute('role', visibles.length ? 'listbox' : 'group')
     flot.colocar()
     if (activo >= 0) {
       input.setAttribute('aria-activedescendant', `${listaId}-${activo}`)
@@ -1767,6 +1771,18 @@ export const CAMPOS: Record<string, Fabrica> = {
   address: direccion,
   signature: firma,
   datecal: fechaCal,
+}
+
+/**
+ * Registra un tipo de campo propio para `form()` y `wizard()`: `registerField('rating', (ctx, valor) => ({ el, value, focus, invalid }))`.
+ * Devuelve una función que lo quita. No se pueden reemplazar los tipos que ya trae la librería.
+ */
+export function registerField(tipo: string, fabrica: Fabrica): () => void {
+  if (!tipo || tipo in CAMPOS) throw new Error(`El tipo de campo «${tipo}» ya existe o no es válido.`)
+  CAMPOS[tipo] = fabrica
+  return () => {
+    delete CAMPOS[tipo]
+  }
 }
 
 export const FIELDS_CSS = `

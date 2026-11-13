@@ -23,7 +23,7 @@ import { h, uid } from './core/dom'
 
 const ES = { loading: 'Cargando…', failed: 'No se pudo cargar esta pestaña.' }
 const EN = { loading: 'Loading…', failed: 'Could not load this tab.' }
-const T = () => (language() === 'en' ? EN : ES)
+const T = () => (language() === 'es' ? ES : EN)
 
 /** Lo que recibe la función de contenido de una pestaña. */
 export interface TabInfo {

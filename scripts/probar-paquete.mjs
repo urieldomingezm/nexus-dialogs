@@ -33,6 +33,7 @@ const ENTRADAS = [
   'nexus-dialogs/table',
   'nexus-dialogs/tabs',
   'nexus-dialogs/timeline',
+  'nexus-dialogs/locales',
   'nexus-dialogs/sepomex',
   'nexus-dialogs/rrhh',
 ]

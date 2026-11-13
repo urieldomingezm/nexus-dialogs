@@ -19,6 +19,7 @@
       "nexus-dialogs/table": ["./src/table.ts"],
       "nexus-dialogs/tabs": ["./src/tabs.ts"],
       "nexus-dialogs/timeline": ["./src/timeline.ts"],
+      "nexus-dialogs/locales": ["./src/locales.ts"],
       "nexus-dialogs/sepomex": ["./src/sepomex.ts"],
       "nexus-dialogs/rrhh": ["./src/rrhh.ts"],
       "nexus-dialogs/swal": ["./src/swal.ts"],

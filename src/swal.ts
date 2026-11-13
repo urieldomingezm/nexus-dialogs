@@ -174,8 +174,7 @@ function normalizar(args: unknown[]): SweetAlertOptions {
 const DIM = (v: number | string | undefined): string | undefined => (v === undefined ? undefined : typeof v === 'number' ? `${v}px` : v)
 
 const valorParam = (v: string): unknown => {
-  if (v === 'true') return true
-  if (v === 'false') return false
+  if (v === 'true' || v === 'false') return v === 'true'
   if (v !== '' && !Number.isNaN(Number(v))) return Number(v)
   if (/^[[{]/.test(v)) {
     try {
@@ -561,27 +560,23 @@ function etiquetarBotones(e: Entrada): void {
 
 /** `draggable`: se arrastra el panel desde la cabecera con el mouse o el dedo. */
 function hacerArrastrable(panel: HTMLElement): void {
-  let ox = 0
-  let oy = 0
-  let sx = 0
-  let sy = 0
-  let activo = false
+  let x = 0
+  let y = 0
+  let desde: [number, number] | null = null // dónde se tomó la cabecera, respecto a lo ya movido
   panel.addEventListener('pointerdown', (ev) => {
     const t = ev.target as Element
     if (ev.button !== 0 || !t.closest('.head') || t.closest('button,a,input,select,textarea')) return
-    activo = true
-    sx = ev.clientX - ox
-    sy = ev.clientY - oy
+    desde = [ev.clientX - x, ev.clientY - y]
     panel.setPointerCapture(ev.pointerId)
   })
   panel.addEventListener('pointermove', (ev) => {
-    if (!activo) return
-    ox = ev.clientX - sx
-    oy = ev.clientY - sy
-    panel.style.setProperty('translate', `${ox}px ${oy}px`)
+    if (!desde) return
+    x = ev.clientX - desde[0]
+    y = ev.clientY - desde[1]
+    panel.style.setProperty('translate', `${x}px ${y}px`)
   })
   const soltar = (ev: PointerEvent) => {
-    activo = false
+    desde = null
     if (panel.hasPointerCapture(ev.pointerId)) panel.releasePointerCapture(ev.pointerId)
   }
   panel.addEventListener('pointerup', soltar)

@@ -12,7 +12,7 @@
 import { angosto, direccion, h, svg, uid } from './core/dom'
 import { icon } from './core/icons'
 import { adopt } from './core/sheet'
-import { en, es } from './i18n'
+import { labelsFor } from 'nexus-dialogs'
 import { BUTTONS, VARS } from './styles'
 import type { Scheme } from './types'
 
@@ -45,7 +45,8 @@ export interface ToastConfig {
   max?: number
   /** Duración por omisión en ms. */
   duration?: number
-  lang?: 'es' | 'en'
+  /** 'es', 'en' o uno registrado con `registerLanguage`. Para seguir a la página: `lang: pageLanguage()`. */
+  lang?: string
   scheme?: Scheme
   /** Dirección del texto; 'auto' sigue a la página. */
   dir?: 'ltr' | 'rtl' | 'auto'
@@ -119,7 +120,7 @@ ol.narrow.bottom-left,ol.narrow.bottom-center,ol.narrow.bottom-right{top:0;botto
 @media (prefers-reduced-motion:reduce){li,li.out{animation:none}.spin{animation:none}.icon path{animation:none}}
 `
 
-const L = () => (cfg.lang === 'en' ? en : es)
+const L = () => labelsFor(cfg.lang.split('-')[0].toLowerCase())
 
 /** El diálogo modal de arriba, si hay: los toasts deben vivir dentro o quedan inertes detrás de él. */
 function modalArriba(): HTMLDialogElement | null {
