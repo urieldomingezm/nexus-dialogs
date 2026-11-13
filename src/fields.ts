@@ -1797,6 +1797,9 @@ export const FIELDS_CSS = `
 .cb-list[hidden]{display:none}
 .cb-list:popover-open{inset:auto;border:1px solid var(--_line);overflow:auto;color:var(--_fg)}
 .cb-list.up{top:auto;bottom:calc(100% + 6px)}
+.body::-webkit-scrollbar,.cb-list::-webkit-scrollbar{width:12px}
+.body::-webkit-scrollbar-thumb,.cb-list::-webkit-scrollbar-thumb{background:var(--_subtle);border:3px solid transparent;border-radius:9px;background-clip:content-box}
+@supports not selector(::-webkit-scrollbar){.body,.cb-list{scrollbar-color:var(--_subtle) transparent}}
 .cb-opt{display:flex;gap:12px;align-items:center;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:14px;color:var(--_fg)}
 .cb-opt.active{background:var(--_surface)}
 .cb-opt[aria-selected=true] .cb-text>span{font-weight:600}
