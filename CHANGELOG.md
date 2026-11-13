@@ -4,6 +4,8 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ## [Sin publicar]
 
+## [1.0.0] - 2026-11-13
+
 ### Corregido
 
 - La barra de desplazamiento vertical del cuerpo de los modales y de la lista de los `select` con búsqueda (combobox) se ocultaba sola en macOS, iOS y Windows con barras flotantes, y era difícil usarla con el ratón. Ahora es una barra fija de 12 px, siempre visible (en Firefox, con `scrollbar-color`).
