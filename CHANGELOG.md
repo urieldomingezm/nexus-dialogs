@@ -40,6 +40,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ### Cambiado
 
+- **Versión 1.0.** Desde esta versión la API pública sigue el versionado semántico: solo una versión mayor rompe (qué cuenta como romper, en Soporte). No hay cambios que rompen respecto a la 0.5.4. Se actualizan Soporte, Versiones, Limitaciones, `SECURITY.md` y el README: solo se corrige la última 1.x y se puede usar `^1.0.0`.
 - `language()` devuelve `string` (antes `'es' | 'en'`) porque ahora puede ser un idioma registrado. Quien compare con `'es'` o `'en'` no cambia; solo afecta a un tipo propio construido sobre su resultado.
 - `nexus-dialogs/toast` ya no lleva su propia copia de los textos: los toma del núcleo (`nexus-dialogs`), que es dependencia del paquete. Pesa 1 KB menos.
 

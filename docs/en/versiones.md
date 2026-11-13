@@ -6,8 +6,8 @@ How versions are numbered, how to read the CHANGELOG and what to do before and a
 
 | Change | Example | What to expect |
 |---|---|---|
-| **Patch** | `0.5.3` → `0.5.4` | Fixes only. Upgrading is safe |
-| **Minor** | `0.5.x` → `0.6.0` | While we are on `0.x`, **it may break**. From `1.0`, it only adds |
+| **Patch** | `1.0.0` → `1.0.1` | Fixes only. Upgrading is safe |
+| **Minor** | `1.0.x` → `1.1.0` | It only adds. (Up to `0.x`, a minor could break) |
 | **Major** | `1.x` → `2.0` | May break. Whatever is removed was announced as deprecated a minor version earlier |
 
 What counts as "breaking" (removing or renaming a public export, changing what a function returns, changing a default value that alters the result, or raising a browser minimum) is in [Support](https://urieldomingezm.github.io/nexus-dialogs/en/soporte.html#versions).
@@ -23,7 +23,7 @@ Each version in the [CHANGELOG](https://github.com/urieldomingezm/nexus-dialogs/
 
 ## Before upgrading
 
-1. **Pin the exact version** while you are on `0.x`: `"nexus-dialogs": "0.5.4"`, without `^` or `~`. That way a fresh install never changes version on its own.
+1. **Choose how to pin the version.** From `1.0` you can use `"nexus-dialogs": "^1.0.0"`: minor versions and patches do not break. If you prefer that a fresh install never changes on its own, use the exact version, without `^` or `~`.
 2. **Read "Breaking changes"** for every version between yours and the new one, not just the latest.
 3. **Search your code** for what each change mentions (the function or option name).
 4. **Check the types:** `tsc` flags removed or renamed exports and options that changed shape.
@@ -39,14 +39,15 @@ Each version in the [CHANGELOG](https://github.com/urieldomingezm/nexus-dialogs/
 
 | From | To | What changes | How to migrate |
 |---|---|---|---|
+| `0.5.x` | `1.0.0` | Nothing breaks: `1.0.0` only fixes the public API and semantic versioning | Upgrade and run your tests |
 | `0.4.x` | `0.5.0` | `strictHtml` is `true` by default: string `html` is shown as text | With your own content, `configure({ strictHtml: false })`. With outside content, `configure({ sanitize: (h) => DOMPurify.sanitize(h) })`. `Node`s and plain texts don't change |
 
 New migrations are added here as they come out. For coming from SweetAlert2 there is a separate guide: [Migrate from SweetAlert2](https://urieldomingezm.github.io/nexus-dialogs/en/migracion.html).
 
 ## When something is going to be removed
 
-From `1.0`, a function that is going to be retired keeps working for one full minor version, marked `@deprecated` in the types (your editor strikes it through) and listed under "Deprecated" in the CHANGELOG with its replacement. It is only removed in the next major version. In `0.x` the notice may last less, but it always appears under "Breaking changes".
+A function that is going to be retired keeps working for one full minor version, marked `@deprecated` in the types (your editor strikes it through) and listed under "Deprecated" in the CHANGELOG with its replacement. It is only removed in the next major version. (In `0.x` the notice could last less, but it always appeared under "Breaking changes".)
 
 ## If the upgrade breaks something
 
-Go back to the previous version (`npm install nexus-dialogs@0.5.4`) and open an [issue](https://github.com/urieldomingezm/nexus-dialogs/issues) with the version you come from, the one you are going to and a minimal case. If the change was not in "Breaking changes", it is a CHANGELOG error and it gets fixed.
+Go back to the previous version (`npm install nexus-dialogs@1.0.0`) and open an [issue](https://github.com/urieldomingezm/nexus-dialogs/issues) with the version you come from, the one you are going to and a minimal case. If the change was not in "Breaking changes", it is a CHANGELOG error and it gets fixed.

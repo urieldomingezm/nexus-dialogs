@@ -15,7 +15,7 @@ Incluye la versión, el navegador, los pasos para reproducirlo y qué impacto ti
 
 ## Versiones con correcciones de seguridad
 
-Mientras la librería esté en 0.x, solo se corrige la **última versión publicada**. Desde la 1.0, la última 1.x.
+Se corrige la **última versión 1.x publicada**. Las 0.x ya no reciben correcciones.
 
 ## Cómo se publica una versión
 

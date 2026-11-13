@@ -51,8 +51,8 @@ Types are included and checked with `@arethetypeswrong` on every change. Importi
 
 ## Versions
 
-- **0.x (today).** A minor version (`0.5` → `0.6`) may bring breaking changes. They always appear in the CHANGELOG under "Breaking changes", with how to migrate. Pin the exact version (`"nexus-dialogs": "0.5.4"`) until you want to upgrade.
-- **From 1.0.** Only a major version breaks. Whatever is going to be removed is marked as deprecated a minor version earlier.
+- **From 1.0 (today).** Only a major version breaks. Whatever is going to be removed is marked as deprecated a minor version earlier. You can use `^1.0.0`.
+- **Before (0.x).** A minor version could bring breaking changes; they appear in the CHANGELOG under "Breaking changes".
 - **What counts as breaking:** removing or renaming a public export, changing what a function returns ([contracts](https://urieldomingezm.github.io/nexus-dialogs/en/contratos.html)), changing a default value that alters the result and raising the minimum of a browser or framework.
 - **What does not count:** the exact look within what the button standard and accessibility ask for, bug and security fixes, and what is not in the public API.
 - **How it is watched:** `npm run api:check` fails if the public API changes without updating its report, and `test/tipos/contratos.ts` pins what each function returns.
@@ -63,7 +63,7 @@ One person maintains the library, so this is good faith, not a contract.
 
 | | What to expect |
 |---|---|
-| **Vulnerabilities** | Acknowledgement within 7 days and first assessment within 14 ([`SECURITY.md`](https://github.com/urieldomingezm/nexus-dialogs/blob/main/SECURITY.md)). The latest published version is fixed (from 1.0, the latest 1.x) |
+| **Vulnerabilities** | Acknowledgement within 7 days and first assessment within 14 ([`SECURITY.md`](https://github.com/urieldomingezm/nexus-dialogs/blob/main/SECURITY.md)). The latest 1.x is fixed; 0.x no longer receives fixes |
 | **Bugs** | Handled in the latest version. With a minimal case that reproduces it, the fix is much faster |
 | **Accessibility** | Takes priority over new features |
 | **Previous versions** | They don't receive fixes; upgrading from one minor to the next comes with the migration guide in the CHANGELOG |
