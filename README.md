@@ -1045,8 +1045,8 @@ La API pública completa, generada de los tipos, está en [`api/nexus-dialogs.ap
 - **nexus-tours**: los diálogos son `<dialog open>` de verdad, así que los tours los detectan y pueden explicar lo que hay dentro.
 - Bootstrap, Tailwind, SweetAlert2: sin choques de `z-index` ni de CSS. Para migrar de SweetAlert2, ver [¿Vienes de SweetAlert2?](#vienes-de-sweetalert2).
 - Seguridad: [`docs/seguridad.md`](docs/seguridad.md). Para reportar una vulnerabilidad, [`SECURITY.md`](SECURITY.md).
-- Vue 3.3+ con `nexus-dialogs/vue`. React 18+ con `nexus-dialogs/react` (probado con 18 y 19). Angular 16+ con `nexus-dialogs/angular`.
-- Node/SSR: importar no toca el DOM; los diálogos se abren solo en el navegador.
+- Vue 3.3+ con `nexus-dialogs/vue`. React 18+ con `nexus-dialogs/react`. Angular 16+ con `nexus-dialogs/angular`. CI instala y prueba cada una en su versión mínima y en la última (matriz en [Soporte](https://urieldomingezm.github.io/nexus-dialogs/soporte.html), salida de [`compat/matriz.json`](compat/matriz.json)).
+- Node 18 o más (probado en 18, 20, 22 y 24). SSR: importar no toca el DOM; los diálogos se abren solo en el navegador.
 
 ## 14. Desarrollo
 
@@ -1057,9 +1057,10 @@ npm run build:site    # sitio de documentación en site-dist/ (necesita npm run 
 npm run test:unit     # Vitest + happy-dom
 npm run test:e2e      # Playwright (Chromium, Firefox, WebKit) + axe
 npm run build && npm run size && npm run api:check && npm run check:paquete
+npm run compat:check  # la matriz de compatibilidad coincide con package.json y docs/soporte.md
 npm run bench         # tamaños, tiempos y memoria repetibles (docs/rendimiento.md)
 ```
 
 Ejemplos completos de principio a fin (alta de empleado, cierre de quincena, importar empleados): [`examples/`](examples/). Tamaños y tiempos: [Rendimiento](https://urieldomingezm.github.io/nexus-dialogs/rendimiento.html).
 
-Ver [CHANGELOG](CHANGELOG.md).
+¿Quieres colaborar? Lee [`CONTRIBUTING.md`](CONTRIBUTING.md). Ver [CHANGELOG](CHANGELOG.md).

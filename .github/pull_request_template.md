@@ -8,3 +8,5 @@
 - [ ] Si cambia la API pública: corrí `npm run build && npm run api` y lo anoté en el CHANGELOG
 - [ ] Si cambia lo que se dibuja: lo revisé en celular y con teclado
 - [ ] Actualicé el README si cambia cómo se usa
+- [ ] Si cambia un mínimo (navegador, Node o framework): edité `compat/matriz.json`, corrí `npm run compat` y lo anoté como cambio que rompe
+- [ ] Leí [`CONTRIBUTING.md`](../CONTRIBUTING.md)

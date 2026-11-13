@@ -6,11 +6,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ### Corregido
 
+- Las pruebas de React usaban `act` de `react`, que no existe antes de la 18.3; ahora también corren con 18.0 a 18.2.
 - Sitio de documentación, «Míralo en acción»: la demostración ya no se queda parada para siempre. Cambiar de apariencia no la afecta, elegir una escena la reproduce y la deja lista para usarse, y si nadie la toca durante 12 segundos sigue sola con la siguiente (lo mismo si alguien la usa y se va). En el teléfono, empezar a desplazar la página sobre la maqueta ya no la detiene: solo un toque completo, el teclado o escribir. En pantallas de menos de 400 px los submenús muestran solo el título.
 - Sitio de documentación en el teléfono: el menú abierto con un grupo desplegado medía más que la pantalla y los últimos enlaces (y el botón de cerrar) quedaban fuera de alcance. Ahora el menú nunca pasa de la altura de la pantalla, solo se desplazan los enlaces y el botón de cerrar y el buscador se quedan a la vista.
 
 ### Agregado
 
+- `CONTRIBUTING.md` con la guía para contribuir, y plantilla de issue «Incompatibilidad».
+- Matriz de compatibilidad verificada: `compat/matriz.json` es la fuente única de los mínimos y de las versiones que se prueban. `npm run compat` regenera las tablas de `docs/soporte.md`, `npm run compat:check` comprueba `package.json`, el README y esas tablas, y CI instala Vue 3.3, React 18.0, Angular 16.0 y las últimas, y prueba el paquete en Node 18, 20, 22 y 24 (`npm run check:node`).
 - Sitio de documentación: selector de idioma en la cabecera, junto al del tema (Español, English, Português, Français). Cambia el idioma de los diálogos y avisos reales de las demostraciones, se recuerda entre visitas; los textos de la página siguen en español.
 - **Rendimiento repetible:** `npm run bench` mide el tamaño de cada archivo (gzip y brotli), lo que pesa usar solo una parte y los tiempos y la memoria en Chromium; `--write` actualiza la nueva página [Rendimiento](docs/rendimiento.md).
 - **Soporte:** página [Soporte](docs/soporte.md) con la matriz de navegadores función por función (qué pasa si falta una), frameworks, política de versiones y de soporte, y el caso de uso en producción.

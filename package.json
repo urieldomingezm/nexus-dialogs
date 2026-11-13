@@ -308,6 +308,9 @@
     "bench": "node scripts/bench.mjs",
     "api": "node scripts/api.mjs",
     "api:check": "node scripts/api.mjs --check",
+    "compat": "node scripts/compat.mjs",
+    "compat:check": "node scripts/compat.mjs --check",
+    "check:node": "node scripts/probar-node.mjs",
     "check:paquete": "attw --pack . --ignore-rules cjs-resolves-to-esm && node scripts/probar-paquete.mjs",
     "prepublishOnly": "npm run build"
   },

@@ -1,0 +1,42 @@
+name: Incompatibilidad
+description: No funciona (o funciona a medias) en un navegador, versión de Node o framework que la documentación dice que soporta.
+labels: [compatibilidad]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Revisa antes la [matriz de compatibilidad](https://urieldomingezm.github.io/nexus-dialogs/soporte.html). Si tu versión está por debajo del mínimo, no es un error, pero cuéntalo: ayuda a decidir si vale la pena bajar el mínimo.
+  - type: input
+    id: version
+    attributes:
+      label: Versión de nexus-dialogs
+      placeholder: '0.5.4'
+    validations:
+      required: true
+  - type: dropdown
+    id: entorno
+    attributes:
+      label: ¿Dónde falla?
+      options: [Navegador, Node (importar o compilar), Vue, React, Angular, Otro]
+    validations:
+      required: true
+  - type: input
+    id: versiones
+    attributes:
+      label: Versiones exactas
+      description: Navegador y sistema, o versión de Node, Vue, React o Angular.
+      placeholder: Safari 16.4 en iOS, Node 18.20, React 18.2…
+    validations:
+      required: true
+  - type: textarea
+    id: que-pasa
+    attributes:
+      label: ¿Qué pasa y qué esperabas?
+    validations:
+      required: true
+  - type: textarea
+    id: reproducir
+    attributes:
+      label: Cómo reproducirlo
+      description: El código mínimo y, si puedes, un enlace a StackBlitz.
+      render: ts

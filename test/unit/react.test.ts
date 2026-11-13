@@ -1,11 +1,16 @@
 import { describe, expect, it } from 'vitest'
-import { act, createElement, StrictMode, type ReactNode } from 'react'
+import * as React from 'react'
+import { createElement, StrictMode, type ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { NexusDialogsProvider, useDialog, useForm, useToast } from '../../src/react'
 import { confirmDelete } from '../../src/patterns'
 import { toast } from '../../src/toast'
 import { configure, dialog, language } from '../../src/index'
 import { $, abiertos, boton, escribir, esperar } from './utilidades'
+
+// `act` salió de `react` en la 18.3; antes vivía en `react-dom/test-utils` (así se prueban también las 18.0 a 18.2).
+const act: (fn: () => unknown) => Promise<void> =
+  (React as unknown as { act?: typeof act }).act ?? ((await import('react-dom/test-utils')) as unknown as { act: typeof act }).act
 
 ;(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
 
