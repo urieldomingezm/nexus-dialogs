@@ -4,6 +4,10 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ## [Sin publicar]
 
+### Cambiado
+
+- Los textos de la interfaz del sitio (buscador, copiar, tema, volver arriba) los resuelve ahora [`nexus-i18n`](https://www.npmjs.com/package/nexus-i18n), la librería de idiomas de las librerías NEXUS: idioma desde `<html lang>`, respaldo en español y `{n}`. Es una dependencia de desarrollo del sitio (no entra en el paquete). Los diccionarios con funciones y listas (demostración, Mini ERP, Migrar, Pruebas) siguen como estaban.
+
 ## [1.0.0] - 2026-11-13
 
 ### Corregido

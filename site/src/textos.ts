@@ -1,13 +1,9 @@
 // Textos de la interfaz que el sitio escribe desde JavaScript (los de las páginas salen del build: site/idiomas.mjs).
-// El idioma es el de la página: <html lang="en"> → inglés. Lo que falte en un idioma sale en español.
+// El idioma es el de la página: <html lang="en"> → inglés. Lo que falte en un idioma sale en español. Los resuelve nexus-i18n.
+import { createI18n } from 'nexus-i18n'
+
 export type Idioma = 'es' | 'en' | 'pt' | 'fr'
 export const IDIOMAS: Idioma[] = ['es', 'en', 'pt', 'fr']
-
-const leer = (): Idioma => {
-  const l = (document.documentElement.lang || 'es').slice(0, 2) as Idioma
-  return IDIOMAS.includes(l) ? l : 'es'
-}
-export const idioma: Idioma = leer()
 
 const D = {
   es: {
@@ -92,5 +88,9 @@ const D = {
   },
 } as const
 
+const i18n = createI18n({ lang: 'auto', fallback: 'es', messages: D })
+/** Idioma de la página (`<html lang>`); si no es uno de los cuatro, español. */
+export const idioma = i18n.lang as Idioma
+
 export type Clave = keyof (typeof D)['es']
-export const t = (k: Clave, n?: number): string => (D[idioma][k] ?? D.es[k]).replace('{n}', String(n ?? ''))
+export const t = (k: Clave, n?: number): string => i18n.t(k, { n: n ?? '' })
