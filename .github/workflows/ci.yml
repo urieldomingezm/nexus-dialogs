@@ -49,6 +49,9 @@ jobs:
       - name: La API pública coincide con api/nexus-dialogs.api.md
         run: npm run api:check
 
+      - name: La matriz de compatibilidad coincide con package.json, el README y docs/soporte.md
+        run: npm run compat:check
+
       - name: Auditoría de lo que se publica (sin dependencias vulnerables en producción)
         run: npm audit --omit=dev --audit-level=low
 
@@ -132,3 +135,62 @@ jobs:
             playwright-report
             test-results
           retention-days: 7
+
+  # La matriz de compatibilidad (compat/matriz.json) también decide qué se ejecuta aquí: cada versión de Vue, React y
+  # Angular que figura en docs/soporte.md se instala de verdad y corre las pruebas de su envoltura.
+  matriz:
+    name: Matriz de compatibilidad
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      frameworks: ${{ steps.m.outputs.frameworks }}
+      node: ${{ steps.m.outputs.node }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: m
+        run: |
+          echo "frameworks=$(node scripts/compat.mjs --ci)" >> "$GITHUB_OUTPUT"
+          echo "node=$(node scripts/compat.mjs --node)" >> "$GITHUB_OUTPUT"
+
+  frameworks:
+    name: ${{ matrix.nombre }}
+    needs: matriz
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.matriz.outputs.frameworks) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Instalar ${{ matrix.paquetes }}
+        run: npm i --no-save --no-audit --no-fund ${{ matrix.paquetes }}
+      - name: Pruebas de la envoltura
+        run: npx vitest run ${{ matrix.pruebas }}
+
+  node:
+    name: Node ${{ matrix.node }}
+    needs: matriz
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ${{ fromJSON(needs.matriz.outputs.node) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      # La librería se compila con Node 22; lo que se prueba es que su resultado funcione en cada Node soportado.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm run check:node

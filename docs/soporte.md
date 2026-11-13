@@ -19,13 +19,35 @@ No hay soporte para Internet Explorer ni para versiones de Safari anteriores a l
 
 ### Frameworks y entornos
 
-| | Versión |
-|---|---|
-| Vue (`nexus-dialogs/vue`) | 3.3 o más |
-| React (`nexus-dialogs/react`) | 18 o más (probado con 18 y 19) |
-| Angular (`nexus-dialogs/angular`) | 16 o más, solo ESM |
-| Node (compilar, SSR) | 18 o más; importar no toca el DOM y abrir un diálogo en el servidor falla con un error explícito |
-| TypeScript | Tipos incluidos; se revisan con `@arethetypeswrong` en cada cambio |
+<!-- compat:inicio -->
+**Qué se ejecuta en CI (matriz de compatibilidad).** Las filas salen de [`compat/matriz.json`](https://github.com/urieldomingezm/nexus-dialogs/blob/main/compat/matriz.json): CI instala cada versión indicada y corre las pruebas de su envoltura, así que lo que dice «ejecuta» es lo que de verdad se ejecuta. `npm run compat:check` falla si esta tabla, `package.json` o el README no coinciden con ese archivo.
+
+#### Navegadores
+
+| Navegador | Mínimo | Motor que CI ejecuta (e2e) |
+|---|---|---|
+| Chrome y Edge | 111 | Chromium |
+| Firefox | 113 | Firefox |
+| Safari | 16.4 | WebKit |
+
+CI ejecuta las pruebas e2e con la versión de cada motor que trae Playwright; no se prueban versiones viejas por separado.
+
+#### Frameworks
+
+| Framework | Mínimo declarado | Versiones que CI ejecuta |
+|---|---|---|
+| Vue (`nexus-dialogs/vue`) | 3.3 o más | 3.3 (mínimo), última |
+| React (`nexus-dialogs/react`) | 18 o más | 18.0 (mínimo), 18 (última), última |
+| Angular (`nexus-dialogs/angular`) | 16 o más. Solo ESM. | 16.0 (mínimo), 19, última |
+
+#### Node
+
+| Mínimo | Versiones que CI ejecuta | Qué se comprueba |
+|---|---|---|
+| 18 | 18, 20, 22, 24 | Importar (ESM y CJS) y fallar con un error claro sin DOM. La librería se compila con Node 22. |
+<!-- compat:fin -->
+
+Los tipos se incluyen y se revisan con `@arethetypeswrong` en cada cambio. Importar la librería no toca el DOM y abrir un diálogo en el servidor falla con un error explícito.
 
 ## Versiones
 
