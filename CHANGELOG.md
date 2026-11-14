@@ -10,6 +10,8 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ### Cambiado
 
+- La lista del buscador (combobox) se abre siempre hacia abajo —ya no sube por ser corto el diálogo; solo lo hace si en pantalla casi no hay sitio abajo— y estrena diseño: filas más altas, casilla en la selección múltiple, barra de acento en la fila activa, encabezados de grupo fijos en mayúsculas pequeñas y sombra más marcada.
+
 - **Aspecto por omisión más compacto** (se propone como 1.1.0; la API y los nombres de las variables no cambian): menos espacio en la cabecera, el cuerpo y el pie (sin la raya divisoria), título de 16 px y botones de 36 px, radio de 14 px en el panel y 8 px en los controles. El ícono de tipo (eliminar, reloj, aviso…) pasa a un círculo de 40 px con anillo y fondo más marcado del color de su tipo.
 - **Botones:** el principal es azul sólido (`#2563eb` con texto blanco, también en oscuro; antes `#4263eb` claro y `#8ea4ff` oscuro). **Cancelar** y los botones secundarios son un gris sólido derivado de `--nd-fg` y `--nd-bg` (se adapta a cualquier tema), sin borde ni texto rojo. Lo destructivo sigue en rojo sólido.
 - «Cerrar sesión ahora» (`sessionTimeout`), «Rechazar» (`approval`) y «Descartar» (`confirmUnsaved`) pasan a rojo sólido: antes eran el «cancelar» con texto rojo.
