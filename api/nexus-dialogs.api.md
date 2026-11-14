@@ -342,6 +342,7 @@ interface Field {
     upload?: (file: File, progress: (percent: number) => void) => Promise<unknown>;
     presets?: false | DatePreset[];
     maxDays?: number;
+    periods?: boolean;
     calendar?: boolean;
     businessDays?: boolean | 'custom';
     holidays?: string[];
@@ -1220,7 +1221,7 @@ interface TabsOptions {
     tabs: TabSpec[];
     initial?: string;
     label?: string;
-    variant?: 'soft' | 'underline' | 'segmented';
+    variant?: 'underline' | 'segmented';
     scale?: 'sm' | 'md' | 'lg';
     fill?: boolean;
     height?: 'stable' | 'auto';
@@ -1234,7 +1235,6 @@ interface TabSpec {
     html?: string;
     badge?: string | number;
     disabled?: boolean;
-    icon?: string | Node;
 }
 ```
 
