@@ -48,6 +48,7 @@
 
 <section><h2>RR. HH.</h2><div class="fila">
   <button id="h-vacaciones">Vacaciones (calendario)</button>
+  <button id="h-periodos">Programar capacitación</button>
   <button id="h-firma">Firmar recibo</button>
   <button id="h-importar">Importar empleados</button>
   <button id="h-elegir">Elegir empleados</button>
@@ -218,6 +219,9 @@
   on('h-vacaciones', () => form({ title: 'Solicitar vacaciones', submitText: 'Enviar solicitud', fields: [
     { name: 'dias', label: 'Fechas', type: 'daterange', calendar: true, businessDays: true, holidays: ['2026-12-24', '2026-12-31'], required: true, maxDays: 12, presets: false, help: 'Máximo 12 días hábiles. Los festivos de ley y los de la empresa no cuentan.' },
     { name: 'nota', label: 'Comentario', type: 'textarea' },
+  ] }))
+  on('h-periodos', () => form({ title: 'Programar capacitación', submitText: 'Guardar', fields: [
+    { name: 'fechas', label: 'Fechas', type: 'daterange', periods: true, required: true },
   ] }))
   on('h-firma', () => form({ title: 'Recibo de nómina · Quincena 21', text: 'Al firmar aceptas haber recibido $ 8,450.00 MXN.', submitText: 'Firmar recibo', fields: [
     { name: 'firma', label: 'Tu firma', type: 'signature', required: true },

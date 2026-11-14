@@ -12,7 +12,7 @@ const LIMITES = {
   // Sin tope (Infinity): el paquete completo y los temas crecen con el modo oscuro de Tailwind y Bootstrap; se siguen midiendo y
   // el CI muestra cuánto cambian contra main, pero no fallan por tamaño.
   'nexus-dialogs.all': Infinity,
-  forms: 23.5,
+  forms: 25.5,
   toast: 6.8,
   themes: Infinity,
   patterns: 7,

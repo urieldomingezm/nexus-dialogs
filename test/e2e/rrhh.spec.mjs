@@ -18,6 +18,34 @@ test.describe('RR. HH.', () => {
     expect(await resultado(p)).toMatchObject({ confirmed: true, value: { dias: { from: '2026-12-07', to: '2026-12-16' } } })
   })
 
+  test('periodos: un rango y un día suelto, con teclado y axe', async ({ pagina: p }) => {
+    await p.click('#h-periodos')
+    await enDialogo(p, '.cal-day[tabindex="0"]').first().focus()
+    // Primer día del rango con Enter, tres días después el último.
+    await p.keyboard.press('Enter')
+    await p.keyboard.press('ArrowRight')
+    await p.keyboard.press('ArrowRight')
+    await p.keyboard.press('ArrowRight')
+    await p.keyboard.press('Enter')
+    await expect(enDialogo(p, '.per')).toHaveCount(1)
+    await expect(enDialogo(p, '.per-n')).toHaveText('4 días')
+    // Otro día, no corrido.
+    await p.keyboard.press('ArrowDown')
+    await p.keyboard.press('ArrowDown')
+    await p.keyboard.press('Enter')
+    await expect(enDialogo(p, '.per')).toHaveCount(2)
+    await expect(enDialogo(p, '.per-n').nth(1)).toHaveText('1 día')
+    await expect(enDialogo(p, '.dr-count')).toHaveText('5 días')
+    expect(await axe(p)).toEqual([])
+    await enDialogo(p, '.per-x').first().click()
+    await expect(enDialogo(p, '.per')).toHaveCount(1)
+    await boton(p, 'confirm').click()
+    const r = await resultado(p)
+    expect(r.confirmed).toBe(true)
+    expect(r.value.fechas).toHaveLength(1)
+    expect(r.value.fechas[0].from).toBe(r.value.fechas[0].to)
+  })
+
   test('firma con el mouse', async ({ pagina: p }) => {
     await p.click('#h-firma')
     const lienzo = enDialogo(p, 'canvas.sig-pad')
