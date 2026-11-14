@@ -24,8 +24,6 @@ export const themes = {
     '--nd-line': '#33374b',
     '--nd-accent': '#8ea4ff',
     '--nd-accent-contrast': '#12142a',
-    '--nd-cancel-fg': '#ff8a80',
-    '--nd-cancel-border': '#8c3a36',
     '--nd-danger': '#d92d20',
     '--nd-error': '#ff8a80',
     '--nd-overlay': 'rgba(0,0,0,.6)',
@@ -37,8 +35,6 @@ export const themes = {
     '--nd-success': '#198754',
     '--nd-warning': '#ffc107',
     '--nd-info': '#0dcaf0',
-    '--nd-cancel-fg': '#dc3545',
-    '--nd-cancel-border': '#dc3545',
     '--nd-border': '#dee2e6',
     '--nd-fg': '#212529',
     '--nd-muted': '#6c757d',
@@ -53,8 +49,6 @@ export const themes = {
     '--nd-danger': '#e11d48',
     '--nd-success': '#059669',
     '--nd-warning': '#d97706',
-    '--nd-cancel-fg': '#e11d48',
-    '--nd-cancel-border': '#fda4af',
     '--nd-border': '#cbd5e1',
     '--nd-fg': '#0f172a',
     '--nd-muted': '#475569',
@@ -80,8 +74,6 @@ export const themes = {
     '--nd-error': '#fb7185',
     '--nd-success': '#34d399',
     '--nd-warning': '#fbbf24',
-    '--nd-cancel-fg': '#fb7185',
-    '--nd-cancel-border': '#9f1239',
     '--nd-overlay': 'rgba(2,6,23,.7)',
     '--nd-radius': '16px',
     '--nd-control-radius': '8px',
@@ -90,8 +82,6 @@ export const themes = {
   material: {
     '--nd-accent': '#6750a4',
     '--nd-danger': '#b3261e',
-    '--nd-cancel-fg': '#b3261e',
-    '--nd-cancel-border': '#e6b4b0',
     '--nd-border': '#79747e',
     '--nd-fg': '#1d1b20',
     '--nd-muted': '#49454f',
@@ -127,7 +117,7 @@ export function fromBootstrap(el: Element = document.documentElement): Theme {
     if (v) t[nd] = v
   }
   const danger = leer('--bs-danger')
-  if (danger) t['--nd-cancel-fg'] = t['--nd-cancel-border'] = danger
+  if (danger) t['--nd-danger'] = danger
   return t
 }
 

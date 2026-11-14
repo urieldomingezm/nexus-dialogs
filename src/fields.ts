@@ -235,12 +235,13 @@ function flotante(ancla: HTMLElement, el: HTMLElement) {
   const colocar = () => {
     if (!conPopover || !abierto) return
     const r = ancla.getBoundingClientRect()
-    const caja = ancla.closest('.body')?.getBoundingClientRect()
     const alto = el.offsetHeight
     const vis = zonaVisible()
-    const abajo = Math.min(caja?.bottom ?? vis.bottom, vis.bottom) - r.bottom
-    const arriba = r.top - Math.max(caja?.top ?? 0, vis.top)
-    const haciaArriba = abajo < alto + 8 && arriba > abajo
+    // La lista va en la capa superior: no la recorta el cuerpo del diálogo, así que solo cuenta la pantalla.
+    // Por omisión se abre hacia abajo; sube únicamente si abajo casi no hay sitio y arriba hay claramente más.
+    const abajo = vis.bottom - r.bottom
+    const arriba = r.top - vis.top
+    const haciaArriba = abajo < Math.min(alto, 200) + 8 && arriba > abajo
     const tope = Math.max(120, (haciaArriba ? arriba : abajo) - 12)
     css(el, {
       position: 'fixed',
@@ -269,9 +270,9 @@ function flotante(ancla: HTMLElement, el: HTMLElement) {
       return
     }
     if (si) {
-      const caja = ancla.closest('.body')?.getBoundingClientRect()
       const r = ancla.getBoundingClientRect()
-      el.classList.toggle('up', !!caja && caja.bottom - r.bottom < 200 && r.top - caja.top > caja.bottom - r.bottom)
+      const vis = zonaVisible()
+      el.classList.toggle('up', vis.bottom - r.bottom < 200 && r.top - vis.top > vis.bottom - r.bottom)
     }
   }
   return { ver, colocar }
@@ -315,7 +316,7 @@ const combobox: Fabrica = (ctx, valor) => {
   })
   const lista = h('ul', {
     id: listaId,
-    class: 'cb-list',
+    class: multiple ? 'cb-list cb-multi' : 'cb-list',
     role: 'listbox',
     hidden: true,
     'aria-label': fl.label,
@@ -1955,24 +1956,27 @@ export const FIELDS_CSS = `
 .t0{background:#e0e7ff;color:#3451d1}.t1{background:#fce7f6;color:#c11574}.t2{background:#d1fadf;color:#067647}.t3{background:#fef0c7;color:#b54708}
 .t4{background:#e0f2fe;color:#026aa2}.t5{background:#ebe9fe;color:#5925dc}.t6{background:#ffe4e8;color:#c01048}
 .cb-box{position:relative}
-.cb-list{position:absolute;z-index:5;inset-inline:0;top:calc(100% + 6px);margin:0;padding:6px;list-style:none;max-height:260px;overflow:auto;
-  background:var(--_bg);border:1px solid var(--_line);border-radius:12px;box-shadow:0 12px 24px -4px rgba(16,24,40,.12),0 4px 8px -2px rgba(16,24,40,.04)}
+.cb-list{position:absolute;z-index:5;inset-inline:0;top:calc(100% + 6px);margin:0;padding:4px 0;list-style:none;max-height:260px;overflow:auto;
+  background:var(--_bg);border:1px solid var(--_line);border-radius:12px;box-shadow:0 16px 32px -8px rgba(16,24,40,.22)}
 .cb-list[hidden]{display:none}
 .cb-list:popover-open{inset:auto;border:1px solid var(--_line);overflow:auto;color:var(--_fg)}
 .cb-list.up{top:auto;bottom:calc(100% + 6px)}
 .body::-webkit-scrollbar,.cb-list::-webkit-scrollbar{width:12px}
 .body::-webkit-scrollbar-thumb,.cb-list::-webkit-scrollbar-thumb{background:var(--_subtle);border:3px solid transparent;border-radius:9px;background-clip:content-box}
 @supports not selector(::-webkit-scrollbar){.body,.cb-list{scrollbar-color:var(--_subtle) transparent}}
-.cb-opt{display:flex;gap:12px;align-items:center;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:14px;color:var(--_fg)}
-.cb-opt.active{background:var(--_surface)}
+.cb-opt{display:flex;gap:12px;align-items:center;padding:10px 14px;cursor:pointer;font-size:14px;color:var(--_fg)}
+.cb-opt.active{background:var(--_surface);box-shadow:inset 3px 0 var(--_accent)}
 .cb-opt[aria-selected=true] .cb-text>span{font-weight:600}
 .cb-opt[aria-disabled=true]{opacity:.45;cursor:not-allowed}
-.cb-opt.create{color:var(--_accent);font-weight:600;border-top:1px solid var(--_line);border-radius:0 0 8px 8px;margin-top:4px}
+.cb-opt.create{color:var(--_accent-t);font-weight:600;border-top:1px solid var(--_line);margin-top:4px}
 .cb-text{display:flex;flex-direction:column;min-width:0;flex:1}
 .cb-text small{color:var(--_subtle);font-size:13px;font-weight:400}
-.cb-check{flex:none;width:18px;text-align:center;color:var(--_accent);font-weight:700}
-.cb-group{padding:8px 10px 4px;font-size:12px;font-weight:600;color:var(--_subtle)}
-.cb-note{padding:10px;color:var(--_subtle);font-size:14px}
+.cb-check{flex:none;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;color:var(--_accent-t);font-weight:700}
+.cb-multi .cb-check{order:-1;border:1.5px solid var(--_border);border-radius:5px;font-size:12px;color:var(--_accent-fg)}
+.cb-multi .cb-opt.create .cb-check{display:none}
+.cb-multi .cb-opt[aria-selected=true] .cb-check{background:var(--_accent);border-color:var(--_accent)}
+.cb-group{position:sticky;top:0;padding:10px 14px 6px;background:var(--_bg);font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--_subtle)}
+.cb-note{padding:14px;color:var(--_subtle);font-size:14px}
 .cb-chips{list-style:none;margin:0 0 8px;padding:0;display:flex;flex-wrap:wrap;gap:6px}
 .cb-chips[hidden]{display:none}
 .cb-chips li{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 4px 0 8px;border-radius:8px;border:1px solid var(--_border);background:var(--_bg);font-size:14px;font-weight:500;color:var(--_label)}
@@ -2073,7 +2077,7 @@ export const FIELDS_CSS = `
 .cal-day.off{color:var(--_subtle);background:repeating-linear-gradient(135deg,transparent 0 3px,color-mix(in srgb,var(--_fg) 5%,transparent) 3px 4px)}
 .cal-day.hol{color:var(--_warning);font-weight:600}
 .cal-day.sel.off,.cal-day.sel.hol{color:var(--_accent-fg);background:var(--_accent)}
-.dr-count{margin:8px 0 0;font-size:13px;font-weight:600;color:var(--_accent)}
+.dr-count{margin:8px 0 0;font-size:13px;font-weight:600;color:var(--_accent-t)}
 .dr-count:empty{display:none}
 .per-wrap{display:grid;gap:10px;justify-items:start}
 .per-wrap .cal{margin-top:0;width:100%;box-sizing:border-box}

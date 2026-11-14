@@ -28,6 +28,9 @@ test.describe('huecos de cobertura', () => {
     await p.keyboard.press('Backspace')
     await p.keyboard.type('x')
     await expect(enDialogo(p, '.cb-note')).toHaveText('No se pudo buscar')
+    // La lista se abre hacia abajo y tapa el pie: Escape la cierra primero y el diálogo sigue abierto.
+    await p.keyboard.press('Escape')
+    await expect(enDialogo(p, '.cb-note')).toBeHidden()
     await boton(p, 'cancel').click()
     expect((await p.evaluate(() => window.fin)).confirmed).toBe(false)
   })

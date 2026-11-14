@@ -9,14 +9,14 @@ describe('themes', () => {
     expect(document.documentElement.style.getPropertyValue('--nd-radius')).toBe('4px')
   })
 
-  it('fromBootstrap lee --bs-* y Cancelar usa el rojo de Bootstrap', () => {
+  it('fromBootstrap lee --bs-* y el botón de peligro usa el rojo de Bootstrap', () => {
     const el = document.createElement('div')
     el.style.setProperty('--bs-primary', '#6610f2')
     el.style.setProperty('--bs-danger', '#ff0000')
     document.body.appendChild(el)
     const t = fromBootstrap(el)
     expect(t['--nd-accent']).toBe('#6610f2')
-    expect(t['--nd-cancel-fg']).toBe('#ff0000')
+    expect(t['--nd-danger']).toBe('#ff0000')
     expect(t['--nd-radius']).toBe(themes.bootstrap['--nd-radius'])
   })
 })

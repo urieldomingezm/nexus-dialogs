@@ -306,7 +306,7 @@ export async function sessionTimeout(o: SessionTimeoutOptions = {}): Promise<'ex
     dismissible: { escape: true, backdrop: false },
     initialFocus: 'confirm',
     buttons: [
-      { id: 'logout', role: 'deny', text: t.logout },
+      { id: 'logout', role: 'deny', text: t.logout, variant: 'danger' },
       { id: 'extend', role: 'confirm', text: t.stay },
     ],
     render: (ctx: DialogContext) => {
@@ -516,7 +516,7 @@ export async function approval(o: ApprovalOptions): Promise<ApprovalResult> {
 
   const botones: ButtonSpec[] = [
     ...(o.allowRequestInfo ? [{ id: 'info', text: t.requestInfo, variant: 'secondary' as const }] : []),
-    { id: 'reject', text: t.reject, variant: 'cancel', onClick: async () => ((await rechazar()) ? 'rejected' : false) },
+    { id: 'reject', text: t.reject, variant: 'danger', onClick: async () => ((await rechazar()) ? 'rejected' : false) },
     { id: 'confirm', role: 'confirm', text: o.approveText ?? t.approve },
   ]
   if (o.allowRequestInfo && o.onRequestInfo) {

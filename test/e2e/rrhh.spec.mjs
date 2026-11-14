@@ -174,7 +174,7 @@ test.describe('RR. HH. (2)', () => {
     expect(await axe(p)).toEqual([])
   })
 
-  test('lista del buscador hacia arriba sin recortarse', async ({ pagina: p }) => {
+  test('lista del buscador se abre hacia abajo y sin recortarse', async ({ pagina: p }) => {
     await p.setViewportSize({ width: 1100, height: 640 })
     await p.click('#c-combo')
     await p.keyboard.press('Tab')
@@ -186,5 +186,7 @@ test.describe('RR. HH. (2)', () => {
     const opciones = await enDialogo(p, '[role=option]').count()
     expect(opciones).toBeGreaterThan(1)
     expect(caja.height).toBeGreaterThan(100)
+    const entrada = await enDialogo(p, '.cb-input[aria-expanded=true]').boundingBox()
+    expect(caja.y).toBeGreaterThanOrEqual(entrada.y + entrada.height)
   })
 })

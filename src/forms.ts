@@ -590,7 +590,7 @@ const descartar = async (): Promise<boolean> => {
     initialFocus: 'cancel',
     buttons: [
       { id: 'keep', role: 'cancel', text: L.keepEditing, variant: 'secondary' },
-      { id: 'discard', role: 'confirm', text: L.discard, variant: 'cancel' },
+      { id: 'discard', role: 'confirm', text: L.discard, variant: 'danger' },
     ],
   })
   return r.confirmed
@@ -1146,10 +1146,10 @@ select.input{appearance:none;background-image:linear-gradient(45deg,transparent 
 .summary{margin:0 0 18px;padding:12px 14px;border-radius:12px;border:1px solid color-mix(in srgb,var(--_error) 25%,var(--_bg));
   background:color-mix(in srgb,var(--_error) 6%,var(--_bg));font-size:14px}
 .summary:focus{outline:none;box-shadow:0 0 0 4px color-mix(in srgb,var(--_error) 15%,transparent)}
-.summary p{margin:0 0 4px;font-weight:600;color:color-mix(in srgb,var(--_cancel-fg) 70%,var(--_fg))}
+.summary p{margin:0 0 4px;font-weight:600;color:color-mix(in srgb,var(--_error) 70%,var(--_fg))}
 .summary ul{margin:0;padding-inline-start:20px}
 .summary li{margin:2px 0}
-.summary a{color:color-mix(in srgb,var(--_cancel-fg) 70%,var(--_fg));display:block;min-height:24px;line-height:24px}
+.summary a{color:color-mix(in srgb,var(--_error) 70%,var(--_fg));display:block;min-height:24px;line-height:24px}
 /* Asistente: barras de progreso con el nombre del paso debajo. */
 .stepper{list-style:none;margin:0 0 20px;padding:0;display:flex;gap:8px;font-size:13px;font-weight:500;color:var(--_subtle)}
 .stepper li{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
@@ -1158,7 +1158,7 @@ select.input{appearance:none;background-image:linear-gradient(45deg,transparent 
 .stepper .num{display:none}
 .stepper li span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .stepper .done{color:var(--_label)}
-.stepper .current{color:var(--_accent);font-weight:600}
+.stepper .current{color:var(--_accent-t);font-weight:600}
 .narrow .stepper li:not(.current) span:last-child{visibility:hidden}
 .step-head{margin-bottom:16px}
 .step-count{margin:0;font-size:13px;color:var(--_subtle)}
@@ -1172,7 +1172,7 @@ select.input{appearance:none;background-image:linear-gradient(45deg,transparent 
 .review dl{margin:0;display:grid;grid-template-columns:minmax(140px,auto) 1fr;gap:6px 16px;font-size:14px}
 .review dt{color:var(--_subtle)}
 .review dd{margin:0;overflow-wrap:anywhere;color:var(--_fg)}
-.link{border:0;background:transparent;color:var(--_accent);font:600 14px var(--_font);cursor:pointer;padding:6px 8px;border-radius:8px}
+.link{border:0;background:transparent;color:var(--_accent-t);font:600 14px var(--_font);cursor:pointer;padding:6px 8px;border-radius:8px}
 .link:hover{background:color-mix(in srgb,var(--_accent) 8%,transparent)}
 .link:focus-visible{outline:none;box-shadow:0 0 0 4px var(--_focus)}
 `
