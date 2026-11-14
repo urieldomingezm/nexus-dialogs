@@ -4,6 +4,8 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ## [Sin publicar]
 
+## [1.1.1] - 2026-11-14
+
 ### Agregado
 
 - Variables `--nd-cancel-bg` (fondo de Cancelar y de los secundarios) y `--nd-accent-text` (color de acento para texto).
