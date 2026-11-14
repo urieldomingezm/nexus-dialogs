@@ -50,6 +50,108 @@ describe('daterange con calendario', () => {
     await p
   })
 })
+// ── Lista de periodos ───────────────────────────────────────────────────────
+describe('daterange con periods', () => {
+  const abrir = (extra: Record<string, unknown> = {}) =>
+    form({
+      title: 'Capacitación',
+      fields: [{ name: 'f', label: 'Fechas', type: 'daterange', periods: true, required: true, ...extra }],
+    })
+  const dia = (iso: string) => $<HTMLButtonElement>(`.cal-day[data-d="${iso}"]`)
+  const mes = (iso: string) => {
+    // Lleva el calendario al mes de `iso` con las flechas.
+    const objetivo = iso.slice(0, 7)
+    for (let i = 0; i < 24 && !document.querySelector('nexus-dialogs')?.shadowRoot?.querySelector(`.cal-day[data-d="${iso}"]`); i++) {
+      const [a, m] = objetivo.split('-').map(Number)
+      const t = $('.cal-title').textContent ?? ''
+      const meses = [
+        'enero',
+        'febrero',
+        'marzo',
+        'abril',
+        'mayo',
+        'junio',
+        'julio',
+        'agosto',
+        'septiembre',
+        'octubre',
+        'noviembre',
+        'diciembre',
+      ]
+      const actual = meses.findIndex((n) => t.toLowerCase().startsWith(n)) + 1
+      const anio = Number(t.match(/\d{4}/)?.[0])
+      const dif = (a - anio) * 12 + (m - actual)
+      $<HTMLButtonElement>(`.cal-nav[aria-label="${dif > 0 ? 'Mes siguiente' : 'Mes anterior'}"]`)?.click()
+    }
+  }
+
+  it('un rango y un día suelto no corrido; sin cajas ni atajos', async () => {
+    const p = abrir()
+    expect($$('.dr-inputs, .presets').length).toBe(0)
+    const hoy = new Date()
+    const base = `${hoy.getFullYear() + 1}-03`
+    mes(`${base}-17`)
+    dia(`${base}-17`).click()
+    expect($('.per-guia').textContent).toContain('último día')
+    dia(`${base}-19`).click()
+    expect($$('.per').length).toBe(1)
+    expect($('.per-txt').textContent).toMatch(/^17 al 19 mar/)
+    expect($('.per-n').textContent).toBe('3 días')
+    // Segundo periodo: un solo día, cerrado con «Agregar otro periodo».
+    dia(`${base}-25`).click()
+    expect($$('.per').length).toBe(2)
+    $<HTMLButtonElement>('.per-add').click()
+    expect($('.per-add').hasAttribute('hidden')).toBe(true)
+    boton('confirm').click()
+    expect((await p).value).toEqual({
+      f: [
+        { from: `${base}-17`, to: `${base}-19` },
+        { from: `${base}-25`, to: `${base}-25` },
+      ],
+    })
+  })
+
+  it('quitar un periodo; los periodos se ordenan y no pueden traslaparse', async () => {
+    const hoy = new Date()
+    const base = `${hoy.getFullYear() + 1}-05`
+    const p = abrir()
+    mes(`${base}-10`)
+    dia(`${base}-20`).click()
+    dia(`${base}-22`).click()
+    dia(`${base}-05`).click()
+    dia(`${base}-06`).click()
+    const txt = $$('.per-txt').map((e) => e.textContent)
+    expect(txt[0]).toMatch(/^5 al 6/)
+    expect(txt[1]).toMatch(/^20 al 22/)
+    dia(`${base}-21`).click()
+    dia(`${base}-24`).click()
+    boton('confirm').click()
+    await esperar()
+    expect($('.field.daterange .msg').textContent).toBe('Los periodos no pueden traslaparse.')
+    $$<HTMLButtonElement>('.per-x')[2].click()
+    expect($$('.per').length).toBe(2)
+    expect($('.per-x').getAttribute('aria-label')).toMatch(/^Quitar periodo 5 al 6/)
+    boton('confirm').click()
+    const r = (await p).value as { f: { from: string }[] }
+    expect(r.f.map((x) => x.from)).toEqual([`${base}-05`, `${base}-20`])
+  })
+
+  it('maxDays cuenta el total de todos los periodos', async () => {
+    const base = `${new Date().getFullYear() + 1}-07`
+    const p = abrir({ maxDays: 4 })
+    mes(`${base}-01`)
+    dia(`${base}-01`).click()
+    dia(`${base}-03`).click()
+    dia(`${base}-10`).click()
+    dia(`${base}-11`).click()
+    boton('confirm').click()
+    await esperar()
+    expect($('.field.daterange .msg').textContent).toBe('En total son máximo 4 días.')
+    $<HTMLButtonElement>('.per-x').click()
+    boton('confirm').click()
+    expect(((await p).value as { f: unknown[] }).f.length).toBe(1)
+  })
+})
 const raizActiva = () =>
   ($('.cal') as HTMLElement).getRootNode() && (($('.cal').getRootNode() as ShadowRoot).activeElement as HTMLElement | null)
 

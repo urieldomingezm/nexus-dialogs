@@ -450,7 +450,7 @@ export const capacitacion: FormSchema = {
     { name: 'modalidad', label: 'Modalidad', type: 'segmented', options: ['Presencial', 'En línea', 'Mixta'], value: 'Presencial' },
     { name: 'instructor', label: 'Instructor o proveedor', required: true },
     { name: 'agente', label: 'Agente capacitador (registro STPS)', help: 'Solo si la constancia DC-3 la expide un agente externo.' },
-    { name: 'fechas', label: 'Fechas', type: 'daterange', calendar: true, required: true, span: 2 },
+    { name: 'fechas', label: 'Fechas', type: 'daterange', periods: true, required: true, span: 2 },
     { name: 'horas', label: 'Duración en horas', type: 'number', min: 1, required: true },
     { name: 'costo', label: 'Costo total', type: 'money', min: 0 },
     {

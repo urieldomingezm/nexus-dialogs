@@ -68,6 +68,17 @@ const ES = {
   from: 'Desde',
   to: 'Hasta',
   bothDates: 'Completa las dos fechas.',
+  periods: 'Periodos',
+  addPeriod: 'Agregar otro periodo',
+  pickStart: 'Toca un día, o el primer día de un rango.',
+  pickEnd: 'Toca el último día del rango, o agrega otro periodo si era un día suelto.',
+  removePeriod: 'Quitar periodo {0}',
+  dayN: '{0} días',
+  day1: '1 día',
+  overlap: 'Los periodos no pueden traslaparse.',
+  maxTotal: 'En total son máximo {0} días.',
+  maxTotalBusiness: 'En total son máximo {0} días hábiles.',
+  noPeriods: 'Aún no hay periodos.',
   order: '«Hasta» debe ser igual o posterior a «Desde».',
   maxDays: 'El rango es de máximo {0} días.',
   outOfRange: 'Las fechas deben estar entre {0} y {1}.',
@@ -133,6 +144,17 @@ const EN: Textos = {
   from: 'From',
   to: 'To',
   bothDates: 'Fill in both dates.',
+  periods: 'Periods',
+  addPeriod: 'Add another period',
+  pickStart: 'Tap a day, or the first day of a range.',
+  pickEnd: 'Tap the last day of the range, or add another period if it was a single day.',
+  removePeriod: 'Remove period {0}',
+  dayN: '{0} days',
+  day1: '1 day',
+  overlap: 'Periods cannot overlap.',
+  maxTotal: 'At most {0} days in total.',
+  maxTotalBusiness: 'At most {0} business days in total.',
+  noPeriods: 'No periods yet.',
   order: '“To” must be the same as or after “From”.',
   maxDays: 'The range can be at most {0} days.',
   outOfRange: 'Dates must be between {0} and {1}.',
@@ -838,6 +860,8 @@ const isoATexto = (s: string) => {
 interface Calendario {
   el: HTMLElement
   pintar(desde: string, hasta: string): void
+  /** Varios periodos a la vez (cada uno [desde, hasta]); `ancla` es el día al que se lleva el foco. */
+  pintarVarios(rangos: [string, string][], ancla?: string): void
 }
 /** Mes en cuadrícula: flechas, Re Pág/Av Pág (mes), Inicio/Fin (semana), Enter o espacio elige. Semana desde lunes. */
 function calendario(o: { min?: string; max?: string; habiles?: BusinessDaysOptions; alElegir: (iso: string) => void }): Calendario {
@@ -845,7 +869,7 @@ function calendario(o: { min?: string; max?: string; habiles?: BusinessDaysOptio
   let mes = new Date()
   mes = new Date(mes.getFullYear(), mes.getMonth(), 1)
   let foco = ''
-  let sel: [string, string] = ['', '']
+  let rangos: [string, string][] = [['', '']]
   const titulo = h('div', { class: 'cal-title', 'aria-live': 'polite' })
   const flecha = (texto: string, d: number, path: string) => {
     const b = h('button', { type: 'button', class: 'cal-nav', 'aria-label': texto, onclick: () => mover(d, true, false) })
@@ -872,7 +896,8 @@ function calendario(o: { min?: string; max?: string; habiles?: BusinessDaysOptio
     const inicio = new Date(mes)
     inicio.setDate(1 - ((mes.getDay() + 6) % 7))
     const hoy = iso(new Date())
-    if (!foco || foco.slice(0, 7) !== iso(mes).slice(0, 7)) foco = sel[0] && sel[0].slice(0, 7) === iso(mes).slice(0, 7) ? sel[0] : iso(mes)
+    if (!foco || foco.slice(0, 7) !== iso(mes).slice(0, 7))
+      foco = rangos[0][0] && rangos[0][0].slice(0, 7) === iso(mes).slice(0, 7) ? rangos[0][0] : iso(mes)
     const filas: HTMLElement[] = [h('div', { role: 'row', class: 'cal-row' }, ...nombres)]
     for (let w = 0; w < 6; w++) {
       const celdas: HTMLElement[] = []
@@ -880,23 +905,23 @@ function calendario(o: { min?: string; max?: string; habiles?: BusinessDaysOptio
         const f = new Date(inicio)
         f.setDate(inicio.getDate() + w * 7 + d)
         const i = iso(f)
-        const [a, b] = sel
         const noHabil = !!o.habiles && !isBusinessDay(i, o.habiles)
         const festivo = noHabil && ![0, 6].includes(f.getDay())
+        const dentro = rangos.some(([a, b]) => a && b && i > a && i < b)
         const clases = [
           f.getMonth() !== mes.getMonth() ? 'out' : '',
           noHabil ? 'off' : '',
           festivo ? 'hol' : '',
           i === hoy ? 'today' : '',
-          i === a || i === b ? 'sel' : '',
-          a && b && i > a && i < b ? 'in' : '',
-          i === a && b ? 'start' : '',
-          i === b && a ? 'end' : '',
+          rangos.some(([a, b]) => i === a || i === b) ? 'sel' : '',
+          dentro ? 'in' : '',
+          rangos.some(([a, b]) => i === a && b) ? 'start' : '',
+          rangos.some(([a, b]) => i === b && a) ? 'end' : '',
         ]
         celdas.push(
           h(
             'span',
-            { role: 'gridcell', 'aria-selected': String(i === a || i === b || (!!a && !!b && i > a && i < b)) },
+            { role: 'gridcell', 'aria-selected': String(dentro || rangos.some(([a, b]) => i === a || i === b)) },
             h(
               'button',
               {
@@ -954,8 +979,11 @@ function calendario(o: { min?: string; max?: string; habiles?: BusinessDaysOptio
   return {
     el,
     pintar(a, b) {
-      sel = [a, b]
-      const ancla = b || a
+      this.pintarVarios([[a, b]], b || a)
+    },
+    pintarVarios(r, ancla) {
+      rangos = r.length ? r : [['', '']]
+      ancla ??= rangos[rangos.length - 1][1] || rangos[rangos.length - 1][0]
       if (ancla) {
         const f = desdeIso(ancla)
         if (f.getMonth() !== mes.getMonth() || f.getFullYear() !== mes.getFullYear()) mes = new Date(f.getFullYear(), f.getMonth(), 1)
@@ -1067,7 +1095,142 @@ const fechaCal: Fabrica = (ctx, valor) => {
   }
 }
 
+/** «17 al 19 nov», «28 nov al 2 dic», «25 nov». Con año solo si no es el actual. */
+function etiquetaPeriodo(a: string, b: string): string {
+  const fa = desdeIso(a)
+  const fb = desdeIso(b || a)
+  const actual = new Date().getFullYear()
+  const anio = (d: Date) => (d.getFullYear() === actual ? '' : ` ${d.getFullYear()}`)
+  const dia = (d: Date, m = true) => d.toLocaleDateString(loc(), { day: 'numeric', ...(m ? { month: 'short' } : {}) }).replace(/\.$/, '')
+  if (!b || a === b) return dia(fa) + anio(fa)
+  const es = language() === 'es'
+  const mismoMes = fa.getMonth() === fb.getMonth() && fa.getFullYear() === fb.getFullYear()
+  if (mismoMes) {
+    const mes = fb.toLocaleDateString(loc(), { month: 'short' }).replace(/\.$/, '')
+    return es ? `${fa.getDate()} al ${fb.getDate()} ${mes}${anio(fb)}` : `${mes} ${fa.getDate()} – ${fb.getDate()}${anio(fb)}`
+  }
+  return `${dia(fa)}${anio(fa)} ${es ? 'al' : '–'} ${dia(fb)}${anio(fb)}`
+}
+
+/** daterange con `periods: true`: calendario siempre visible y una lista de periodos (rangos o días sueltos). Valor: `{ from, to }[]`. */
+const periodos: Fabrica = (ctx, valor) => {
+  const t = T()
+  const fl = ctx.field
+  const min = fl.min !== undefined ? String(fl.min) : undefined
+  const max = fl.max !== undefined ? String(fl.max) : undefined
+  const habiles: BusinessDaysOptions | undefined = fl.businessDays
+    ? { holidays: fl.holidays, mexican: fl.businessDays !== 'custom' }
+    : undefined
+  type P = { a: string; b: string }
+  const orden = (l: P[]) => l.sort((x, y) => (x.a < y.a ? -1 : x.a > y.a ? 1 : 0))
+  const lista: P[] = orden(
+    (Array.isArray(valor) ? (valor as { from?: string; to?: string }[]) : [])
+      .filter((p) => p?.from)
+      .map((p) => ({ a: p.from as string, b: (p.to || p.from) as string })),
+  )
+  /** Índice del periodo que aún espera su último día (un solo clic lo deja como día suelto), o -1. */
+  let abierto = -1
+  const dias = (p: P) =>
+    habiles ? businessDays(p.a, p.b, habiles) : Math.round((desdeIso(p.b).getTime() - desdeIso(p.a).getTime()) / 86_400_000) + 1
+  const textoDias = (n: number) => (habiles ? (n === 1 ? t.business1 : f(t.businessN, n)) : n === 1 ? t.day1 : f(t.dayN, n))
+  const total = () => lista.reduce((n, p) => n + dias(p), 0)
+
+  const guia = h('p', { class: 'per-guia', role: 'status' })
+  const ul = h('ul', { class: 'per-lista', 'aria-label': t.periods })
+  const suma = h('p', { class: 'dr-count', role: 'status' })
+  const agregar = h('button', { type: 'button', class: 'per-add', disabled: fl.disabled }, `+ ${t.addPeriod}`)
+  const cal = calendario({
+    min,
+    max,
+    habiles,
+    alElegir: (d) => {
+      if (abierto >= 0) {
+        const p = lista[abierto]
+        const ini = p.a
+        p.a = d < ini ? d : ini
+        p.b = d < ini ? ini : d
+        abierto = -1
+      } else {
+        lista.push({ a: d, b: d })
+        abierto = lista.length - 1
+      }
+      // Tras ordenar, el abierto cambia de lugar: se vuelve a buscar por su fecha.
+      const marca = abierto >= 0 ? lista[abierto] : null
+      orden(lista)
+      abierto = marca ? lista.indexOf(marca) : -1
+      pintar(d)
+      cambio(el)
+    },
+  })
+  const pintar = (ancla?: string) => {
+    cal.pintarVarios(
+      lista.map((p) => [p.a, p.b]),
+      ancla,
+    )
+    ul.replaceChildren(
+      ...lista.map((p, i) => {
+        const nombre = etiquetaPeriodo(p.a, p.b)
+        return h(
+          'li',
+          { class: 'per' + (i === abierto ? ' abierto' : '') },
+          h('span', { class: 'per-txt' }, nombre),
+          h('span', { class: 'per-n' }, textoDias(dias(p))),
+          h(
+            'button',
+            {
+              type: 'button',
+              class: 'per-x',
+              disabled: fl.disabled,
+              'aria-label': f(t.removePeriod, nombre),
+              onclick: () => {
+                lista.splice(i, 1)
+                abierto = abierto === i ? -1 : abierto > i ? abierto - 1 : abierto
+                pintar()
+                cambio(el)
+                ;(ul.querySelector<HTMLElement>('.per-x') ?? agregar).focus()
+              },
+            },
+            svg(
+              '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m3 3 8 8M11 3l-8 8"/></svg>',
+            ),
+          ),
+        )
+      }),
+    )
+    ul.hidden = !lista.length
+    guia.textContent = abierto >= 0 ? t.pickEnd : lista.length ? '' : t.pickStart
+    suma.textContent = lista.length > 1 ? textoDias(total()) : ''
+    agregar.hidden = abierto < 0
+  }
+  agregar.addEventListener('click', () => {
+    abierto = -1
+    pintar()
+    cal.el.querySelector<HTMLElement>('.cal-day[tabindex="0"]')?.focus()
+  })
+  pintar(lista[0]?.a)
+  const el = h('div', { class: 'dr per-wrap' }, cal.el, guia, ul, agregar, suma)
+  return {
+    el,
+    group: true,
+    value: () => (lista.length ? lista.map((p) => ({ from: p.a, to: p.b })) : null),
+    focus: () => cal.el.querySelector<HTMLElement>('.cal-day[tabindex="0"]')?.focus(),
+    invalid: (on) => el.classList.toggle('bad', on),
+    validate: () => {
+      for (const p of lista) {
+        if ((min && p.a < min) || (max && p.b > max)) return f(t.outOfRange, min ? legible(min) : '…', max ? legible(max) : '…')
+      }
+      for (let i = 1; i < lista.length; i++) if (lista[i].a <= lista[i - 1].b) return t.overlap
+      if (fl.maxDays && total() > fl.maxDays) return f(habiles ? t.maxTotalBusiness : t.maxTotal, fl.maxDays)
+      return null
+    },
+    summary: () =>
+      lista.map((p) => (p.a === p.b ? legible(p.a) : `${legible(p.a)} – ${legible(p.b)}`)).join(', ') +
+      (lista.length ? ` (${textoDias(total())})` : ''),
+  }
+}
+
 const rango: Fabrica = (ctx, valor) => {
+  if (ctx.field.periods) return periodos(ctx, valor)
   const t = T()
   const fl = ctx.field
   const v = (valor ?? {}) as { from?: string; to?: string }
@@ -1916,6 +2079,24 @@ export const FIELDS_CSS = `
 .cal-day.sel.off,.cal-day.sel.hol{color:var(--_accent-fg);background:var(--_accent)}
 .dr-count{margin:8px 0 0;font-size:13px;font-weight:600;color:var(--_accent-t)}
 .dr-count:empty{display:none}
+.per-wrap{display:grid;gap:10px;justify-items:start}
+.per-wrap .cal{margin-top:0;width:100%;box-sizing:border-box}
+.per-wrap.bad .cal{border-color:color-mix(in srgb,var(--_error) 55%,var(--_bg))}
+.per-guia{margin:0;font-size:13px;color:var(--_subtle)}
+.per-guia:empty{display:none}
+.per-lista{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px;width:100%}
+.per-lista[hidden]{display:none}
+.per{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 4px 0 14px;border:1px solid var(--_border);border-radius:999px;background:var(--_bg);box-shadow:var(--_xs);font-size:14px;color:var(--_fg)}
+.per.abierto{border-color:var(--_accent);box-shadow:0 0 0 3px var(--_focus)}
+.per-txt{font-weight:600}
+.per-n{color:var(--_subtle);font-size:13px}
+.per-x{width:32px;height:32px;border:0;border-radius:50%;background:transparent;color:var(--_muted);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.per-x:hover{background:var(--_surface);color:var(--_fg)}
+.per-x:focus-visible,.per-add:focus-visible{outline:none;box-shadow:0 0 0 3px var(--_focus)}
+.per-add{height:36px;padding:0 14px;border:1px dashed var(--_border);border-radius:999px;background:transparent;color:var(--_accent);font:600 13px var(--_font);cursor:pointer}
+.per-add[hidden]{display:none}
+.per-add:hover{background:var(--_surface)}
+.per-wrap .dr-count{margin:0}
 .cal-day.today{box-shadow:inset 0 0 0 1px var(--_border);font-weight:700}
 .cal-day.sel{background:var(--_accent);color:var(--_accent-fg);font-weight:600}
 .cal-day:disabled{opacity:.35;cursor:not-allowed;background:transparent}

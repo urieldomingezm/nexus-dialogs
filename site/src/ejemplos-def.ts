@@ -691,15 +691,21 @@ export async function seguimiento() {
  * import: import { tabsDialog } from 'nexus-dialogs/tabs'
  */
 export async function pestanasCompactas() {
+  // Icono: un nodo (aquí un SVG) o las clases de tu fuente de iconos, como 'bi bi-journal-text'.
+  const ico = (d: string) => {
+    const el = document.createElement('span')
+    el.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="${d}"/></svg>`
+    return el
+  }
   const r = await tabsDialog({
     title: 'Resultado de la cita',
     size: 'sm', // ancho del diálogo: sm 400 px, md 480, lg 640, xl 860 o un número
     scale: 'sm', // tamaño de las pestañas
     fill: true,
     tabs: [
-      { id: 'resultado', label: 'Resultado', content: 'Apto, con observaciones.' },
-      { id: 'notas', label: 'Notas', badge: 2, content: 'Entrevista con buen perfil; falta confirmar horario.' },
-      { id: 'historial', label: 'Historial', content: 'Sin movimientos anteriores.' },
+      { id: 'resultado', label: 'Resultado', icon: ico('M5 13l4 4L19 7'), content: 'Apto, con observaciones.' },
+      { id: 'notas', label: 'Notas', icon: ico('M5 6h14M5 12h14M5 18h9'), badge: 2, content: 'Buen perfil; falta confirmar horario.' },
+      { id: 'historial', label: 'Historial', icon: ico('M3 12h4l3-8 4 16 3-8h4'), content: 'Sin movimientos anteriores.' },
     ],
   })
   return r
