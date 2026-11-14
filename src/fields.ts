@@ -1407,15 +1407,16 @@ const direccion: Fabrica = (ctx, valor) => {
   const calle = parte('street', t.street, { autocomplete: 'street-address' })
   // Con varias colonias, un <select> en lugar del texto (mismo id, así la etiqueta sigue apuntando bien).
   const lista = h('select', { id: colonia.input.id, class: 'input', disabled: fl.disabled, 'aria-describedby': ctx.describedBy })
+  const envol = h('div', { class: 'sel' }, lista)
   const aviso = h('p', { class: 'ad-note', role: 'status' })
   let consulta = 0
   const usarLista = (colonias: string[]) => {
     if (colonias.length > 1) {
       lista.replaceChildren(h('option', { value: '' }, t.chooseNeighborhood), ...colonias.map((c) => h('option', { value: c }, c)))
       lista.value = colonias.includes(colonia.input.value) ? colonia.input.value : ''
-      colonia.input.replaceWith(lista)
+      colonia.input.replaceWith(envol)
     } else {
-      if (lista.isConnected) lista.replaceWith(colonia.input)
+      if (envol.isConnected) envol.replaceWith(colonia.input)
       colonia.input.value = colonias[0] ?? colonia.input.value
     }
   }
@@ -1796,23 +1797,23 @@ export const FIELDS_CSS = `
 .cb-list{position:absolute;z-index:5;inset-inline:0;top:calc(100% + 6px);margin:0;padding:4px 0;list-style:none;max-height:260px;overflow:auto;
   background:var(--_bg);border:1px solid var(--_line);border-radius:12px;box-shadow:0 16px 32px -8px rgba(16,24,40,.22)}
 .cb-list[hidden]{display:none}
-.cb-list:popover-open{inset:auto;border:1px solid var(--_line);overflow:auto;color:var(--_fg)}
+.cb-list:popover-open{inset:auto;border:1px solid var(--_line);color:var(--_fg)}
 .cb-list.up{top:auto;bottom:calc(100% + 6px)}
 .body::-webkit-scrollbar,.cb-list::-webkit-scrollbar{width:12px}
 .body::-webkit-scrollbar-thumb,.cb-list::-webkit-scrollbar-thumb{background:var(--_subtle);border:3px solid transparent;border-radius:9px;background-clip:content-box}
 @supports not selector(::-webkit-scrollbar){.body,.cb-list{scrollbar-color:var(--_subtle) transparent}}
 .cb-opt{display:flex;gap:12px;align-items:center;padding:10px 14px;cursor:pointer;font-size:14px;color:var(--_fg)}
-.cb-opt.active{background:var(--_surface);box-shadow:inset 3px 0 var(--_accent)}
+.cb-opt.active{background:var(--_surface)}
 .cb-opt[aria-selected=true] .cb-text>span{font-weight:600}
 .cb-opt[aria-disabled=true]{opacity:.45;cursor:not-allowed}
-.cb-opt.create{color:var(--_accent-t);font-weight:600;border-top:1px solid var(--_line);margin-top:4px}
+.cb-opt.create{color:var(--_accent-t);font-weight:600;border-top:1px solid var(--_line)}
 .cb-text{display:flex;flex-direction:column;min-width:0;flex:1}
 .cb-text small{color:var(--_subtle);font-size:13px;font-weight:400}
 .cb-check{flex:none;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;color:var(--_accent-t);font-weight:700}
-.cb-multi .cb-check{order:-1;border:1.5px solid var(--_border);border-radius:5px;font-size:12px;color:var(--_accent-fg)}
+.cb-multi .cb-check{order:-1;border:1.5px solid var(--_border);border-radius:5px;color:var(--_accent-fg)}
 .cb-multi .cb-opt.create .cb-check{display:none}
 .cb-multi .cb-opt[aria-selected=true] .cb-check{background:var(--_accent);border-color:var(--_accent)}
-.cb-group{position:sticky;top:0;padding:10px 14px 6px;background:var(--_bg);font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--_subtle)}
+.cb-group{position:sticky;top:0;padding:10px 14px 6px;background:var(--_bg);font-size:11px;font-weight:600;text-transform:uppercase;color:var(--_subtle)}
 .cb-note{padding:14px;color:var(--_subtle);font-size:14px}
 .cb-chips{list-style:none;margin:0 0 8px;padding:0;display:flex;flex-wrap:wrap;gap:6px}
 .cb-chips[hidden]{display:none}

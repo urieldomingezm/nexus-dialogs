@@ -386,7 +386,9 @@ class FieldSet {
       const control =
         tipo === 'money'
           ? h('div', { class: 'affix' }, h('span', { 'aria-hidden': 'true' }, '$'), input, h('span', { class: 'cur' }, f.currency ?? 'MXN'))
-          : input
+          : tipo === 'select'
+            ? h('div', { class: 'sel' }, input)
+            : input
       c.wrap = h('div', { class: 'field' }, etiqueta(id), control, ayuda, msg)
     }
     if (this.columns !== 1 && (f.span === 2 || (this.columns === 'auto' && f.span !== 1 && FILA_COMPLETA.test(tipo)))) {
@@ -1113,9 +1115,11 @@ const FORM_CSS = `
 fieldset.field{border:0;margin:0;padding:0;min-width:0}
 legend{font-size:14px;font-weight:500;color:var(--_label);padding:0;margin-bottom:6px}
 .req{color:var(--_error)}
-select.input{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--_subtle) 50%),linear-gradient(135deg,var(--_subtle) 50%,transparent 50%);
-  background-position:calc(100% - 20px) 19px,calc(100% - 15px) 19px;background-size:5px 5px;background-repeat:no-repeat;padding-inline-end:40px}
-:host([dir=rtl]) select.input{background-position:20px 19px,15px 19px}
+select.input{appearance:none;padding-inline-end:40px}
+.sel{position:relative}
+.sel::after{content:"";position:absolute;inset-inline-end:17px;top:17px;width:6px;height:6px;border:solid var(--_subtle);border-width:0 1.5px 1.5px 0;rotate:45deg;pointer-events:none;transition:rotate .2s}
+.sel:has(select:open)::after{rotate:225deg}
+@media (prefers-reduced-motion:reduce){.sel::after{transition:none}}
 .options{display:grid;gap:10px}
 .check{display:flex;gap:10px;align-items:center;font-size:14px;font-weight:500;color:var(--_label);cursor:pointer}
 .check input{width:18px;height:18px;margin:0;accent-color:var(--_accent)}
