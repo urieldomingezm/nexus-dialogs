@@ -4,6 +4,10 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ## [Sin publicar]
 
+### Agregado
+
+- `daterange` con `periods: true`: una lista de periodos con un calendario siempre visible, para elegir rangos («17 al 19 nov») y días sueltos no corridos («25 nov») en el mismo campo. Sin atajos ni cajas de texto; cada periodo se quita con la ×. El valor es `{ from, to }[]`, los periodos se ordenan y no pueden traslaparse, y `maxDays` cuenta el total. La plantilla de capacitación de `rrhh` lo usa. El `daterange` de un solo rango no cambia.
+
 ### Cambiado
 
 - Los textos de la interfaz del sitio (buscador, copiar, tema, volver arriba) los resuelve ahora [`nexus-i18n`](https://www.npmjs.com/package/nexus-i18n), la librería de idiomas de las librerías NEXUS: idioma desde `<html lang>`, respaldo en español y `{n}`. Es una dependencia de desarrollo del sitio (no entra en el paquete). Los diccionarios con funciones y listas (demostración, Mini ERP, Migrar, Pruebas) siguen como estaban.

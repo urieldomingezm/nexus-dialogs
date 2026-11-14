@@ -154,8 +154,13 @@ export interface Field {
   // ── daterange ──
   /** Atajos («Quincena actual», «Mes pasado»…). false los oculta; un arreglo pone los tuyos. */
   presets?: false | DatePreset[]
-  /** Máximo de días del rango. */
+  /** Máximo de días del rango (con `periods`, el total entre todos los periodos). */
   maxDays?: number
+  /**
+   * daterange: en vez de un solo rango, el usuario arma una lista de periodos con un calendario siempre visible: rangos («17 al 19 nov»)
+   * y días sueltos no corridos («25 nov»). Sin atajos ni cajas de texto. Valor: `{ from, to }[]` (un día suelto trae from = to) o null.
+   */
+  periods?: boolean
   /** date y daterange: calendario en la pantalla y fechas escritas como dd/mm/aaaa (sin el selector del navegador). */
   calendar?: boolean
   /**
