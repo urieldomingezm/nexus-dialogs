@@ -1804,10 +1804,10 @@ export const FIELDS_CSS = `
 .cb-opt.active{background:var(--_surface)}
 .cb-opt[aria-selected=true] .cb-text>span{font-weight:600}
 .cb-opt[aria-disabled=true]{opacity:.45;cursor:not-allowed}
-.cb-opt.create{color:var(--_accent);font-weight:600;border-top:1px solid var(--_line);border-radius:0 0 8px 8px;margin-top:4px}
+.cb-opt.create{color:var(--_accent-t);font-weight:600;border-top:1px solid var(--_line);border-radius:0 0 8px 8px;margin-top:4px}
 .cb-text{display:flex;flex-direction:column;min-width:0;flex:1}
 .cb-text small{color:var(--_subtle);font-size:13px;font-weight:400}
-.cb-check{flex:none;width:18px;text-align:center;color:var(--_accent);font-weight:700}
+.cb-check{flex:none;width:18px;text-align:center;color:var(--_accent-t);font-weight:700}
 .cb-group{padding:8px 10px 4px;font-size:12px;font-weight:600;color:var(--_subtle)}
 .cb-note{padding:10px;color:var(--_subtle);font-size:14px}
 .cb-chips{list-style:none;margin:0 0 8px;padding:0;display:flex;flex-wrap:wrap;gap:6px}
@@ -1910,7 +1910,7 @@ export const FIELDS_CSS = `
 .cal-day.off{color:var(--_subtle);background:repeating-linear-gradient(135deg,transparent 0 3px,color-mix(in srgb,var(--_fg) 5%,transparent) 3px 4px)}
 .cal-day.hol{color:var(--_warning);font-weight:600}
 .cal-day.sel.off,.cal-day.sel.hol{color:var(--_accent-fg);background:var(--_accent)}
-.dr-count{margin:8px 0 0;font-size:13px;font-weight:600;color:var(--_accent)}
+.dr-count{margin:8px 0 0;font-size:13px;font-weight:600;color:var(--_accent-t)}
 .dr-count:empty{display:none}
 .cal-day.today{box-shadow:inset 0 0 0 1px var(--_border);font-weight:700}
 .cal-day.sel{background:var(--_accent);color:var(--_accent-fg);font-weight:600}

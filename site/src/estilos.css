@@ -1680,14 +1680,15 @@ dialog.buscador::backdrop {
   --_muted: var(--nd-muted, #475467);
   --_border: var(--nd-border, #d0d5dd);
   --_surface: var(--nd-surface, #f9fafb);
-  --_accent: var(--nd-accent, #4263eb);
+  --_accent: var(--nd-accent, #2563eb);
   --_accent-fg: var(--nd-accent-contrast, #fff);
+  --_accent-t: var(--nd-accent-text, var(--_accent));
   --_danger: var(--nd-danger, #d92d20);
   --_error: var(--nd-error, #d92d20);
-  --_cancel: var(--nd-cancel-fg, #b42318);
-  --_cancel-borde: var(--nd-cancel-border, #fecdca);
-  --_radio: var(--nd-radius, 20px);
-  --_radio-c: var(--nd-control-radius, 10px);
+  --_cancel: var(--nd-cancel-fg, var(--_fg));
+  --_cancel-fondo: var(--nd-cancel-bg, color-mix(in srgb, var(--_fg) 8%, var(--_bg)));
+  --_radio: var(--nd-radius, 14px);
+  --_radio-c: var(--nd-control-radius, 8px);
   --_fuente: var(--nd-font, Inter, system-ui, sans-serif);
   position: relative;
   min-height: 380px;
@@ -1704,10 +1705,9 @@ dialog.buscador::backdrop {
   --_muted: var(--nd-muted, #94969c);
   --_border: var(--nd-border, #333741);
   --_surface: var(--nd-surface, #1f242f);
-  --_accent: var(--nd-accent, #8ea4ff);
-  --_accent-fg: var(--nd-accent-contrast, #12142a);
-  --_cancel: var(--nd-cancel-fg, #fda29b);
-  --_cancel-borde: var(--nd-cancel-border, #7a271a);
+  --_accent: var(--nd-accent, #2563eb);
+  --_accent-fg: var(--nd-accent-contrast, #fff);
+  --_accent-t: var(--nd-accent-text, var(--nd-accent, #60a5fa));
   --_error: var(--nd-error, #fda29b);
 }
 .demo-fondo {
@@ -1791,7 +1791,7 @@ dialog.buscador::backdrop {
   display: grid;
   gap: 12px;
   width: min(340px, calc(100% - 32px));
-  padding: 22px;
+  padding: 18px;
   border-radius: var(--_radio);
   background: var(--_bg);
   color: var(--_fg);
@@ -1860,7 +1860,7 @@ dialog.buscador::backdrop {
   padding: 0;
   border: 0;
   background: transparent;
-  color: var(--_accent);
+  color: var(--_accent-t);
   font: inherit;
   font-weight: 700;
   cursor: pointer;
@@ -1885,8 +1885,9 @@ dialog.buscador::backdrop {
   cursor: pointer;
 }
 .demo-btn.cancelar {
+  border-color: transparent;
+  background: var(--_cancel-fondo);
   color: var(--_cancel);
-  border-color: var(--_cancel-borde);
 }
 .demo-btn.peligro {
   border-color: transparent;

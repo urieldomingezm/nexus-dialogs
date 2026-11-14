@@ -56,9 +56,9 @@ describe('derecha a izquierda (RTL)', () => {
   })
 
   it('el CSS usa propiedades lógicas: el botón × va al final y el temporizador reacciona a rtl', () => {
-    expect(CORE_CSS).toContain('inset-inline-end:16px')
+    expect(CORE_CSS).toContain('inset-inline-end:12px')
     expect(CORE_CSS).toContain(':host([dir=rtl]) .timer')
-    expect(CORE_CSS).not.toMatch(/\.x\{[^}]*\bright:16px/)
+    expect(CORE_CSS).not.toMatch(/\.x\{[^}]*\bright:12px/)
     expect(CORE_CSS).not.toMatch(/padding-right|margin-right|padding-left|margin-left/)
   })
 

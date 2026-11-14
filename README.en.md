@@ -942,8 +942,8 @@ toast.configure({ scheme: 'auto', theme: themes.bootstrap })
 :root {
   --nd-accent: #0f766e;        /* main button */
   --nd-danger: #b91c1c;        /* danger button */
-  --nd-cancel-fg: #b91c1c;     /* Cancel text and border */
-  --nd-cancel-border: #fca5a5;
+  --nd-cancel-bg: #e5e7eb;     /* Cancel and secondary buttons background */
+  --nd-cancel-fg: #111827;     /* Cancel text */
   --nd-radius: 12px;           /* dialog corners */
   --nd-control-radius: 8px;    /* buttons and fields */
   --nd-font: 'Inter', system-ui, sans-serif;

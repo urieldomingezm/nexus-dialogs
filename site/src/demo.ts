@@ -15,8 +15,7 @@ const controles = document.querySelector('.demo-apariencia')
 type Apariencia = 'nexus' | 'material' | 'bootstrap' | 'tailwind' | 'oscuro'
 const NOMBRES: Record<Apariencia, string> = { nexus: 'Nexus', material: 'Material', bootstrap: 'Bootstrap', tailwind: 'Tailwind', oscuro: T.oscuro }
 // Cada apariencia con su paleta clara y oscura (Bootstrap y Material no traen oscura: en oscuro vale la de Nexus), como en la mesa de pruebas.
-// El sitio define su propio `--nd-accent-contrast` en :root; los temas claros de otros sistemas no lo traen y lo heredarían (texto casi
-// blanco violeta sobre su azul), así que aquí se fija al blanco de siempre de la librería.
+// Se fija el blanco de siempre de la librería para que ningún tema claro de otros sistemas herede un contraste ajeno.
 const BLANCO: Theme = { '--nd-accent-contrast': '#fff' }
 const PARES: Record<Apariencia, { claro: Theme; oscuro: Theme }> = {
   nexus: { claro: {}, oscuro: {} },

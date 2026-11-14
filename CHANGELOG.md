@@ -4,7 +4,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ## [Sin publicar]
 
+### Agregado
+
+- Variables `--nd-cancel-bg` (fondo de Cancelar y de los secundarios) y `--nd-accent-text` (color de acento para texto).
+
 ### Cambiado
+
+- **Aspecto por omisión más compacto** (se propone como 1.1.0; la API y los nombres de las variables no cambian): menos espacio en la cabecera, el cuerpo y el pie (sin la raya divisoria), título de 16 px y botones de 36 px, radio de 14 px en el panel y 8 px en los controles. El ícono de tipo (eliminar, reloj, aviso…) pasa a un círculo de 40 px con anillo y fondo más marcado del color de su tipo.
+- **Botones:** el principal es azul sólido (`#2563eb` con texto blanco, también en oscuro; antes `#4263eb` claro y `#8ea4ff` oscuro). **Cancelar** y los botones secundarios son un gris sólido derivado de `--nd-fg` y `--nd-bg` (se adapta a cualquier tema), sin borde ni texto rojo. Lo destructivo sigue en rojo sólido.
+- «Cerrar sesión ahora» (`sessionTimeout`), «Rechazar» (`approval`) y «Descartar» (`confirmUnsaved`) pasan a rojo sólido: antes eran el «cancelar» con texto rojo.
+- Los temas `themes.*` y `fromBootstrap` ya no fijan un Cancelar rojo; `fromBootstrap` pasa `--bs-danger` a `--nd-danger`.
+- El texto en color de acento (enlaces, paso actual, cuenta del rango) usa `--nd-accent-text`, que en oscuro es un azul más claro (`#60a5fa`) para mantener el contraste; si defines `--nd-accent`, lo sigue.
+- Para volver al Cancelar de antes: `--nd-cancel-bg: transparent; --nd-cancel-fg: #b42318; --nd-cancel-border: #fecdca`.
 
 - Los textos de la interfaz del sitio (buscador, copiar, tema, volver arriba) los resuelve ahora [`nexus-i18n`](https://www.npmjs.com/package/nexus-i18n), la librería de idiomas de las librerías NEXUS: idioma desde `<html lang>`, respaldo en español y `{n}`. Es una dependencia de desarrollo del sitio (no entra en el paquete). Los diccionarios con funciones y listas (demostración, Mini ERP, Migrar, Pruebas) siguen como estaban.
 

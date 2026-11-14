@@ -482,7 +482,7 @@ const CSS = `
 .imp-steps{display:flex;gap:8px;margin:0 0 16px;padding:0;list-style:none;font-size:13px;font-weight:500;color:var(--_subtle)}
 .imp-steps li{flex:1}
 .imp-steps li::before{content:"";display:block;height:4px;border-radius:2px;background:var(--_line);margin-bottom:8px}
-.imp-steps li.on{color:var(--_accent)}
+.imp-steps li.on{color:var(--_accent-t)}
 .imp-steps li.on::before{background:var(--_accent)}
 .drop{display:flex;flex-direction:column;align-items:center;gap:10px;padding:28px 20px;border:1px dashed var(--_border);border-radius:12px;background:var(--_surface);text-align:center;font-size:14px;color:var(--_muted)}
 .drop.over{border-color:var(--_accent);background:color-mix(in srgb,var(--_accent) 6%,var(--_bg))}
@@ -494,7 +494,7 @@ const CSS = `
 .note:empty{display:none}
 .status{margin:10px 0 0;font-size:14px;color:var(--_muted)}
 .status:empty{display:none}
-.link{border:0;background:transparent;color:var(--_accent);font:600 14px var(--_font);cursor:pointer;padding:6px 8px;border-radius:8px;margin-top:12px}
+.link{border:0;background:transparent;color:var(--_accent-t);font:600 14px var(--_font);cursor:pointer;padding:6px 8px;border-radius:8px;margin-top:12px}
 .link:focus-visible{outline:none;box-shadow:0 0 0 4px var(--_focus)}
 .check{display:flex;gap:10px;align-items:center;font-size:14px;margin:0 0 12px;color:var(--_label)}
 .check input{width:18px;height:18px;accent-color:var(--_accent);margin:0}
