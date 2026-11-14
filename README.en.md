@@ -776,7 +776,7 @@ A candidate’s detail, an employee’s record, a survey with several sections. 
 
 - **Accessible**: linked `tablist` / `tab` / `tabpanel`; arrows (reversed in RTL), Home and End; disabled tabs are skipped; focus starts on the active one.
 - **Stable height** (`height: 'stable'`, the default): the dialog is as tall as the tallest tab and doesn’t jump when switching. With `height: 'auto'` it is as tall as the active one. If the content is taller than the screen, the tab list stays fixed on top and only the content scrolls.
-- **Styles**: `variant: 'underline'` (default) or `'segmented'`. `badge` shows a number or a short text next to the label.
+- **Styles**: `variant: 'soft'` (default: tabs share the full width, the active one on a soft background), `'underline'` (a line under the active one) or `'segmented'`. `badge` shows a number or a short text next to the label and `icon` puts an icon before it (a node such as an SVG, or the classes of your icon font).
 - By default a single “Close” button; pass `buttons` for something else (for example, Save and Cancel).
 
 To put them inside another dialog (`dialog.open` with `render`, a `form`…): `const t = tabs({ tabs: [...] })` returns `{ el, current, select(id), panel(id), setBadge(id, n), setDisabled(id, bool) }`; insert `t.el` and add `styles: TABS_CSS` to the dialog.
@@ -790,7 +790,7 @@ There are two things you can configure, and they are not to be confused: the **d
 | `size` (dialog) | `sm` 400 px, `md` 480, `lg` 640, `xl` 860 or a number | The width. On mobile the centered dialog becomes a bottom sheet |
 | `scale` in `tabs` | `sm` 34 px, `md` 42 (default), `lg` 50 | Tab height and font |
 | `scale` in `timeline` | `sm` 24 px marker, `md` 32 (default), `lg` 40 | Marker and font of the steps |
-| `fill` in `tabs` | `true` / `false` | Tabs share the full width (by default, only in `segmented`) |
+| `fill` in `tabs` | `true` / `false` | Tabs share the full width (by default in `soft` and `segmented`; with many tabs they keep a minimum width and the list scrolls) |
 | `layout` in `timeline` | `vertical` (default) / `horizontal` | Steps in a column or in a row (opens in `xl`) |
 
 They adapt to the **container’s width**, not the screen’s: they work the same in a dialog, a side panel or a bottom sheet. Tabs compact and the list scrolls if they don’t fit; the `horizontal` tracking goes back to vertical by itself when the container is under 36 rem.

@@ -160,16 +160,34 @@ describe('tabs()', () => {
 describe('tamaños de tabs()', () => {
   const clases = (o: Parameters<typeof tabs>[0]) => tabs(o).el.className
   it('md por omisión no agrega clase; sm y lg sí', () => {
-    expect(clases({ tabs: dos })).toBe('tabs nofill')
-    expect(clases({ tabs: dos, scale: 'md' })).toBe('tabs nofill')
+    expect(clases({ tabs: dos })).toBe('tabs soft fill')
+    expect(clases({ tabs: dos, scale: 'md' })).toBe('tabs soft fill')
     expect(clases({ tabs: dos, scale: 'sm' })).toContain('sc-sm')
     expect(clases({ tabs: dos, scale: 'lg' })).toContain('sc-lg')
   })
-  it('fill: por omisión solo en segmented; se puede forzar en un sentido u otro', () => {
-    expect(clases({ tabs: dos })).toContain('nofill')
+  it('fill: por omisión en soft y segmented, no en underline; se puede forzar en un sentido u otro', () => {
+    expect(clases({ tabs: dos })).toMatch(/ fill$/)
+    expect(clases({ tabs: dos, variant: 'underline' })).toContain('nofill')
+    expect(clases({ tabs: dos, fill: false })).toContain('nofill')
     expect(clases({ tabs: dos, variant: 'segmented' })).toMatch(/ fill$/)
     expect(clases({ tabs: dos, fill: true })).toMatch(/ fill$/)
     expect(clases({ tabs: dos, variant: 'segmented', fill: false })).toContain('nofill')
+  })
+})
+
+describe('icono de pestaña', () => {
+  it('una cadena es clases de iconos y un nodo se inserta tal cual; ambos ocultos a lectores', () => {
+    const svg = document.createElement('span')
+    svg.textContent = '★'
+    const c = tabs({
+      tabs: [
+        { id: 'a', label: 'Uno', icon: 'bi bi-journal' },
+        { id: 'b', label: 'Dos', icon: svg },
+      ],
+    })
+    const [a, b] = Array.from(c.el.querySelectorAll('.tab'))
+    expect(a.querySelector('i.tab-ico.bi')?.getAttribute('aria-hidden')).toBe('true')
+    expect(b.querySelector('.tab-ico')?.textContent).toBe('★')
   })
 })
 

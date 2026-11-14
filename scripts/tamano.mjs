@@ -24,7 +24,7 @@ const LIMITES = {
   'nexus-dialogs.swal.iife': 18.5,
   import: 10.5,
   table: 4,
-  tabs: 3,
+  tabs: 3.5,
   timeline: 3,
   locales: 2,
   sepomex: 0.8,
