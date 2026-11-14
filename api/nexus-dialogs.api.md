@@ -1220,7 +1220,7 @@ interface TabsOptions {
     tabs: TabSpec[];
     initial?: string;
     label?: string;
-    variant?: 'underline' | 'segmented';
+    variant?: 'soft' | 'underline' | 'segmented';
     scale?: 'sm' | 'md' | 'lg';
     fill?: boolean;
     height?: 'stable' | 'auto';
@@ -1234,6 +1234,7 @@ interface TabSpec {
     html?: string;
     badge?: string | number;
     disabled?: boolean;
+    icon?: string | Node;
 }
 ```
 
