@@ -6,6 +6,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ### Agregado
 
+- `daterange` con `periods: true`: una lista de periodos con un calendario siempre visible, para elegir rangos («17 al 19 nov») y días sueltos no corridos («25 nov») en el mismo campo. Sin atajos ni cajas de texto; cada periodo se quita con la ×. El valor es `{ from, to }[]`, los periodos se ordenan y no pueden traslaparse, y `maxDays` cuenta el total. La plantilla de capacitación de `rrhh` lo usa. El `daterange` de un solo rango no cambia.
 - `icon` en cada pestaña: un nodo (por ejemplo un SVG) o las clases de tu fuente de iconos, antes de la etiqueta.
 
 ### Cambiado

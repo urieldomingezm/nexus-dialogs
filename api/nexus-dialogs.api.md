@@ -342,6 +342,7 @@ interface Field {
     upload?: (file: File, progress: (percent: number) => void) => Promise<unknown>;
     presets?: false | DatePreset[];
     maxDays?: number;
+    periods?: boolean;
     calendar?: boolean;
     businessDays?: boolean | 'custom';
     holidays?: string[];

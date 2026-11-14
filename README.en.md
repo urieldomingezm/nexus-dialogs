@@ -571,6 +571,14 @@ There is always a “Choose files” button in addition to dragging. Files of an
 
 Shortcuts: Today, This week, Current fortnight, This month, Last month and Last 30 days. Change them with `presets: [{ label: 'Two months', range: () => [start, end] }]` or remove them with `presets: false`. It also supports `min` and `max` in `YYYY-MM-DD`.
 
+**Several periods (ranges and single days)**
+
+```ts
+{ name: 'dates', label: 'Dates', type: 'daterange', periods: true, required: true, maxDays: 10 }
+```
+
+An always-visible calendar and, below it, the list of periods: tap the first and last day for a range (“17 to 19 Nov · 3 days”) or use “Add another period” for a single day (“25 Nov · 1 day”). Each period is removed with the ×. No shortcuts and no text boxes. The value is `{ from, to }[]` (a single day has `from` equal to `to`) or `null`; periods are sorted, cannot overlap, and `maxDays` counts the total (business days if you use `businessDays`). It supports `min`, `max`, `businessDays` and `holidays`.
+
 **Verification code**
 
 ```ts

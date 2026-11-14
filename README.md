@@ -569,6 +569,14 @@ Siempre hay botón «Elegir archivos» además de arrastrar. Los archivos de otr
 
 Atajos: Hoy, Esta semana, Quincena actual, Este mes, Mes pasado y Últimos 30 días. Cambia los tuyos con `presets: [{ label: 'Bimestre', range: () => [inicio, fin] }]` o quítalos con `presets: false`. También admite `min` y `max` en `AAAA-MM-DD`.
 
+**Varios periodos (rangos y días sueltos)**
+
+```ts
+{ name: 'fechas', label: 'Fechas', type: 'daterange', periods: true, required: true, maxDays: 10 }
+```
+
+Un calendario siempre visible y, debajo, la lista de periodos: toca el primer y el último día para un rango («17 al 19 nov · 3 días») o usa «Agregar otro periodo» para un día suelto («25 nov · 1 día»). Cada periodo se quita con la ×. Sin atajos ni cajas de texto. El valor es `{ from, to }[]` (un día suelto trae `from` igual a `to`) o `null`; los periodos se ordenan, no pueden traslaparse y `maxDays` cuenta el total (de días hábiles si usas `businessDays`). Admite `min`, `max`, `businessDays` y `holidays`.
+
 **Código de verificación**
 
 ```ts
