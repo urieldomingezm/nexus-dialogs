@@ -4,7 +4,13 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ## [Sin publicar]
 
+### Agregado
+
+- `icon` en cada pestaña: un nodo (por ejemplo un SVG) o las clases de tu fuente de iconos, antes de la etiqueta.
+
 ### Cambiado
+
+- Pestañas (`tabs`, `tabsDialog`): el aspecto por omisión es ahora `variant: 'soft'`: las pestañas se reparten todo el ancho, con el contenido centrado y la activa sobre un fondo suave del color de acento; el contador es una pastilla pequeña. Con muchas pestañas conservan un ancho mínimo y la lista se desplaza. Para el de antes usa `variant: 'underline'`.
 
 - Los textos de la interfaz del sitio (buscador, copiar, tema, volver arriba) los resuelve ahora [`nexus-i18n`](https://www.npmjs.com/package/nexus-i18n), la librería de idiomas de las librerías NEXUS: idioma desde `<html lang>`, respaldo en español y `{n}`. Es una dependencia de desarrollo del sitio (no entra en el paquete). Los diccionarios con funciones y listas (demostración, Mini ERP, Migrar, Pruebas) siguen como estaban.
 

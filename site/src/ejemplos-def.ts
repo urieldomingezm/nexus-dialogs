@@ -691,15 +691,29 @@ export async function seguimiento() {
  * import: import { tabsDialog } from 'nexus-dialogs/tabs'
  */
 export async function pestanasCompactas() {
+  // Icono: un nodo (aquí un SVG) o las clases de tu fuente de iconos, como 'bi bi-journal-text'.
+  const icono = (trazo: string) => {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+    svg.setAttribute('viewBox', '0 0 24 24')
+    svg.setAttribute('fill', 'none')
+    svg.setAttribute('stroke', 'currentColor')
+    svg.setAttribute('stroke-width', '2')
+    svg.setAttribute('stroke-linecap', 'round')
+    svg.setAttribute('stroke-linejoin', 'round')
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+    path.setAttribute('d', trazo)
+    svg.append(path)
+    return svg
+  }
   const r = await tabsDialog({
     title: 'Resultado de la cita',
     size: 'sm', // ancho del diálogo: sm 400 px, md 480, lg 640, xl 860 o un número
     scale: 'sm', // tamaño de las pestañas
     fill: true,
     tabs: [
-      { id: 'resultado', label: 'Resultado', content: 'Apto, con observaciones.' },
-      { id: 'notas', label: 'Notas', badge: 2, content: 'Entrevista con buen perfil; falta confirmar horario.' },
-      { id: 'historial', label: 'Historial', content: 'Sin movimientos anteriores.' },
+      { id: 'resultado', label: 'Resultado', icon: icono('M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11'), content: 'Apto, con observaciones.' },
+      { id: 'notas', label: 'Notas', icon: icono('M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9zM14 3v6h6M8 13h8M8 17h5'), badge: 2, content: 'Entrevista con buen perfil; falta confirmar horario.' },
+      { id: 'historial', label: 'Historial', icon: icono('M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5M12 7v5l3 2'), content: 'Sin movimientos anteriores.' },
     ],
   })
   return r

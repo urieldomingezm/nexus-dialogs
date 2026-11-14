@@ -48,6 +48,8 @@ export interface TabSpec {
   /** Número o texto corto junto a la etiqueta: cuántas referencias hay, «Nuevo». */
   badge?: string | number
   disabled?: boolean
+  /** Icono antes de la etiqueta: un nodo (por ejemplo un SVG) o las clases de tu fuente de iconos (`'bi bi-journal-text'`). */
+  icon?: string | Node
 }
 
 export interface TabsOptions {
@@ -56,14 +58,17 @@ export interface TabsOptions {
   initial?: string
   /** Nombre accesible de la lista de pestañas. Por omisión, el título del diálogo. */
   label?: string
-  /** `underline` (línea bajo la activa, por omisión) o `segmented` (control con la activa rellena). */
-  variant?: 'underline' | 'segmented'
+  /**
+   * `soft` (por omisión): pestañas que se reparten todo el ancho, con la activa sobre un fondo suave del color de acento.
+   * `underline`: línea bajo la activa. `segmented`: control con la activa rellena.
+   */
+  variant?: 'soft' | 'underline' | 'segmented'
   /**
    * Tamaño de las pestañas: `sm` (34 px), `md` (42 px, por omisión) o `lg` (50 px). No cambia el ancho del diálogo: ese es `size`.
    * Para medidas propias usa las variables `--nd-tab-height`, `--nd-tab-font-size` y `--nd-tab-padding` (con `theme`).
    */
   scale?: 'sm' | 'md' | 'lg'
-  /** Las pestañas se reparten todo el ancho por igual. Por omisión solo en `segmented`. */
+  /** Las pestañas se reparten todo el ancho por igual. Por omisión en `soft` y `segmented`; con muchas, conservan un ancho mínimo y la lista se desplaza. */
   fill?: boolean
   /**
    * `stable` (por omisión): todas las pestañas ocupan el mismo lugar y el conjunto mide lo que la más alta.
@@ -104,6 +109,13 @@ const CSS = `
 .tab-badge{padding:0 7px;border-radius:999px;background:color-mix(in srgb,var(--_accent) 14%,var(--_bg));color:color-mix(in srgb,var(--_accent) 65%,var(--_fg));font-size:12px;line-height:18px;font-variant-numeric:tabular-nums}
 .tab-badge[hidden]{display:none}
 
+.soft .tabs-list{gap:6px;padding:0;border:0}
+.soft .tab{flex:1 1 0;min-width:max-content;margin:0;border:0;border-radius:10px;font-weight:500}
+.soft.nofill .tab{flex:none}
+.soft .tab:hover:not([aria-selected=true]):not([aria-disabled=true]){background:var(--_surface)}
+.soft .tab[aria-selected=true]{background:color-mix(in srgb,var(--_accent) 14%,var(--_bg));color:color-mix(in srgb,var(--_accent) 55%,var(--_fg));font-weight:600}
+.tab-ico{display:inline-flex;font-size:1.15em;line-height:1}
+.tab-ico svg{width:1.15em;height:1.15em}
 .seg .tabs-list{padding:4px;gap:4px;border:1px solid var(--_line);border-radius:999px;background:var(--_surface)}
 .seg .tab{flex:1 1 0;height:calc(var(--nd-tab-height,var(--tab-h)) - 6px);margin:0;border:0;border-radius:999px}
 .seg.nofill .tab{flex:none}
@@ -130,13 +142,14 @@ export function tabs(o: TabsOptions, ctx?: DialogContext): TabsControl {
   if (ids.size !== o.tabs.length) throw new Error('nexus-dialogs/tabs: los ids de las pestañas deben ser únicos.')
 
   const base = uid('tabs')
+  const variante = o.variant ?? 'soft'
   const lista = h('div', { class: 'tabs-list', role: 'tablist', 'aria-label': o.label })
   const paneles = h('div', { class: 'tabs-panels' })
   const raiz = h(
     'div',
     {
-      class: `tabs${o.variant === 'segmented' ? ' seg' : ''}${o.height === 'auto' ? ' auto' : ''}${o.scale && o.scale !== 'md' ? ` sc-${o.scale}` : ''}${
-        (o.fill ?? o.variant === 'segmented') ? ' fill' : ' nofill'
+      class: `tabs${variante === 'segmented' ? ' seg' : variante === 'soft' ? ' soft' : ''}${o.height === 'auto' ? ' auto' : ''}${o.scale && o.scale !== 'md' ? ` sc-${o.scale}` : ''}${
+        (o.fill ?? variante !== 'underline') ? ' fill' : ' nofill'
       }`,
     },
     h('div', { class: 'tabs-bar' }, lista),
@@ -159,6 +172,13 @@ export function tabs(o: TabsOptions, ctx?: DialogContext): TabsControl {
       'aria-disabled': spec.disabled ? 'true' : null,
       tabindex: '-1',
     })
+    if (spec.icon) {
+      boton.append(
+        typeof spec.icon === 'string'
+          ? h('i', { class: `tab-ico ${spec.icon}`, 'aria-hidden': 'true' })
+          : h('span', { class: 'tab-ico', 'aria-hidden': 'true' }, spec.icon),
+      )
+    }
     boton.append(spec.label, insignia)
     const panel = h('div', {
       class: 'tab-panel',

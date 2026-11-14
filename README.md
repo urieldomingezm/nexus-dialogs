@@ -766,7 +766,7 @@ El detalle de un candidato, la ficha de un empleado, una encuesta con varias sec
 
 - **Accesible**: `tablist` / `tab` / `tabpanel` enlazados; flechas (invertidas en RTL), Inicio y Fin; las pestañas deshabilitadas se saltan; el foco empieza en la activa.
 - **Altura estable** (`height: 'stable'`, por omisión): el diálogo mide lo que la pestaña más alta y no brinca al cambiar. Con `height: 'auto'` mide lo que la activa. Si el contenido es más alto que la pantalla, la lista de pestañas se queda fija arriba y solo se desplaza el contenido.
-- **Estilos**: `variant: 'underline'` (por omisión) o `'segmented'`. `badge` muestra un número o un texto corto junto a la etiqueta.
+- **Estilos**: `variant: 'soft'` (por omisión: las pestañas se reparten todo el ancho, con la activa sobre un fondo suave), `'underline'` (línea bajo la activa) o `'segmented'`. `badge` muestra un número o un texto corto junto a la etiqueta e `icon` pone un icono antes de ella (un nodo, como un SVG, o las clases de tu fuente de iconos).
 - Por omisión un solo botón «Cerrar»; pasa `buttons` para otra cosa (por ejemplo, Guardar y Cancelar).
 
 Para ponerlas dentro de otro diálogo (`dialog.open` con `render`, un `form`…): `const t = tabs({ tabs: [...] })` devuelve `{ el, current, select(id), panel(id), setBadge(id, n), setDisabled(id, bool) }`; inserta `t.el` y agrega `styles: TABS_CSS` al diálogo.
@@ -780,7 +780,7 @@ Hay dos cosas que se pueden configurar, y no se confunden: el **ancho del diálo
 | `size` (diálogo) | `sm` 400 px, `md` 480, `lg` 640, `xl` 860 o un número | El ancho. En celular el diálogo central se vuelve hoja inferior |
 | `scale` en `tabs` | `sm` 34 px, `md` 42 (por omisión), `lg` 50 | Alto y letra de las pestañas |
 | `scale` en `timeline` | `sm` marcador de 24 px, `md` 32 (por omisión), `lg` 40 | Marcador y letra de las etapas |
-| `fill` en `tabs` | `true` / `false` | Las pestañas se reparten todo el ancho (por omisión, solo en `segmented`) |
+| `fill` en `tabs` | `true` / `false` | Las pestañas se reparten todo el ancho (por omisión en `soft` y `segmented`; con muchas pestañas conservan un ancho mínimo y la lista se desplaza) |
 | `layout` en `timeline` | `vertical` (por omisión) / `horizontal` | Etapas en columna o en una fila (abre en `xl`) |
 
 Se adaptan al **ancho del contenedor**, no al de la pantalla: sirven igual en un diálogo, un panel lateral o una hoja inferior. Las pestañas se compactan y la lista se desplaza si no caben; el seguimiento `horizontal` vuelve solo a vertical cuando el contenedor mide menos de 36 rem.
